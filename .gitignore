@@ -1,28 +1,21 @@
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Flutter/Dart specific
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
 .pub-cache/
 .pub/
-/build/
-flutter_*.png
-linked_*.ds
-unlinked.ds
-unlinked_spec.ds
-
-# Android related
-**/android/**/gradle-wrapper.jar
-**/android/.gradle
-**/android/captures/
+build/
+**/build/
 **/android/gradlew
 **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
-**/android/key.properties
-*.jks
+**/android/.gradle
+**/android/captures/
+**/android/app/.cxx
+**/android/.idea
+**/android/app/outputs/
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -57,46 +50,60 @@ unlinked_spec.ds
 **/macos/Flutter/GeneratedPluginRegistrant.swift
 **/macos/Flutter/ephemeral
 
-# Web related
-lib/generated_plugin_registrant.dart
-
-# Windows
+# Platform specific
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
 **/windows/flutter/generated_plugin_registrant.cc
 **/windows/flutter/generated_plugin_registrant.h
 **/windows/flutter/generated_plugins.cmake
 
-# Linux
-**/linux/flutter/generated_plugin_registrant.cc
-**/linux/flutter/generated_plugin_registrant.h
-**/linux/flutter/generated_plugins.cmake
+# Web related
+lib/generated_plugin_registrant.dart
+web/packages/
+web/cache/
+web/worker/
 
-# Coverage
-coverage/
-
-# Symbols
+# Symbolication related
 app.*.symbols
 
-# Exceptions to above rules.
-!**/ios/**/default.mode1v3
-!**/ios/**/default.mode2v3
-!**/ios/**/default.pbxuser
-!**/ios/**/default.perspectivev3
-!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+# Obfuscation related
+app.*.map.json
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
+# Test coverage
+coverage/
+
+# System files
+.DS_Store
+**/.DS_Store
+._.DS_Store
+**/._.DS_Store
+Thumbs.db
+**/Thumbs.db
+
+# IDE files
 .idea/
+.vscode/
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.project
+**/.classpath
+**/.settings/
 
-# Visual Studio Code related
-.classpath
-.project
-.settings/
-.vscode/*
+# JIT/AOT compiler related
+**/6a233b46b78ada3a72fe2e767fe87731/
 
-# FVM
+# Flutter version manager
 .fvm/flutter_sdk
 
-# Fastlane
-fastlane/report.xml
+# Log files
+*.log
+
+# Template cache
+.cache/
+
+# Native libs
+*.so
+*.dylib
+*.dll
