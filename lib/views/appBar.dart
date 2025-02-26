@@ -16,6 +16,7 @@ AppBar appBarrWitoutAction(
     leadinBorderColor,
     leadingWidget,
     titleColor,
+    fontSize,
     isBlockBack}) {
   return AppBar(
     titleSpacing: 0.0,
@@ -44,7 +45,7 @@ AppBar appBarrWitoutAction(
       title!.tr ?? "title",
       style: textStyleMontserratBold(
         color: titleColor ?? mainBlackcolor,
-        fontSize: 22,
+        fontSize: fontSize ?? 22,
       ),
     ),
   );
@@ -108,18 +109,22 @@ AppBar appBarrWitAction(
   return AppBar(
     backgroundColor: backgroundColor ?? Colors.transparent,
     leading: leadingWidget ??
-        Consumer<UserViewModel>(builder: (context, vm, child) {
-          return InkWell(
-              onTap: () {
-                Get.back();
-              },
-              child: Icon(
-                  //  vm.isEnglish ?
-                  Icons.arrow_back,
-                  //  : Icons.arrow_back,
-                  color: leadinIconColor ?? mainBlackcolor,
-                  size: 25));
-        }),
+        GestureDetector(onTap: () {
+          Get.back();
+        }, child: Consumer<UserViewModel>(builder: (context, pr, c) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Container(
+                child: Padding(
+              padding:
+                  const EdgeInsets.only(right: 5, left: 2, top: 5, bottom: 5),
+              child: Image.asset(
+                'images/backlogo.png',
+                color: leadinIconColor ?? whiteColor,
+              ),
+            )),
+          );
+        })),
     elevation: elevation ?? 0,
     centerTitle: centerTitle ?? true,
     title: Text(

@@ -7,8 +7,8 @@ class Responses {
   Responses({
     required this.status,
     this.message,
-    required this.data,
-    this.pagination, // Optional
+    this.data,
+    this.pagination,
   });
 
   factory Responses.fromJson(Map<String, dynamic> json) {
@@ -20,18 +20,21 @@ class Responses {
       'deal',
       'banks',
       'atm',
+      'merchants',
     ];
 
     // Find the first existing key in the JSON
     String? dataKey = possibleDataKeys.firstWhere(
       (key) => json.containsKey(key),
-      orElse: () => 'key_not_found',
+      orElse: () => '',
     );
 
     return Responses(
       status: json['status'],
       message: json['message'],
-      data: dataKey != 'key_not_found' ? json[dataKey] : json,
+      data: (dataKey.isNotEmpty)
+          ? json[dataKey]
+          : null, // ✅ Set `data` to `null` if key is not found
       pagination: json.containsKey('pagination')
           ? json['pagination']
           : null, // Handle pagination
@@ -43,8 +46,7 @@ class Responses {
       'status': status,
       'message': message,
       'data': data,
-      if (pagination != null)
-        'pagination': pagination, // Only include if not null
+      if (pagination != null) 'pagination': pagination,
     };
   }
 }

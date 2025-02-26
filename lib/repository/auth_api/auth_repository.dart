@@ -6,4 +6,6 @@ abstract class AuthRepository {
   Future<ApiResponse<Responses>> registerApi(dynamic data);
   Future<ApiResponse<Responses>> updateProfile(dynamic data, token);
   Future<ApiResponse<Responses>> getAllBanks();
+  Future<ApiResponse<Responses>> getAllMerchants();
+  Future<ApiResponse<Responses>> checkCoinSecurity({securityToken});
 }

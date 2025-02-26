@@ -12,10 +12,8 @@ import 'base_api_services.dart';
 
 class NetworkApiService implements BaseApiServices {
   final String _baseUrl = "https://api.buzdy.com";
-  final String _registrationEndPoint = "/auth/registeruser";
   final String _loginEndPoint = "/users/signin";
-  final String _registerEndPoint = "/users/signin";
-
+  final String _registerEndPoint = "/users/signup";
   final String _updateProfile = "/api/customer/updateProfile";
 
   @override
@@ -29,13 +27,18 @@ class NetworkApiService implements BaseApiServices {
   }
 
   @override
-  String updateProfile() {
-    return _updateProfile;
+  String getAllMerchantEndPoint({pageNumber}) {
+    return "https://api.buzdy.com/merchants?page_no=$pageNumber&page_size=10";
   }
 
   @override
-  String getRegistrationEndPoint() {
-    return _registrationEndPoint;
+  String rugChecktEndPoint({securityToken}) {
+    return "https://api.buzdy.com/rugcheck?string=$securityToken";
+  }
+
+  @override
+  String updateProfile() {
+    return _updateProfile;
   }
 
   @override
@@ -51,12 +54,12 @@ class NetworkApiService implements BaseApiServices {
   @override
   Future getGetApiResponse(String url) async {
     if (kDebugMode) {
-      print(url);
+      print("API URL--- ${url}");
     }
     dynamic responseJson;
     try {
       var header = {
-        'accept': '/',
+        'accept': '*/*',
       };
       if (kDebugMode) {
         // print("headers: $header");
@@ -91,7 +94,7 @@ class NetworkApiService implements BaseApiServices {
     dynamic responseJson;
     try {
       var headers = {
-        'accept': '/',
+        'accept': '*/*',
         'Content-Type': 'application/json',
         if (token.isNotEmpty) 'Authorization': "Bearer $token",
         if (cookies.isNotEmpty) 'Cookie': '$cookies'

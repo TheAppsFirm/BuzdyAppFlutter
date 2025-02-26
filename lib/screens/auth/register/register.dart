@@ -1,4 +1,4 @@
-import 'package:buzdy/screens/auth/login/login.dart';
+import 'dart:io';
 import 'package:buzdy/screens/provider/UserViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,6 +10,8 @@ import 'package:buzdy/views/custom_text_field.dart';
 import 'package:buzdy/views/text_styles.dart';
 import 'package:buzdy/views/ui_helpers.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -19,12 +21,65 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isChecked = false;
+  final bool _isChecked = false;
   bool hidePassword = true;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  File? _image;
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+        print(_image);
+      });
+    }
+  }
+
+  Future<void> _signup() async {
+    var uri = Uri.parse('https://api.buzdy.com/users/signup');
+
+    var request = http.MultipartRequest('POST', uri);
+
+    // ✅ Add necessary headers
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Content-Type':
+          'multipart/form-data', // Ensures proper boundary formatting
+    });
+
+    // ✅ Add form fields (Ensure no null values)
+    request.fields['firstname'] = _firstNameController.text.trim();
+    request.fields['lastname'] = _lastNameController.text.trim();
+    request.fields['email'] = _emailController.text.trim();
+    request.fields['password'] = _passwordController.text.trim();
+    request.fields['user_id'] = _emailController.text.split('@').first;
+    request.fields['phone'] = '39598437589';
+    request.fields['phone_country_code'] = 'string';
+
+    try {
+      var response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Signup successful');
+        Get.snackbar("Success", "Signup successful!",
+            backgroundColor: Colors.green, colorText: Colors.white);
+      } else {
+        print('❌ Signup failed with status: ${response.statusCode}');
+        Get.snackbar("Error", "Signup failed: ${response.reasonPhrase}",
+            backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      print('❌ Error: $e');
+      Get.snackbar("Error", "Something went wrong: $e",
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +93,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 UIHelper.verticalSpaceMd40,
-
-                // Header Text
                 kText(
                   text: "Join Us: Set Up Your Account",
                   fSize: 24.0,
@@ -55,9 +108,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   height: 1.5,
                 ),
                 UIHelper.verticalSpaceMd35,
-                // Full Name Input
                 kText(
-                  text: "Full name",
+                  text: "First Name",
                   fSize: 16.0,
                   tColor: mainBlackcolor,
                   fWeight: fontWeightSemiBold,
@@ -66,11 +118,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 CustomTextField(
                     prefix: Icon(Icons.person_2_outlined),
                     required: false,
-                    hint: "Full name",
-                    controllerr: _nameController),
-
+                    hint: "First Name",
+                    controllerr: _firstNameController),
                 UIHelper.verticalSpaceSm20,
-                // Gmail Input
+                kText(
+                  text: "Last Name",
+                  fSize: 16.0,
+                  tColor: mainBlackcolor,
+                  fWeight: fontWeightSemiBold,
+                ),
+                const SizedBox(height: 10),
+                CustomTextField(
+                    prefix: Icon(Icons.person_2_outlined),
+                    required: false,
+                    hint: "Last Name",
+                    controllerr: _lastNameController),
+                UIHelper.verticalSpaceSm20,
                 kText(
                   text: "Email",
                   fSize: 16.0,
@@ -83,22 +146,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   required: false,
                   hint: "user@gmail.com",
                   controllerr: _emailController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Email is required";
-                    }
-                    // Regular Expression for Valid Email
-                    String emailPattern =
-                        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-                    RegExp regex = RegExp(emailPattern);
-                    if (!regex.hasMatch(value)) {
-                      return "Enter a valid email address";
-                    }
-                    return null;
-                  },
                 ),
                 UIHelper.verticalSpaceSm20,
-                // Password Input
                 kText(
                   text: "Password",
                   fSize: 16.0,
@@ -111,7 +160,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   required: false,
                   hint: "*********",
                   isHide: hidePassword,
-                  label: null,
                   controllerr: _passwordController,
                   suffixIcon: InkWell(
                     onTap: () {
@@ -124,117 +172,43 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           : Icons.remove_red_eye,
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Password is required";
-                    }
-                    if (value.length < 8) {
-                      return "Password must be at least 8 characters long";
-                    }
-                    if (!RegExp(r'^(?=.*[A-Z])').hasMatch(value)) {
-                      return "Password must contain at least one uppercase letter";
-                    }
-                    if (!RegExp(r'^(?=.*\d)').hasMatch(value)) {
-                      return "Password must contain at least one number";
-                    }
-                    if (!RegExp(r'^(?=.*[!@#$%^&*(),.?":{}|<>])')
-                        .hasMatch(value)) {
-                      return "Password must contain at least one special character";
-                    }
-                    return null; // ✅ Password is valid
-                  },
                 ),
                 UIHelper.verticalSpaceSm20,
-                // Terms and Conditions
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _isChecked,
-                      onChanged: (value) {
-                        setState(() {
-                          _isChecked = value!;
-                        });
-                      },
-                    ),
-                    Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          text: "By Signing up, you are agree to our ".tr,
-                          style: textStyleMontserratMiddle(),
-                          children: [
-                            TextSpan(
-                              text: "Terms & Conditions".tr,
-                              style: textStyleMontserratMiddle(
-                                  color: appblueColor2,
-                                  weight: fontWeightSemiBold),
-                            ),
-                            TextSpan(
-                              text: " and ".tr,
-                              style: textStyleMontserratMiddle(),
-                            ),
-                            TextSpan(
-                              text: "privacy policy.".tr,
-                              style: textStyleMontserratMiddle(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                UIHelper.verticalSpaceMd35,
-                // Submit Button
-                CustomButton(
-                  () {
-                    if (_isChecked) {
-                      // Handle Registration Logic
-                      var payload = {
-                        "firstname": "Johnjskdhf",
-                        "lastname": "Doe",
-                        "email": "johndoe@example.com",
-                        "password": "securepassword",
-                        "user_id": "12345",
-                        "phone": "9876543210",
-                        "phone_country_code": "+1",
-                        "userImage": "", // Pass null if no image
-                      };
+                // GestureDetector(
+                //   onTap: _pickImage,
+                //   child: _image != null
+                //       ? Image.file(_image!, height: 100, width: 100)
+                //       : Container(
+                //           height: 100,
+                //           width: 100,
+                //           decoration: BoxDecoration(
+                //             color: Colors.grey[200],
+                //             borderRadius: BorderRadius.circular(10),
+                //           ),
+                //           child: Icon(Icons.camera_alt,
+                //               size: 50, color: Colors.grey),
+                //         ),
+                // ),
+                // UIHelper.verticalSpaceSm20,
 
-                      if (_formKey.currentState!.validate()) {
-                        pr.register(payload: payload);
-                      }
-                    } else {
-                      // Show an error message
-                      Get.snackbar(
-                        "Error",
-                        "Please accept the Terms & Conditions to proceed.",
-                        backgroundColor: Colors.red,
-                        colorText: Colors.white,
-                      );
+                CustomButton(
+                  () async {
+                    if (_formKey.currentState!.validate()) {
+                      var payload = {
+                        "firstname": _firstNameController.text,
+                        "lastname": _lastNameController.text,
+                        "email": _emailController.text,
+                        "password": _passwordController.text,
+                        "user_id": _emailController.text.split('@').first,
+                        "phone": "",
+                        "phone_country_code": "",
+                      };
+                      pr.register(payload: payload);
                     }
                   },
                   text: "Submit",
                 ),
-                UIHelper.verticalSpaceSm10,
-                // Login Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    kText(
-                      text: "Haven't you an account?",
-                      fSize: 15.0,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Get.off(LoginScreen());
-                      },
-                      child: kText(
-                          text: " Login",
-                          tColor: appButtonColor,
-                          fSize: 15.0,
-                          fWeight: fontWeightSemiBold),
-                    ),
-                  ],
-                ),
+                UIHelper.verticalSpaceSm15,
               ],
             );
           }),

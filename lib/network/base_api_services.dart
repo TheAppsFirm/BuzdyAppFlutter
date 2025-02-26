@@ -1,7 +1,9 @@
 abstract class BaseApiServices {
   String getBaseURL();
   String getAllBankEndPoint({pageNumber});
-  String getRegistrationEndPoint();
+  String getAllMerchantEndPoint({pageNumber});
+  String rugChecktEndPoint({securityToken});
+
   String updateProfile();
   String getLoginEndPoint();
   String getRegisterEndPoint();

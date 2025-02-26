@@ -20,10 +20,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController =
-      TextEditingController(text: "info@buzdy.com");
-  final TextEditingController _passwordController =
-      TextEditingController(text: "tikki&Fikki187");
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool hidePassword = true;
 
@@ -163,8 +161,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 // "password": "A@12abcdef"
                 if (_formKey.currentState!.validate()) {
                   pr.login(payload: {
-                    "email": "user7345@gmail.com",
-                    "password": "A@12abcdef",
+                    "email": _emailController.text,
+                    "password": _passwordController.text,
                   });
                 }
 

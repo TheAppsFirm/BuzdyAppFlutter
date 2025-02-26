@@ -42,12 +42,12 @@ class Bank {
   final String name;
   final String email;
   final String phone;
-  final CountryCode phoneCountryCode;
+  final String phoneCountryCode;
   final dynamic website;
   final String? advertisementUrl;
   final int advertisementState;
-  final Country country;
-  final CountryCode countryCode;
+  final String country;
+  final String countryCode;
   final String city;
   final String timezone;
   final String latitude;
@@ -105,20 +105,20 @@ class Bank {
         name: json["name"],
         email: json["email"],
         phone: json["phone"],
-        phoneCountryCode: countryCodeValues.map[json["phone_country_code"]]!,
+        phoneCountryCode: json["phone_country_code"] ?? "",
         website: json["website"] ?? "",
         advertisementUrl: json["advertisement_url"],
-        advertisementState: json["advertisement_state"],
-        country: countryValues.map[json["country"]]!,
-        countryCode: countryCodeValues.map[json["country_code"]]!,
-        city: json["city"],
+        advertisementState: json["advertisement_state"] ?? 0,
+        country: json["country"] ?? "",
+        countryCode: json["country_code"] ?? "",
+        city: json["city"] ?? "",
         timezone: json["timezone"],
         latitude: json["latitude"],
         longitude: json["longitude"],
         avgRating: json["avg_rating"],
         isArchive: json["is_archive"],
-        address: json["address"],
-        image: json["image"],
+        address: json["address"] ?? "",
+        image: json["image"] ?? "",
         featured: json["featured"],
         createdAt: DateTime.parse(json["created_at"]),
         updatedAt: DateTime.parse(json["updated_at"]),
@@ -138,12 +138,12 @@ class Bank {
         "name": name,
         "email": email,
         "phone": phone,
-        "phone_country_code": countryCodeValues.reverse[phoneCountryCode],
+        "phone_country_code": phoneCountryCode,
         "website": website,
         "advertisement_url": advertisementUrl,
         "advertisement_state": advertisementState,
-        "country": countryValues.reverse[country],
-        "country_code": countryCodeValues.reverse[countryCode],
+        "country": country,
+        "country_code": countryCode,
         "city": city,
         "timezone": timezone,
         "latitude": latitude,
@@ -167,15 +167,15 @@ class Bank {
 
 class Branch {
   final String name;
-  final Email email;
+  final String email;
   final String phone;
-  final CountryCode phoneCountryCode;
+  final String phoneCountryCode;
   final dynamic advertisementUrl;
   final int advertisementState;
   final dynamic fax;
-  final Country country;
-  final City city;
-  final Timezone timezone;
+  final String country;
+  final String city;
+  final String timezone;
   final String latitude;
   final String longitude;
   final int isArchive;
@@ -198,10 +198,10 @@ class Branch {
   final int bankId;
   final int featured;
   final String playStore;
-  final AppStore appStore;
-  final Facebook facebook;
-  final Twitter twitter;
-  final Instagram instagram;
+  final String appStore;
+  final String facebook;
+  final String twitter;
+  final String instagram;
   final int avgRating;
   final ItemType itemType;
   final String placeid;
@@ -252,15 +252,15 @@ class Branch {
 
   factory Branch.fromJson(Map<String, dynamic> json) => Branch(
         name: json["name"],
-        email: emailValues.map[json["email"]]!,
-        phone: json["phone"],
-        phoneCountryCode: countryCodeValues.map[json["phone_country_code"]]!,
+        email: json["email"] ?? "",
+        phone: json["phone"] ?? "",
+        phoneCountryCode: json["phone_country_code"],
         advertisementUrl: json["advertisement_url"] ?? "",
         advertisementState: json["advertisement_state"],
         fax: json["fax"] ?? "",
-        country: countryValues.map[json["country"]]!,
-        city: cityValues.map[json["city"]]!,
-        timezone: timezoneValues.map[json["timezone"]]!,
+        country: json["country"] ?? "",
+        city: json["city"] ?? "",
+        timezone: json["timezone"] ?? "",
         latitude: json["latitude"],
         longitude: json["longitude"],
         isArchive: json["is_archive"],
@@ -268,13 +268,13 @@ class Branch {
         managerName: json["manager_name"] ?? "",
         managerPhone: json["manager_phone"] ?? "",
         managerEmail: json["manager_email"] ?? "",
-        address: json["address"],
+        address: json["address"] ?? "",
         id: json["id"],
         bankCountryId: json["bank_country_id"],
-        atmOnSite: json["atm_on_site"] ?? "",
+        atmOnSite: json["atm_on_site"] ?? 0,
         atmOffSite: json["atm_off_site"] ?? "",
-        fxBranch: json["fx_branch"],
-        image: json["image"],
+        fxBranch: json["fx_branch"] ?? 0,
+        image: json["image"] ?? "",
         createdAt: DateTime.parse(json["created_at"]),
         updatedAt: DateTime.parse(json["updated_at"]),
         bankSubadminId: json["bank_subadmin_id"] ?? "",
@@ -282,27 +282,27 @@ class Branch {
         branchSubadminId: json["branch_subadmin_id"] ?? '',
         bankId: json["bank_id"],
         featured: json["featured"],
-        playStore: json["play_store"],
-        appStore: appStoreValues.map[json["app_store"]]!,
-        facebook: facebookValues.map[json["facebook"]]!,
-        twitter: twitterValues.map[json["twitter"]]!,
-        instagram: instagramValues.map[json["instagram"]]!,
+        playStore: json["play_store"] ?? "",
+        appStore: json["app_store"] ?? "",
+        facebook: json["facebook"] ?? "",
+        twitter: json["twitter"] ?? "",
+        instagram: json["instagram"] ?? "",
         avgRating: json["avg_rating"],
         itemType: itemTypeValues.map[json["item_type"]]!,
         placeid: json["placeid"],
-        updatedName: json["updated_name"],
+        updatedName: json["updated_name"] ?? "",
       );
 
   Map<String, dynamic> toJson() => {
         "name": name,
-        "email": emailValues.reverse[email],
+        "email": email,
         "phone": phone,
-        "phone_country_code": countryCodeValues.reverse[phoneCountryCode],
+        "phone_country_code": phoneCountryCode,
         "advertisement_url": advertisementUrl,
         "advertisement_state": advertisementState,
         "fax": fax,
-        "country": countryValues.reverse[country],
-        "city": cityValues.reverse[city],
+        "country": country,
+        "city": city,
         "timezone": timezoneValues.reverse[timezone],
         "latitude": latitude,
         "longitude": longitude,
@@ -326,10 +326,10 @@ class Branch {
         "bank_id": bankId,
         "featured": featured,
         "play_store": playStore,
-        "app_store": appStoreValues.reverse[appStore],
-        "facebook": facebookValues.reverse[facebook],
-        "twitter": twitterValues.reverse[twitter],
-        "instagram": instagramValues.reverse[instagram],
+        "app_store": appStore,
+        "facebook": facebook,
+        "twitter": twitter,
+        "instagram": instagram,
         "avg_rating": avgRating,
         "item_type": itemTypeValues.reverse[itemType],
         "placeid": placeid,
@@ -337,51 +337,13 @@ class Branch {
       };
 }
 
-enum AppStore { APPS_APPLE_COM_US_APP_MCBLIVE_ID1584933248 }
-
-final appStoreValues = EnumValues({
-  "apps.apple.com/us/app/mcblive/id1584933248":
-      AppStore.APPS_APPLE_COM_US_APP_MCBLIVE_ID1584933248
-});
-
-enum City { LAHORE }
-
-final cityValues = EnumValues({"Lahore": City.LAHORE});
-
-enum Country { PAKISTAN }
-
-final countryValues = EnumValues({"Pakistan": Country.PAKISTAN});
-
-enum Email { MCB_GMAIL_COM }
-
-final emailValues = EnumValues({"mcb@gmail.com": Email.MCB_GMAIL_COM});
-
-enum Facebook { WWW_FACEBOOK_COM_MCB_BANK_PK }
-
-final facebookValues = EnumValues(
-    {"www.facebook.com/MCBBankPk": Facebook.WWW_FACEBOOK_COM_MCB_BANK_PK});
-
-enum Instagram { WWW_INSTAGRAM_COM }
-
-final instagramValues =
-    EnumValues({"www.instagram.com": Instagram.WWW_INSTAGRAM_COM});
-
 enum ItemType { BRANCHES }
 
 final itemTypeValues = EnumValues({"branches": ItemType.BRANCHES});
 
-enum CountryCode { PK }
-
-final countryCodeValues = EnumValues({"pk": CountryCode.PK});
-
 enum Timezone { GMT_5 }
 
 final timezoneValues = EnumValues({"GMT+5": Timezone.GMT_5});
-
-enum Twitter { TWITTER_COM_MCB_BANK_PK }
-
-final twitterValues =
-    EnumValues({"twitter.com/MCBBankPk": Twitter.TWITTER_COM_MCB_BANK_PK});
 
 class Pagination {
   final int pageNo;

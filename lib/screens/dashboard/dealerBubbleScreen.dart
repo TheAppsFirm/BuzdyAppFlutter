@@ -82,6 +82,8 @@ class DealerBubbleScreen extends StatelessWidget {
     },
   ];
 
+  DealerBubbleScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -129,7 +131,8 @@ class DealerBubble extends StatelessWidget {
   final double size;
   final Color color;
 
-  DealerBubble({
+  const DealerBubble({
+    super.key,
     required this.name,
     required this.percentage,
     required this.size,

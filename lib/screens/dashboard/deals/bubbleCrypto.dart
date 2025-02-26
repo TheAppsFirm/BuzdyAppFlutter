@@ -1,7 +1,12 @@
 import 'dart:math';
+import 'package:buzdy/screens/dashboard/deals/model.dart/bubbleCoinModel.dart';
+import 'package:buzdy/screens/provider/UserViewModel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DealsScreen extends StatefulWidget {
+  const DealsScreen({super.key});
+
   @override
   State<DealsScreen> createState() => _DealsScreenState();
 }
@@ -10,26 +15,16 @@ class _DealsScreenState extends State<DealsScreen>
     with SingleTickerProviderStateMixin {
   final Random _random = Random();
   late AnimationController _controller;
-
-  final List<Map<String, dynamic>> cryptoCoins = List.generate(60, (index) {
-    final randomPercentage = (Random().nextDouble() * 20 - 10);
-    return {
-      "name": "Coin $index",
-      "symbol": "C$index",
-      "priceChange": randomPercentage,
-      "price": "\$${(randomPercentage * 1000).toStringAsFixed(2)}",
-      "description": "This is a sample description for Coin $index."
-    };
-  });
-
   List<Bubble> bubbles = [];
 
   @override
   void initState() {
     super.initState();
+    UserViewModel pr = Provider.of<UserViewModel>(context, listen: false);
+
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 16),
+      duration: Duration(milliseconds: 50),
     )..repeat();
 
     _controller.addListener(() {
@@ -39,8 +34,9 @@ class _DealsScreenState extends State<DealsScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final screenSize = MediaQuery.of(context).size;
-      bubbles = _generateBubbles(screenSize);
-      setState(() {});
+      setState(() {
+        bubbles = _generateBubbles(screenSize, pr.bubbleCoins);
+      });
     });
   }
 
@@ -50,22 +46,37 @@ class _DealsScreenState extends State<DealsScreen>
     super.dispose();
   }
 
-  List<Bubble> _generateBubbles(Size screenSize) {
+  /// **Generates Crypto Bubbles with Peak Size Limit & Bottom Padding**
+  List<Bubble> _generateBubbles(
+      Size screenSize, List<BubbleCoinModel> bubbleCoins) {
     final List<Bubble> bubbles = [];
     const double padding = 20;
+    const double bottomPadding = 200; // Ensure no bubbles are too low
 
-    for (final coin in cryptoCoins) {
-      final bubbleSize = max((screenSize.width / 20),
-          (screenSize.width / 20) + (coin["priceChange"] as double).abs() * 5);
+    for (final coin in bubbleCoins) {
+      // **Calculate Bubble Size Based on Hourly Change**
+      double hourlyChange = coin.performance["hour"] ?? 0.0;
+      double baseSize = screenSize.width / 12; // Slightly increased base size
+      double adjustedSize = baseSize + hourlyChange.abs() * 15;
+
+      // **Ensure Peak Size is Limited to Avoid Overly Large Bubbles**
+      double bubbleSize = max(baseSize * 1.2, adjustedSize);
+      bubbleSize = min(
+          bubbleSize, screenSize.width / 5); // Max limit for extreme changes
 
       Offset position;
       bool overlaps;
 
+      // **Ensure bubbles do not overlap & have bottom padding**
       do {
         overlaps = false;
         position = Offset(
           padding + _random.nextDouble() * (screenSize.width - 2 * padding),
-          padding + _random.nextDouble() * (screenSize.height - 2 * padding),
+          padding +
+              _random.nextDouble() *
+                  (screenSize.height -
+                      2 * padding -
+                      bottomPadding), // Apply bottom padding
         );
 
         for (final other in bubbles) {
@@ -78,32 +89,32 @@ class _DealsScreenState extends State<DealsScreen>
       } while (overlaps);
 
       bubbles.add(Bubble(
+        model: coin,
         origin: position,
         currentPosition: position,
         size: bubbleSize,
-        data: coin,
         velocity: Offset(
-          (_random.nextDouble() * 2 - 1) * 0.5,
-          (_random.nextDouble() * 2 - 1) * 0.5,
+          (_random.nextDouble() * 2 - 1) * 0.4,
+          (_random.nextDouble() * 2 - 1) * 0.4,
         ),
       ));
     }
     return bubbles;
   }
 
+  /// **Smooth Bubble Floating Animation**
   void _updateBubblePositions() {
     for (final bubble in bubbles) {
       final newPosition = bubble.currentPosition + bubble.velocity;
 
-      if ((newPosition - bubble.origin).distance > bubble.size / 4) {
+      if ((newPosition - bubble.origin).distance > bubble.size / 5) {
         bubble.velocity = -bubble.velocity;
       }
-
       bubble.currentPosition = newPosition;
     }
   }
 
-  /// **Detect which bubble was tapped**
+  /// **Detect Tapped Bubble & Show Details**
   void _onTapBubble(Offset tapPosition) {
     for (final bubble in bubbles) {
       final distance = (tapPosition - bubble.currentPosition).distance;
@@ -116,6 +127,8 @@ class _DealsScreenState extends State<DealsScreen>
 
   /// **Show Bubble Details in Dialog**
   void _showBubbleDetails(Bubble bubble) {
+    double hourlyPerformance = bubble.model.performance["hour"] ?? 0.0;
+
     showDialog(
       context: context,
       builder: (context) {
@@ -124,29 +137,24 @@ class _DealsScreenState extends State<DealsScreen>
             borderRadius: BorderRadius.circular(15.0),
           ),
           title: Text(
-            bubble.data["name"] ?? "Unknown Coin", // Default value if null
+            bubble.model.name,
             textAlign: TextAlign.center,
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Symbol: ${bubble.data["symbol"] ?? "N/A"}"),
-              Text("Price: ${bubble.data["price"] ?? "N/A"}"),
+              Text("Symbol: ${bubble.model.symbol}",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Price: \$${bubble.model.price.toStringAsFixed(2)}"),
               Text(
-                "Change: ${bubble.data["priceChange"]?.toStringAsFixed(1) ?? "0"}%",
+                "Hourly Change: ${hourlyPerformance.toStringAsFixed(2)}%",
                 style: TextStyle(
-                  color: (bubble.data["priceChange"] ?? 0) > 0
-                      ? Colors.green
-                      : Colors.red,
+                  color: hourlyPerformance > 0 ? Colors.green : Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               SizedBox(height: 10),
-              Text(
-                bubble.data["description"] ?? "No description available.",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              Text("Market Cap: \$${bubble.model.marketcap}"),
             ],
           ),
           actions: [
@@ -183,22 +191,24 @@ class _DealsScreenState extends State<DealsScreen>
   }
 }
 
+/// **Bubble Model**
 class Bubble {
+  final BubbleCoinModel model;
   final Offset origin;
   Offset currentPosition;
   double size;
   Offset velocity;
-  Map<String, dynamic> data;
 
   Bubble({
+    required this.model,
     required this.origin,
     required this.currentPosition,
     required this.size,
     required this.velocity,
-    required this.data,
   });
 }
 
+/// **Bubble Painter - Draws Crypto Bubbles**
 class BubblePainter extends CustomPainter {
   final List<Bubble> bubbles;
 
@@ -209,19 +219,22 @@ class BubblePainter extends CustomPainter {
     final Paint paint = Paint()..style = PaintingStyle.fill;
 
     for (final bubble in bubbles) {
-      paint.color = bubble.data["priceChange"] > 0
-          ? Colors.green.withOpacity(0.6)
-          : Colors.red.withOpacity(0.6);
+      double hourlyPerformance = bubble.model.performance["hour"] ?? 0.0;
+      paint.color = hourlyPerformance > 0
+          ? Colors.green.withOpacity(0.7)
+          : Colors.red.withOpacity(0.7);
 
+      // **Draw the bubble**
       canvas.drawCircle(bubble.currentPosition, bubble.size / 2, paint);
 
+      // **Draw coin symbol inside the bubble**
       final TextPainter symbolPainter = TextPainter(
         text: TextSpan(
-          text: bubble.data["symbol"],
+          text: bubble.model.symbol,
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: bubble.size / 6,
+            fontSize: bubble.size / 5, // Increased font size
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -230,12 +243,13 @@ class BubblePainter extends CustomPainter {
       symbolPainter.paint(
         canvas,
         bubble.currentPosition -
-            Offset(symbolPainter.width / 2, symbolPainter.height),
+            Offset(symbolPainter.width / 2, symbolPainter.height / 2),
       );
 
+      // **Draw hourly performance percentage below symbol**
       final TextPainter percentagePainter = TextPainter(
         text: TextSpan(
-          text: "${bubble.data["priceChange"].toStringAsFixed(1)}%",
+          text: "${hourlyPerformance.toStringAsFixed(1)}%",
           style: TextStyle(
             color: Colors.white,
             fontSize: bubble.size / 8,
@@ -246,8 +260,8 @@ class BubblePainter extends CustomPainter {
       percentagePainter.layout();
       percentagePainter.paint(
         canvas,
-        bubble.currentPosition -
-            Offset(percentagePainter.width / 2, -symbolPainter.height / 2),
+        bubble.currentPosition +
+            Offset(-percentagePainter.width / 2, symbolPainter.height / 2),
       );
     }
   }
