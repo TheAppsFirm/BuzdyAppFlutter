@@ -1,5 +1,20 @@
 .
 ├── .DS_Store
+├── .dart_tool
+│   ├── dartpad
+│   │   └── web_plugin_registrant.dart
+│   ├── extension_discovery
+│   │   ├── README.md
+│   │   ├── devtools.json
+│   │   └── vs_code.json
+│   ├── flutter_build
+│   │   ├── 1719fce3b623139589a7a968838343e4
+│   │   └── dart_plugin_registrant.dart
+│   ├── package_config.json
+│   ├── package_config_subset
+│   └── version
+├── .flutter-plugins
+├── .flutter-plugins-dependencies
 ├── .git
 │   ├── .DS_Store
 │   ├── COMMIT_EDITMSG
@@ -305,24 +320,14 @@
 │   │   ├── .DS_Store
 │   │   ├── 8.3
 │   │   ├── buildOutputCleanup
-│   │   ├── config.properties
 │   │   ├── file-system.probe
 │   │   ├── kotlin
 │   │   └── vcs-1
-│   ├── .idea
-│   │   ├── caches
-│   │   ├── gradle.xml
-│   │   ├── migrations.xml
-│   │   ├── misc.xml
-│   │   ├── runConfigurations.xml
-│   │   └── workspace.xml
 │   ├── app
-│   │   ├── .DS_Store
 │   │   ├── .cxx
 │   │   ├── build.gradle
 │   │   └── src
 │   ├── build.gradle
-│   ├── buzdy_android.iml
 │   ├── gradle
 │   │   └── wrapper
 │   ├── gradle.properties
@@ -332,6 +337,10 @@
 │   └── settings.gradle
 ├── build
 │   ├── .DS_Store
+│   ├── 075c765aae588f7d246fee0c990fc7a0
+│   │   ├── _composite.stamp
+│   │   ├── gen_dart_plugin_registrant.stamp
+│   │   └── gen_localizations.stamp
 │   ├── 6a233b46b78ada3a72fe2e767fe87731
 │   │   ├── _composite.stamp
 │   │   ├── gen_dart_plugin_registrant.stamp
@@ -344,6 +353,12 @@
 │   │   ├── outputs
 │   │   └── tmp
 │   ├── cache.dill.track.dill
+│   ├── flutter_inappwebview_android
+│   │   ├── .transforms
+│   │   ├── generated
+│   │   ├── intermediates
+│   │   ├── outputs
+│   │   └── tmp
 │   ├── flutter_localization
 │   │   ├── .DS_Store
 │   │   ├── .transforms
@@ -369,6 +384,12 @@
 │   │   └── tmp
 │   ├── google_maps_flutter_android
 │   │   ├── .DS_Store
+│   │   ├── .transforms
+│   │   ├── generated
+│   │   ├── intermediates
+│   │   ├── outputs
+│   │   └── tmp
+│   ├── image_picker_android
 │   │   ├── .transforms
 │   │   ├── generated
 │   │   ├── intermediates
@@ -406,6 +427,7 @@
 │       ├── intermediates
 │       ├── outputs
 │       └── tmp
+├── devtools_options.yaml
 ├── images
 │   ├── backlogo.png
 │   ├── buzdysplash.json
@@ -448,6 +470,24 @@
 │       └── RunnerTests.swift
 ├── lib
 │   ├── .DS_Store
+│   ├── core
+│   │   ├── ToastMsg.dart
+│   │   ├── colors.dart
+│   │   ├── constants.dart
+│   │   ├── locale_string.dart
+│   │   ├── localization.dart
+│   │   ├── text_styles.dart
+│   │   ├── theme.dart
+│   │   ├── ui_helpers.dart
+│   │   └── utils.dart
+│   ├── data
+│   │   ├── models
+│   │   ├── network
+│   │   └── repositories
+│   ├── domain
+│   │   ├── entities
+│   │   ├── repositories
+│   │   └── usecases
 │   ├── main.dart
 │   ├── mainresponse
 │   │   └── loginresponcedata.dart
@@ -455,36 +495,17 @@
 │   │   ├── app_exceptions.dart
 │   │   ├── base_api_services.dart
 │   │   └── network_api_services.dart
-│   ├── repository
-│   │   └── auth_api
-│   ├── response
-│   │   ├── api_response.dart
-│   │   └── status.dart
-│   ├── screens
-│   │   ├── .DS_Store
+│   ├── presentation
 │   │   ├── auth
 │   │   ├── dashboard
-│   │   ├── dashboard.dart
-│   │   ├── provider
-│   │   └── splash
-│   └── views
-│       ├── CustomButton.dart
-│       ├── ToastMsg.dart
-│       ├── appBar.dart
-│       ├── colors.dart
-│       ├── customDropdownCode.dart
-│       ├── customText.dart
-│       ├── custom_dialoge.dart
-│       ├── custom_text_field.dart
-│       ├── custombutton2.dart
-│       ├── listTile.dart
-│       ├── locale_string.dart
-│       ├── localization.dart
-│       ├── search_text_field.dart
-│       ├── shimmer
-│       ├── successDialogue.dart
-│       ├── text_styles.dart
-│       └── ui_helpers.dart
+│   │   ├── screens
+│   │   ├── viewmodels
+│   │   └── widgets
+│   ├── repository
+│   │   └── auth_api
+│   └── response
+│       ├── api_response.dart
+│       └── status.dart
 ├── linux
 │   ├── .DS_Store
 │   ├── .gitignore
@@ -566,4 +587,4 @@
         ├── win32_window.cpp
         └── win32_window.h
 
-395 directories, 172 files
+419 directories, 169 files

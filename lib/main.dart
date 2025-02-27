@@ -1,5 +1,5 @@
-import 'package:buzdy/screens/provider/UserViewModel.dart';
-import 'package:buzdy/screens/splash/splash.dart';
+import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
+import 'package:buzdy/presentation/screens/splash/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
