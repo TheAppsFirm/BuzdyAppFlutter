@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Initialize animation
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0)
@@ -46,7 +46,6 @@ class _SplashScreenState extends State<SplashScreen>
     String token = prefs.getString('token') ?? ""; // Retrieve saved token
 
     if (token.isNotEmpty) {
-      
       Get.offAll(() => DashBorad(
             index: 0,
           )); // Navigate to HomeScreen if token exists
@@ -63,22 +62,21 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UserViewModel>(builder: (context, pr, c) {
-      return Scaffold(
-        backgroundColor: appButtonColor,
-        body: Center(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Image.asset('images/buzdysplash.png'),
-              ),
+    return Scaffold(
+      backgroundColor: appButtonColor, // or any color you like
+      body: SizedBox.expand(
+        // this will make sure it takes full screen
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Image.asset(
+              'images/buzdysplash.png',
+              fit: BoxFit.cover, // <--- makes sure it fills the screen
             ),
           ),
         ),
-      );
-    });
+      ),
+    );
   }
 }

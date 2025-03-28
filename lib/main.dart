@@ -1,9 +1,10 @@
-import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/presentation/screens/splash/splash.dart';
+import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:get/get_navigation/src/routes/transitions_type.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -14,14 +15,15 @@ void main() {
 void configLoading() {
   EasyLoading.instance
     ..maskType = EasyLoadingMaskType.black
-    ..loadingStyle = EasyLoadingStyle.custom // Enable custom styling
-    ..backgroundColor = Colors.transparent // Fully remove background
-    ..maskColor = Colors.transparent // Remove mask overlay
-    ..boxShadow = [] // Remove shadows
-    ..indicatorColor = Colors.transparent // Remove default indicator color
-    ..radius = 0 // Remove rounded corners
-    ..textColor = Colors.transparent // ✅ Set a valid text color
-    ..dismissOnTap = false;
+    ..loadingStyle = EasyLoadingStyle.custom
+    ..backgroundColor = Colors.transparent
+    ..maskColor = Colors.transparent
+    ..boxShadow = []
+    ..indicatorColor = Colors.transparent
+    ..radius = 0
+    ..textColor = Colors.transparent
+    ..dismissOnTap = false
+    ..indicatorWidget = Lottie.asset("images/buzdysplash.json", width: 150, height: 150);
 }
 
 class MyApp extends StatelessWidget {
