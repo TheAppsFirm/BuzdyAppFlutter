@@ -1,7 +1,7 @@
 //////
 ///
 library;
-import 'package:buzdy/presentation/screens/dashboard/deals/model.dart/coinModel.dart';
+import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/coinModel.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/presentation/widgets/appBar.dart';
 import 'package:flutter/material.dart';

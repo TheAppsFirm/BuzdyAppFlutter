@@ -1,4 +1,5 @@
-import 'package:buzdy/presentation/screens/dashboard/deals/deals.dart';
+
+import 'package:buzdy/presentation/screens/dashboard/crypto/CryptoScreen.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/feed.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/bank.dart';
 import 'package:buzdy/presentation/screens/dashboard/profile.dart';
@@ -114,7 +115,7 @@ class _DashBoradState extends State<DashBorad> {
   Widget _getPage(int index) {
     switch (index) {
       case 0:
-        return DealerScreen();
+        return CryptoScreen();
       case 1:
         return HomeScreen();
       case 2:

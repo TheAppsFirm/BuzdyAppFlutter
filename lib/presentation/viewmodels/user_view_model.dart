@@ -5,9 +5,9 @@ import 'package:buzdy/repository/auth_api/auth_http_api_repository.dart';
 import 'package:buzdy/response/api_response.dart';
 import 'package:buzdy/response/status.dart';
 import 'package:buzdy/presentation/screens/auth/model/userModel.dart';
-import 'package:buzdy/presentation/screens/dashboard/deals/model.dart/bubbleCoinModel.dart';
-import 'package:buzdy/presentation/screens/dashboard/deals/model.dart/coinModel.dart';
-import 'package:buzdy/presentation/screens/dashboard/deals/model.dart/rugcheckModel.dart';
+import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/bubbleCoinModel.dart';
+import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/coinModel.dart';
+import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/rugcheckModel.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/model/youtubeModel.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/model/bankModel.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/model/merchnatModel.dart';
@@ -41,7 +41,7 @@ class UserViewModel extends ChangeNotifier {
   UserViewModel() {
     getAllBanks(pageNumber: bankcurrentPage);
     getAllMarchants(pageNumber: merchantcurrentPage);
-    fetchCoins(limit: 10);
+    fetchCoins(limit: 25);
     fetchBubbleCoins();
   }
 
@@ -215,46 +215,70 @@ class UserViewModel extends ChangeNotifier {
   List<CoinModel> get coins => _filteredCoins;
   bool get isFetching => _isFetching;
 
-  Future<void> fetchCoins({int limit = 10, bool isRefresh = false}) async {
-    if (_isFetching || !_hasMore) return;
+  Future<void> fetchCoins({int limit = 2, bool isRefresh = false}) async {
+  if (_isFetching || !_hasMore) return;
 
-    _isFetching = true;
-    notifyListeners();
+  _isFetching = true;
+  notifyListeners();
 
-    if (isRefresh) {
-      _offset = 0;
-      _coins.clear();
-      _filteredCoins.clear();
-      _hasMore = true;
-    }
-
-    final url = Uri.parse(
-        'https://frontend-api.pump.fun/coins?offset=$_offset&limit=$limit&sort=last_trade_timestamp&order=DESC&includeNsfw=false');
-
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = jsonDecode(response.body);
-      List<CoinModel> newCoins =
-          jsonData.map((coin) => CoinModel.fromJson(coin)).toList();
-
-      if (newCoins.isNotEmpty) {
-        _coins.addAll(newCoins);
-        _filteredCoins = List.from(_coins);
-        _offset += limit;
-      } else {
-        _hasMore = false;
-      }
-    } else {
-      throw Exception('Failed to load coins');
-    }
-
-    _isFetching = false;
-    notifyListeners();
+  if (isRefresh) {
+    _offset = 0;
+    _coins.clear();
+    _filteredCoins.clear();
+    _hasMore = true;
   }
 
+  final url = Uri.parse('https://api.livecoinwatch.com/coins/list');
+  const apiKey = '6170a07c-9d50-4fc1-89bc-3a9e7030751c';
+
+  final body = jsonEncode({
+    "currency": "USD",
+    "sort": "rank",
+    "order": "ascending",
+    "offset": _offset,
+    "limit": limit,
+    "meta": true,
+  });
+
+  // Print request details
+  print("Request URL: $url");
+  print("Request Headers: { 'Content-Type': 'application/json', 'x-api-key': '$apiKey' }");
+  print("Request Body: $body");
+
+  final response = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    },
+    body: body,
+  );
+
+  // Print response details
+  print("Response status: ${response.statusCode}");
+  print("Response body: ${response.body}");
+
+  if (response.statusCode == 200) {
+    List<CoinModel> newCoins = coinModelFromJson(response.body);
+    if (newCoins.isNotEmpty) {
+      _coins.addAll(newCoins);
+      _filteredCoins = List.from(_coins);
+      _offset += limit;
+    } else {
+      _hasMore = false;
+    }
+  } else {
+    throw Exception('Failed to load coins');
+  }
+
+  _isFetching = false;
+  notifyListeners();
+}
+
+
   // Deals: Check Coin Security
-  Future<InvestmentRanking?> checkCoinSecurity({required String securityToken}) async {
+  Future<InvestmentRanking?> checkCoinSecurity(
+      {required String securityToken}) async {
     print("checkCoinSecurity---------");
     if (bankisLoadingMore) return null;
 
@@ -262,7 +286,8 @@ class UserViewModel extends ChangeNotifier {
     notifyListeners();
 
     AuthHttpApiRepository repository = AuthHttpApiRepository();
-    ApiResponse res = await repository.checkCoinSecurity(securityToken: securityToken);
+    ApiResponse res =
+        await repository.checkCoinSecurity(securityToken: securityToken);
     print(" RESPONSE---------- ${res.data.toString()}");
 
     Responses ress = res.data;
@@ -271,7 +296,8 @@ class UserViewModel extends ChangeNotifier {
 
     if (res.status == Status.completed) {
       if (ress.status == 1) {
-        investmentRanking = InvestmentRanking.fromJson(ress.data["investmentRanking"]);
+        investmentRanking =
+            InvestmentRanking.fromJson(ress.data["investmentRanking"]);
         print("RESPONSE----------- ${investmentRanking.toJson().toString()}");
         notifyListeners();
       }
@@ -290,9 +316,11 @@ class UserViewModel extends ChangeNotifier {
     if (query.isEmpty) {
       _filteredCoins = List.from(_coins);
     } else {
-      _filteredCoins = _coins.where((coin) =>
-          coin.name.toLowerCase().contains(query.toLowerCase()) ||
-          coin.symbol.toLowerCase().contains(query.toLowerCase())).toList();
+      _filteredCoins = _coins
+          .where((coin) =>
+              coin.name.toLowerCase().contains(query.toLowerCase()) ||
+              coin.symbol.toLowerCase().contains(query.toLowerCase()))
+          .toList();
     }
     notifyListeners();
   }
@@ -390,7 +418,8 @@ class UserViewModel extends ChangeNotifier {
       print("fetchBubbleCoins---------");
       var request = http.Request(
         'GET',
-        Uri.parse('https://cryptobubbles.net/backend/data/bubbles1000.usd.json'),
+        Uri.parse(
+            'https://cryptobubbles.net/backend/data/bubbles1000.usd.json'),
       );
 
       http.StreamedResponse response = await request.send();
@@ -424,7 +453,8 @@ class UserViewModel extends ChangeNotifier {
   // EasyLoading controls
   easyLoadingStart({dynamic status}) {
     EasyLoading.show(
-      indicator: Lottie.asset("images/buzdysplash.json", width: 150, height: 150),
+      indicator:
+          Lottie.asset("images/buzdysplash.json", width: 150, height: 150),
     );
     notifyListeners();
   }

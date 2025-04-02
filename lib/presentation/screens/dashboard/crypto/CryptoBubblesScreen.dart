@@ -1,17 +1,17 @@
 import 'dart:math';
-import 'package:buzdy/presentation/screens/dashboard/deals/model.dart/bubbleCoinModel.dart';
+import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/bubbleCoinModel.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class DealsScreen extends StatefulWidget {
-  const DealsScreen({super.key});
+class CryptoBubblesScreen extends StatefulWidget {
+  const CryptoBubblesScreen({super.key});
 
   @override
-  State<DealsScreen> createState() => _DealsScreenState();
+  State<CryptoBubblesScreen> createState() => _CryptoBubblesScreenState();
 }
 
-class _DealsScreenState extends State<DealsScreen>
+class _CryptoBubblesScreenState extends State<CryptoBubblesScreen>
     with SingleTickerProviderStateMixin {
   final Random _random = Random();
   late AnimationController _controller;
@@ -20,7 +20,7 @@ class _DealsScreenState extends State<DealsScreen>
   @override
   void initState() {
     super.initState();
-    UserViewModel pr = Provider.of<UserViewModel>(context, listen: false);
+    UserViewModel userVM = Provider.of<UserViewModel>(context, listen: false);
 
     _controller = AnimationController(
       vsync: this,
@@ -32,10 +32,11 @@ class _DealsScreenState extends State<DealsScreen>
       setState(() {});
     });
 
+    // Generate bubbles after the first frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final screenSize = MediaQuery.of(context).size;
       setState(() {
-        bubbles = _generateBubbles(screenSize, pr.bubbleCoins);
+        bubbles = _generateBubbles(screenSize, userVM.bubbleCoins);
       });
     });
   }
@@ -46,7 +47,7 @@ class _DealsScreenState extends State<DealsScreen>
     super.dispose();
   }
 
-  /// **Generates Crypto Bubbles with Peak Size Limit & Bottom Padding**
+  /// Generates crypto bubbles with a peak size limit and bottom padding.
   List<Bubble> _generateBubbles(
       Size screenSize, List<BubbleCoinModel> bubbleCoins) {
     final List<Bubble> bubbles = [];
@@ -54,29 +55,26 @@ class _DealsScreenState extends State<DealsScreen>
     const double bottomPadding = 200; // Ensure no bubbles are too low
 
     for (final coin in bubbleCoins) {
-      // **Calculate Bubble Size Based on Hourly Change**
+      // Calculate bubble size based on hourly change.
       double hourlyChange = coin.performance["hour"] ?? 0.0;
       double baseSize = screenSize.width / 12; // Slightly increased base size
       double adjustedSize = baseSize + hourlyChange.abs() * 15;
 
-      // **Ensure Peak Size is Limited to Avoid Overly Large Bubbles**
+      // Ensure peak size is limited to avoid overly large bubbles.
       double bubbleSize = max(baseSize * 1.2, adjustedSize);
-      bubbleSize = min(
-          bubbleSize, screenSize.width / 5); // Max limit for extreme changes
+      bubbleSize = min(bubbleSize, screenSize.width / 5); // Max limit
 
       Offset position;
       bool overlaps;
 
-      // **Ensure bubbles do not overlap & have bottom padding**
+      // Ensure bubbles do not overlap and apply bottom padding.
       do {
         overlaps = false;
         position = Offset(
           padding + _random.nextDouble() * (screenSize.width - 2 * padding),
           padding +
               _random.nextDouble() *
-                  (screenSize.height -
-                      2 * padding -
-                      bottomPadding), // Apply bottom padding
+                  (screenSize.height - 2 * padding - bottomPadding),
         );
 
         for (final other in bubbles) {
@@ -102,11 +100,10 @@ class _DealsScreenState extends State<DealsScreen>
     return bubbles;
   }
 
-  /// **Smooth Bubble Floating Animation**
+  /// Smooth bubble floating animation update.
   void _updateBubblePositions() {
     for (final bubble in bubbles) {
       final newPosition = bubble.currentPosition + bubble.velocity;
-
       if ((newPosition - bubble.origin).distance > bubble.size / 5) {
         bubble.velocity = -bubble.velocity;
       }
@@ -114,7 +111,7 @@ class _DealsScreenState extends State<DealsScreen>
     }
   }
 
-  /// **Detect Tapped Bubble & Show Details**
+  /// Detect tapped bubble and show details.
   void _onTapBubble(Offset tapPosition) {
     for (final bubble in bubbles) {
       final distance = (tapPosition - bubble.currentPosition).distance;
@@ -125,7 +122,7 @@ class _DealsScreenState extends State<DealsScreen>
     }
   }
 
-  /// **Show Bubble Details in Dialog**
+  /// Show bubble details in a dialog.
   void _showBubbleDetails(Bubble bubble) {
     double hourlyPerformance = bubble.model.performance["hour"] ?? 0.0;
 
@@ -191,7 +188,7 @@ class _DealsScreenState extends State<DealsScreen>
   }
 }
 
-/// **Bubble Model**
+/// Bubble model for crypto bubbles.
 class Bubble {
   final BubbleCoinModel model;
   final Offset origin;
@@ -208,7 +205,7 @@ class Bubble {
   });
 }
 
-/// **Bubble Painter - Draws Crypto Bubbles**
+/// Custom painter to draw crypto bubbles.
 class BubblePainter extends CustomPainter {
   final List<Bubble> bubbles;
 
@@ -224,17 +221,17 @@ class BubblePainter extends CustomPainter {
           ? Colors.green.withOpacity(0.7)
           : Colors.red.withOpacity(0.7);
 
-      // **Draw the bubble**
+      // Draw the bubble.
       canvas.drawCircle(bubble.currentPosition, bubble.size / 2, paint);
 
-      // **Draw coin symbol inside the bubble**
+      // Draw coin symbol inside the bubble.
       final TextPainter symbolPainter = TextPainter(
         text: TextSpan(
           text: bubble.model.symbol,
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: bubble.size / 5, // Increased font size
+            fontSize: bubble.size / 5,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -242,11 +239,10 @@ class BubblePainter extends CustomPainter {
       symbolPainter.layout();
       symbolPainter.paint(
         canvas,
-        bubble.currentPosition -
-            Offset(symbolPainter.width / 2, symbolPainter.height / 2),
+        bubble.currentPosition - Offset(symbolPainter.width / 2, symbolPainter.height / 2),
       );
 
-      // **Draw hourly performance percentage below symbol**
+      // Draw hourly performance percentage below the symbol.
       final TextPainter percentagePainter = TextPainter(
         text: TextSpan(
           text: "${hourlyPerformance.toStringAsFixed(1)}%",
@@ -260,8 +256,7 @@ class BubblePainter extends CustomPainter {
       percentagePainter.layout();
       percentagePainter.paint(
         canvas,
-        bubble.currentPosition +
-            Offset(-percentagePainter.width / 2, symbolPainter.height / 2),
+        bubble.currentPosition + Offset(-percentagePainter.width / 2, symbolPainter.height / 2),
       );
     }
   }
