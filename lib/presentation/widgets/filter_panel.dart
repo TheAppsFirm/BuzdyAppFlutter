@@ -1,18 +1,16 @@
-import 'package:buzdy/utils/string_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:buzdy/utils/string_extension.dart';
 
-class FilterPanel extends StatelessWidget {
+class FilterPanel extends StatefulWidget {
   final String searchQuery;
   final String selectedTimeframe;
   final String selectedSort;
   final int coinRange;
-  final double minPercentChange;
   final double zoom;
   final Function(String) onSearchChanged;
   final Function(String) onTimeframeChanged;
   final Function(String) onSortChanged;
   final Function(int) onCoinRangeChanged;
-  final Function(double) onMinPercentChangeChanged;
   final Function(double) onZoomChanged;
 
   const FilterPanel({
@@ -21,225 +19,238 @@ class FilterPanel extends StatelessWidget {
     required this.selectedTimeframe,
     required this.selectedSort,
     required this.coinRange,
-    required this.minPercentChange,
     required this.zoom,
     required this.onSearchChanged,
     required this.onTimeframeChanged,
     required this.onSortChanged,
     required this.onCoinRangeChanged,
-    required this.onMinPercentChangeChanged,
     required this.onZoomChanged,
   }) : super(key: key);
 
   @override
+  _FilterPanelState createState() => _FilterPanelState();
+}
+
+class _FilterPanelState extends State<FilterPanel> {
+  late double _localZoom;
+
+  @override
+  void initState() {
+    super.initState();
+    _localZoom = widget.zoom;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    const List<int> coinRangeOptions = [10, 25, 50, 100, 200];
-    const List<double> minChangeOptions = [0.0, 1.0, 2.0, 5.0, 10.0];
-
-    Widget buildFilterCard({required double width, required Widget child}) {
-      return Container(
-        width: width,
-        margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(8.0),
-        child: child,
-      );
-    }
-
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      height: 100,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.grey.shade900, Colors.grey.shade800],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Field
-          buildFilterCard(
-            width: 150,
-            child: TextField(
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: "Search",
-                labelStyle: const TextStyle(color: Colors.white70),
-                prefixIcon: const Icon(Icons.search, color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white38),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.blueAccent),
-                  borderRadius: BorderRadius.circular(12.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Filter Options",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              onChanged: onSearchChanged,
-            ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white70),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
-
-          // Timeframe Filter
-          buildFilterCard(
-            width: 130,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 4, bottom: 4),
-                  child: Text(
-                    "Timeframe",
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                ),
-                Expanded(
-                  child: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: 'hour', label: Text('1H', style: TextStyle(fontSize: 10))),
-                      ButtonSegment(value: 'day', label: Text('1D', style: TextStyle(fontSize: 10))),
-                      ButtonSegment(value: 'week', label: Text('1W', style: TextStyle(fontSize: 10))),
-                      ButtonSegment(value: 'month', label: Text('1M', style: TextStyle(fontSize: 10))),
-                      ButtonSegment(value: 'year', label: Text('1Y', style: TextStyle(fontSize: 10))),
-                    ],
-                    selected: {selectedTimeframe},
-                    onSelectionChanged: (Set<String> newSelection) {
-                      onTimeframeChanged(newSelection.first);
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-                        return states.contains(MaterialState.selected) ? Colors.blueAccent : Colors.transparent;
-                      }),
-                      foregroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-                        return states.contains(MaterialState.selected) ? Colors.white : Colors.white70;
-                      }),
+          const SizedBox(height: 20),
+          TextField(
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
+              hintText: "Search coins...",
+              hintStyle: TextStyle(color: Colors.grey.shade600),
+              filled: true,
+              fillColor: Colors.grey.shade700,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            ),
+            onChanged: widget.onSearchChanged,
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            "Timeframe",
+            style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _buildTimeButton('hour', '1H'),
+              _buildTimeButton('day', '1D'),
+              _buildTimeButton('week', '1W'),
+              _buildTimeButton('month', '1M'),
+              _buildTimeButton('year', '1Y'),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Sort By",
+                      style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Sort Dropdown
-          buildFilterCard(
-            width: 130,
-            child: DropdownButtonFormField<String>(
-              dropdownColor: Colors.grey[900],
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: "Sort by",
-                labelStyle: const TextStyle(color: Colors.white70),
-                border: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white38),
-                  borderRadius: BorderRadius.circular(12.0),
+                    const SizedBox(height: 10),
+                    _buildDropdown("Sort", widget.selectedSort, ["Market Cap", "Rank", "Price", "Volume"],
+                        widget.onSortChanged),
+                  ],
                 ),
               ),
-              value: selectedSort,
-              items: const [
-                DropdownMenuItem(value: "Market Cap", child: Text("Market Cap", style: TextStyle(color: Colors.white))),
-                DropdownMenuItem(value: "Rank", child: Text("Rank", style: TextStyle(color: Colors.white))),
-                DropdownMenuItem(value: "Price", child: Text("Price", style: TextStyle(color: Colors.white))),
-                DropdownMenuItem(value: "Volume", child: Text("Volume", style: TextStyle(color: Colors.white))),
-              ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Number of Coins",
+                      style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildDropdown("Coins", widget.coinRange, [10, 25, 50, 100, 200], widget.onCoinRangeChanged),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            "Zoom",
+            style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 10),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 8.0,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12.0),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 24.0),
+              activeTrackColor: Colors.blueAccent,
+              inactiveTrackColor: Colors.grey.shade700,
+              thumbColor: Colors.blueAccent,
+              overlayColor: Colors.blueAccent.withOpacity(0.3),
+            ),
+            child: Slider(
+              value: _localZoom,
+              min: 0.5,
+              max: 2.0,
+              divisions: 15,
+              label: "${(_localZoom * 100).toInt()}%",
               onChanged: (value) {
-                if (value != null) onSortChanged(value);
+                setState(() {
+                  _localZoom = value;
+                });
+                widget.onZoomChanged(value);
               },
             ),
           ),
-
-          // Coin Range Dropdown
-          buildFilterCard(
-            width: 120,
-            child: DropdownButtonFormField<int>(
-              dropdownColor: Colors.grey[900],
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: "Top coins",
-                labelStyle: const TextStyle(color: Colors.white70),
-                border: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white38),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
+          const SizedBox(height: 20),
+          Center(
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 5,
               ),
-              value: coinRange,
-              items: coinRangeOptions
-                  .map((e) => DropdownMenuItem(
-                        value: e,
-                        child: Text("$e", style: const TextStyle(color: Colors.white)),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) onCoinRangeChanged(value);
-              },
-            ),
-          ),
-
-          // Min Change Dropdown
-          buildFilterCard(
-            width: 140,
-            child: DropdownButtonFormField<double>(
-              dropdownColor: Colors.grey[900],
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: "Min ${selectedTimeframe.capitalize()} %",
-                labelStyle: const TextStyle(color: Colors.white70),
-                border: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white38),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
+              child: const Text(
+                "Apply Filters",
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
               ),
-              value: minPercentChange,
-              items: minChangeOptions
-                  .map((e) => DropdownMenuItem(
-                        value: e,
-                        child: Text("${e.toStringAsFixed(1)}%", style: const TextStyle(color: Colors.white)),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) onMinPercentChangeChanged(value);
-              },
-            ),
-          ),
-
-          // Zoom Slider
-          buildFilterCard(
-            width: 180,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 12, top: 8),
-                  child: Text("Zoom", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                ),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.zoom_out, color: Colors.white60, size: 18),
-                      Expanded(
-                        child: Slider(
-                          min: 0.5,
-                          max: 2.0,
-                          divisions: 15,
-                          label: zoom.toStringAsFixed(1),
-                          activeColor: Colors.blueAccent,
-                          inactiveColor: Colors.grey,
-                          value: zoom,
-                          onChanged: onZoomChanged,
-                        ),
-                      ),
-                      const Icon(Icons.zoom_in, color: Colors.white60, size: 18),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTimeButton(String value, String label) {
+    final bool isSelected = widget.selectedTimeframe == value;
+    return GestureDetector(
+      onTap: () => widget.onTimeframeChanged(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blueAccent : Colors.grey.shade700,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: Colors.blueAccent.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey.shade300,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown<T>(String label, T value, List<T> items, Function(T) onChanged) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade700,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: DropdownButton<T>(
+        value: value,
+        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e.toString()))).toList(),
+        onChanged: (val) => onChanged(val as T),
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+        dropdownColor: Colors.grey.shade700,
+        isExpanded: true,
+        underline: const SizedBox(),
+        icon: const Icon(Icons.arrow_drop_down, color: Colors.blueAccent),
       ),
     );
   }

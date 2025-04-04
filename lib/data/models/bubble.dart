@@ -1,11 +1,9 @@
 import 'dart:ui';
-
 import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/bubbleCoinModel.dart';
-
 
 class Bubble {
   final BubbleCoinModel model;
-  final Offset origin;
+  Offset origin;
   Offset currentPosition;
   double size;
   Offset velocity;

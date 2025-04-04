@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:buzdy/mainresponse/loginresponcedata.dart';
 import 'package:buzdy/presentation/dashboard/dashboard_screen.dart';
 import 'package:buzdy/repository/auth_api/auth_http_api_repository.dart';
@@ -21,21 +22,17 @@ import 'package:http/http.dart' as http;
 
 class UserViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> listCoins = [];
-
-  // Bank Data
   List<Bank> bankList = [];
-  int bankcurrentPage = 1; // Track the current page
-  bool bankisLoadingMore = false; // Track if more data is being fetched
-  bool bankhasMoreData = true; // If no more pages, stop loading
+  int bankcurrentPage = 1;
+  bool bankisLoadingMore = false;
+  bool bankhasMoreData = true;
 
-  // Merchant Data
   List<MerchantModelData> merchantList = [];
-  int merchantcurrentPage = 1; // Track the current page
-  bool merchantisLoadingMore = false; // Track if more data is being fetched
-  bool merchanthasMoreData = true; // If no more pages, stop loading
+  int merchantcurrentPage = 1;
+  bool merchantisLoadingMore = false;
+  bool merchanthasMoreData = true;
 
   UserModelData? userModel;
-
   List<BubbleCoinModel> bubbleCoins = [];
 
   UserViewModel() {
@@ -45,92 +42,57 @@ class UserViewModel extends ChangeNotifier {
     fetchBubbleCoins();
   }
 
-  // Auth: Login
   Future login({dynamic payload}) async {
     AuthHttpApiRepository repository = AuthHttpApiRepository();
     easyLoadingStart();
     ApiResponse res = await repository.loginApi(payload);
-    print(res.data);
     Responses ress = res.data;
 
     if (ress.status == 1) {
-      print("RESPONSE----------- ${ress.data}");
       easyLoadingStop();
-      UIHelper.showMySnak(
-          title: "Buzdy", message: "Login successfully", isError: false);
-
+      UIHelper.showMySnak(title: "Buzdy", message: "Login successfully", isError: false);
       userModel = UserModelData.fromJson(ress.data);
       await savetoken(token: ress.data['token'].toString());
       await saveUserId(userId: ress.data['id'].toString());
-
-      print("Save UserModel ${userModel!.toJson().toString()}");
-
-      // Navigate to Dashboard (ensure Dashboard widget is correctly imported and named)
       Get.offAll(() => DashboardScreen());
-
       notifyListeners();
     } else {
       easyLoadingStop();
-      UIHelper.showMySnak(
-          title: "ERROR", message: ress.message.toString(), isError: true);
+      UIHelper.showMySnak(title: "ERROR", message: ress.message.toString(), isError: true);
     }
   }
 
-  // Auth: Register
   Future register({dynamic payload}) async {
     AuthHttpApiRepository repository = AuthHttpApiRepository();
     easyLoadingStart();
-
     try {
       ApiResponse res = await repository.registerApi(payload);
-
       if (res.data == null) {
         easyLoadingStop();
-        UIHelper.showMySnak(
-            title: "ERROR",
-            message: "Unexpected error. Please try again.",
-            isError: true);
+        UIHelper.showMySnak(title: "ERROR", message: "Unexpected error. Please try again.", isError: true);
         return;
       }
-
       Responses ress = res.data;
-
       if (ress.status == 1) {
-        print("RESPONSE----------- ${ress.data}");
         easyLoadingStop();
-        UIHelper.showMySnak(
-            title: "Buzdy",
-            message: ress.message ?? "Signup successful",
-            isError: false);
-
+        UIHelper.showMySnak(title: "Buzdy", message: ress.message ?? "Signup successful", isError: false);
         userModel = UserModelData.fromJson(ress.data);
         await savetoken(token: ress.data['token'].toString());
         await saveUserId(userId: ress.data['id'].toString());
-        print("Save UserModel ${userModel!.toJson().toString()}");
         Get.offAll(() => DashboardScreen());
         notifyListeners();
       } else {
         easyLoadingStop();
-        UIHelper.showMySnak(
-            title: "ERROR",
-            message: ress.message ?? "Something went wrong",
-            isError: true);
+        UIHelper.showMySnak(title: "ERROR", message: ress.message ?? "Something went wrong", isError: true);
       }
     } catch (e) {
       easyLoadingStop();
-      UIHelper.showMySnak(
-          title: "ERROR",
-          message: "An unexpected error occurred: $e",
-          isError: true);
-      print("Register API Error: $e");
+      UIHelper.showMySnak(title: "ERROR", message: "An unexpected error occurred: $e", isError: true);
     }
   }
 
-  // Banks
   Future getAllBanks({required int pageNumber}) async {
-    print("bank---------");
     if (bankisLoadingMore) return;
-
     bankisLoadingMore = true;
     notifyListeners();
 
@@ -140,37 +102,23 @@ class UserViewModel extends ChangeNotifier {
     if (res.status == Status.completed) {
       Responses ress = res.data;
       if (ress.status == 1) {
-        BankModel model = BankModel.fromJson({
-          "status": ress.status,
-          "message": ress.message,
-          "banks": ress.data,
-          "pagination": ress.pagination
-        });
-
+        BankModel model = BankModel.fromJson({"status": ress.status, "message": ress.message, "banks": ress.data, "pagination": ress.pagination});
         if (model.banks.isNotEmpty) {
           bankList.addAll(model.banks);
           bankcurrentPage++;
-          print("Fetching more banks... Page: $pageNumber");
-          print("Total banks loaded: ${bankList.length}");
         } else {
           bankhasMoreData = false;
         }
       }
     } else {
-      UIHelper.showMySnak(
-          title: "ERROR", message: res.message.toString(), isError: true);
+      UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
     }
-
     bankisLoadingMore = false;
     notifyListeners();
   }
 
-  // Merchants
   Future getAllMarchants({required int pageNumber}) async {
-    print("merchant---------");
-
     if (merchantisLoadingMore) return;
-
     merchantisLoadingMore = true;
     notifyListeners();
 
@@ -180,32 +128,21 @@ class UserViewModel extends ChangeNotifier {
     if (res.status == Status.completed) {
       Responses ress = res.data;
       if (ress.status == 1) {
-        MerchantModel model = MerchantModel.fromJson({
-          "status": ress.status,
-          "message": ress.message,
-          "merchants": ress.data,
-          "pagination": ress.pagination
-        });
-
+        MerchantModel model = MerchantModel.fromJson({"status": ress.status, "message": ress.message, "merchants": ress.data, "pagination": ress.pagination});
         if (model.merchants.isNotEmpty) {
           merchantList.addAll(model.merchants);
           merchantcurrentPage++;
-          print("Fetching more merchants... Page: $pageNumber");
-          print("Total merchants loaded: ${merchantList.length}");
         } else {
           merchanthasMoreData = false;
         }
       }
     } else {
-      UIHelper.showMySnak(
-          title: "ERROR", message: res.message.toString(), isError: true);
+      UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
     }
-
     merchantisLoadingMore = false;
     notifyListeners();
   }
 
-  // Deals: Coins
   final List<CoinModel> _coins = [];
   List<CoinModel> _filteredCoins = [];
   int _offset = 0;
@@ -216,116 +153,70 @@ class UserViewModel extends ChangeNotifier {
   bool get isFetching => _isFetching;
 
   Future<void> fetchCoins({int limit = 2, bool isRefresh = false}) async {
-  if (_isFetching || !_hasMore) return;
+    if (_isFetching || !_hasMore) return;
+    _isFetching = true;
+    notifyListeners();
 
-  _isFetching = true;
-  notifyListeners();
-
-  if (isRefresh) {
-    _offset = 0;
-    _coins.clear();
-    _filteredCoins.clear();
-    _hasMore = true;
-  }
-
-  final url = Uri.parse('https://api.livecoinwatch.com/coins/list');
-  const apiKey = '6170a07c-9d50-4fc1-89bc-3a9e7030751c';
-
-  final body = jsonEncode({
-    "currency": "USD",
-    "sort": "rank",
-    "order": "ascending",
-    "offset": _offset,
-    "limit": limit,
-    "meta": true,
-  });
-
-  // Print request details
-  print("Request URL: $url");
-  print("Request Headers: { 'Content-Type': 'application/json', 'x-api-key': '$apiKey' }");
-  print("Request Body: $body");
-
-  final response = await http.post(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-    },
-    body: body,
-  );
-
-  // Print response details
-  print("Response status: ${response.statusCode}");
-  print("Response body: ${response.body}");
-
-  if (response.statusCode == 200) {
-    List<CoinModel> newCoins = coinModelFromJson(response.body);
-    if (newCoins.isNotEmpty) {
-      _coins.addAll(newCoins);
-      _filteredCoins = List.from(_coins);
-      _offset += limit;
-    } else {
-      _hasMore = false;
+    if (isRefresh) {
+      _offset = 0;
+      _coins.clear();
+      _filteredCoins.clear();
+      _hasMore = true;
     }
-  } else {
-    throw Exception('Failed to load coins');
+
+    final url = Uri.parse('https://api.livecoinwatch.com/coins/list');
+    const apiKey = '6170a07c-9d50-4fc1-89bc-3a9e7030751c';
+    final body = jsonEncode({"currency": "USD", "sort": "rank", "order": "ascending", "offset": _offset, "limit": limit, "meta": true});
+
+    final response = await http.post(url, headers: {'Content-Type': 'application/json', 'x-api-key': apiKey}, body: body);
+
+    if (response.statusCode == 200) {
+      List<CoinModel> newCoins = coinModelFromJson(response.body);
+      if (newCoins.isNotEmpty) {
+        _coins.addAll(newCoins);
+        _filteredCoins = List.from(_coins);
+        _offset += limit;
+      } else {
+        _hasMore = false;
+      }
+    } else {
+      throw Exception('Failed to load coins');
+    }
+    _isFetching = false;
+    notifyListeners();
   }
 
-  _isFetching = false;
-  notifyListeners();
-}
-
-
-  // Deals: Check Coin Security
-  Future<InvestmentRanking?> checkCoinSecurity(
-      {required String securityToken}) async {
-    print("checkCoinSecurity---------");
+  Future<InvestmentRanking?> checkCoinSecurity({required String securityToken}) async {
     if (bankisLoadingMore) return null;
-
     bankisLoadingMore = true;
     notifyListeners();
 
     AuthHttpApiRepository repository = AuthHttpApiRepository();
-    ApiResponse res =
-        await repository.checkCoinSecurity(securityToken: securityToken);
-    print(" RESPONSE---------- ${res.data.toString()}");
-
+    ApiResponse res = await repository.checkCoinSecurity(securityToken: securityToken);
     Responses ress = res.data;
-
     InvestmentRanking? investmentRanking;
 
-    if (res.status == Status.completed) {
-      if (ress.status == 1) {
-        investmentRanking =
-            InvestmentRanking.fromJson(ress.data["investmentRanking"]);
-        print("RESPONSE----------- ${investmentRanking.toJson().toString()}");
-        notifyListeners();
-      }
+    if (res.status == Status.completed && ress.status == 1) {
+      investmentRanking = InvestmentRanking.fromJson(ress.data["investmentRanking"]);
     } else {
-      UIHelper.showMySnak(
-          title: "ERROR", message: res.message.toString(), isError: true);
+      UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
     }
-
     bankisLoadingMore = false;
     notifyListeners();
     return investmentRanking;
   }
 
-  // Deals: Search Coins
   void searchCoins(String query) {
     if (query.isEmpty) {
       _filteredCoins = List.from(_coins);
     } else {
       _filteredCoins = _coins
-          .where((coin) =>
-              coin.name.toLowerCase().contains(query.toLowerCase()) ||
-              coin.symbol.toLowerCase().contains(query.toLowerCase()))
+          .where((coin) => coin.name.toLowerCase().contains(query.toLowerCase()) || coin.symbol.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     notifyListeners();
   }
 
-  // YouTube Shorts and Videos
   List<Item> youtubeShorts = [];
   List<Item> youtubeVideos = [];
   String? nextPageTokenShorts;
@@ -337,7 +228,6 @@ class UserViewModel extends ChangeNotifier {
 
   Future<void> fetchYoutubeShorts({bool isRefresh = false}) async {
     if (isFetchingShorts || !hasMoreShorts) return;
-
     isFetchingShorts = true;
     notifyListeners();
 
@@ -347,36 +237,26 @@ class UserViewModel extends ChangeNotifier {
       hasMoreShorts = true;
     }
 
-    try {
-      var url = Uri.parse(
-          'https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UCZNZj3mkdCGJfCoKyl4bSYQ&maxResults=5&pageToken=${nextPageTokenShorts ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
+    var url = Uri.parse(
+        'https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UCZNZj3mkdCGJfCoKyl4bSYQ&maxResults=5&pageToken=${nextPageTokenShorts ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
+    var response = await http.get(url);
 
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        YoutubeModel youtubeModel = YoutubeModel.fromJson(jsonResponse);
-
-        if (youtubeModel.items != null && youtubeModel.items!.isNotEmpty) {
-          youtubeShorts.addAll(youtubeModel.items!);
-          nextPageTokenShorts = youtubeModel.nextPageToken;
-        } else {
-          hasMoreShorts = false;
-        }
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      YoutubeModel youtubeModel = YoutubeModel.fromJson(jsonResponse);
+      if (youtubeModel.items != null && youtubeModel.items!.isNotEmpty) {
+        youtubeShorts.addAll(youtubeModel.items!);
+        nextPageTokenShorts = youtubeModel.nextPageToken;
       } else {
-        print("Error fetching YouTube Shorts: ${response.reasonPhrase}");
+        hasMoreShorts = false;
       }
-    } catch (e) {
-      print("Exception while fetching YouTube Shorts: $e");
     }
-
     isFetchingShorts = false;
     notifyListeners();
   }
 
   Future<void> fetchYoutubeVideos({bool isRefresh = false}) async {
     if (isFetchingVideos || !hasMoreVideos) return;
-
     isFetchingVideos = true;
     notifyListeners();
 
@@ -386,76 +266,47 @@ class UserViewModel extends ChangeNotifier {
       hasMoreVideos = true;
     }
 
-    try {
-      var url = Uri.parse(
-          'https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UCZNZj3mkdCGJfCoKyl4bSYQ&maxResults=10&pageToken=${nextPageTokenVideos ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
+    var url = Uri.parse(
+        'https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UCZNZj3mkdCGJfCoKyl4bSYQ&maxResults=10&pageToken=${nextPageTokenVideos ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
+    var response = await http.get(url);
 
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        YoutubeModel youtubeModel = YoutubeModel.fromJson(jsonResponse);
-
-        if (youtubeModel.items != null && youtubeModel.items!.isNotEmpty) {
-          youtubeVideos.addAll(youtubeModel.items!);
-          nextPageTokenVideos = youtubeModel.nextPageToken;
-        } else {
-          hasMoreVideos = false;
-        }
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      YoutubeModel youtubeModel = YoutubeModel.fromJson(jsonResponse);
+      if (youtubeModel.items != null && youtubeModel.items!.isNotEmpty) {
+        youtubeVideos.addAll(youtubeModel.items!);
+        nextPageTokenVideos = youtubeModel.nextPageToken;
       } else {
-        print("Error fetching YouTube Videos: ${response.reasonPhrase}");
+        hasMoreVideos = false;
       }
-    } catch (e) {
-      print("Exception while fetching YouTube Videos: $e");
     }
-
     isFetchingVideos = false;
     notifyListeners();
   }
 
   Future<List<BubbleCoinModel>> fetchBubbleCoins() async {
     try {
-      print("fetchBubbleCoins---------");
-      var request = http.Request(
-        'GET',
-        Uri.parse(
-            'https://cryptobubbles.net/backend/data/bubbles1000.usd.json'),
+      final response = await http.get(
+        Uri.parse('https://cryptobubbles.net/backend/data/bubbles1000.usd.json'),
+        headers: {'Accept': 'application/json'},
       );
 
-      http.StreamedResponse response = await request.send();
-
       if (response.statusCode == 200) {
-        String responseData = await response.stream.bytesToString();
-        List<dynamic> jsonData = jsonDecode(responseData);
-        print(jsonData.length.toString());
-
-        // Parse top 50 coins only
-        List<BubbleCoinModel> coins = jsonData
-            .map((coin) => BubbleCoinModel.fromJson(coin))
-            .toList()
-            .sublist(0, 50);
-
-        bubbleCoins = coins;
+        List<dynamic> jsonData = jsonDecode(response.body);
+        bubbleCoins = jsonData.map((data) => BubbleCoinModel.fromJson(data)).toList(); // Fetch all coins
         notifyListeners();
-        print("coins.length: ${coins.length}");
-
-        return coins;
+        return bubbleCoins;
       } else {
-        print("Error fetching data: ${response.reasonPhrase}");
-        return [];
+        throw Exception('Failed to load bubble coins: ${response.statusCode}');
       }
     } catch (e) {
-      print("Exception: $e");
+      UIHelper.showMySnak(title: "Error", message: "Failed to load data: $e", isError: true);
       return [];
     }
   }
 
-  // EasyLoading controls
   easyLoadingStart({dynamic status}) {
-    EasyLoading.show(
-      indicator:
-          Lottie.asset("images/buzdysplash.json", width: 150, height: 150),
-    );
+    EasyLoading.show(indicator: Lottie.asset("images/buzdysplash.json", width: 150, height: 150));
     notifyListeners();
   }
 
@@ -464,18 +315,14 @@ class UserViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Save token to SharedPreferences
   savetoken({required String token}) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     await pref.setString('token', token);
-    print("token saved successfully: $token");
   }
 
-  // Save user ID to SharedPreferences (fixed key)
   saveUserId({required String userId}) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     await pref.setString('userId', userId);
-    print("userId saved successfully: $userId");
   }
 
   refresh() {
