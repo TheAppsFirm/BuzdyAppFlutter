@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 import 'package:buzdy/data/models/bubble.dart';
 import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/bubbleCoinModel.dart';
+import 'package:buzdy/utils/Quadtree.dart';
 import 'package:flutter/material.dart';
 
 class BubblePhysics {
@@ -14,7 +17,7 @@ class BubblePhysics {
     required this.zoom,
     this.repulsionForce = 10.0,
     this.centeringForce = 0.00005,
-    this.simulationSteps = 50, // Reduced simulation steps
+    this.simulationSteps = 50,
   });
 
   List<Bubble> generateBubbles(
@@ -49,7 +52,6 @@ class BubblePhysics {
 
     for (final coin in bubbleCoins) {
       if (coin.marketcap <= 0) continue;
-
       double bubbleSize = minSize;
       try {
         double logMin = log(minMarketCap);
@@ -59,11 +61,9 @@ class BubblePhysics {
         ratio = ratio.clamp(0.0, 1.0);
         bubbleSize = minSize + ratio * (maxSize - minSize);
       } catch (_) {}
-
       final double radius = min(screenSize.width, availableHeight) * 0.9 / zoom;
       final double angle = _random.nextDouble() * 2 * pi;
       final double distance = _random.nextDouble() * radius;
-
       final Offset initialPosition = center + Offset(cos(angle) * distance, sin(angle) * distance);
       generatedBubbles.add(Bubble(
         model: coin,
@@ -74,46 +74,45 @@ class BubblePhysics {
       ));
     }
 
-    // Use a grid-based spatial partitioning to optimize repulsion calculations
-    final gridSize = 100.0; // Size of each grid cell
-    final gridWidth = (screenSize.width / gridSize).ceil();
-    final gridHeight = (screenSize.height / gridSize).ceil();
-    final grid = List.generate(gridWidth, (_) => List.generate(gridHeight, (_) => <Bubble>[]));
-
-    // Assign bubbles to grid cells
-    for (final bubble in generatedBubbles) {
-      final gridX = (bubble.currentPosition.dx / gridSize).clamp(0, gridWidth - 1).toInt();
-      final gridY = (bubble.currentPosition.dy / gridSize).clamp(0, gridHeight - 1).toInt();
-      grid[gridX][gridY].add(bubble);
-    }
-
+    // Use a quadtree to optimize repulsion calculations
     for (int step = 0; step < simulationSteps; step++) {
-      for (int i = 0; i < generatedBubbles.length; i++) {
-        final bubbleA = generatedBubbles[i];
+      // Build quadtree for current bubble positions.
+      final quadtree = Quadtree<Bubble>(
+        Rect.fromLTWH(0, 0, screenSize.width, screenSize.height),
+        4,
+        (bubble) => bubble.currentPosition,
+      );
+      for (final bubble in generatedBubbles) {
+        quadtree.insert(bubble);
+      }
+
+      // Compute global max bubble size for query range calculation.
+      final double globalMaxSize = generatedBubbles.fold(
+          0.0, (prev, b) => max(prev, b.size));
+
+      for (final bubbleA in generatedBubbles) {
         Offset totalForce = (center - bubbleA.currentPosition) * centeringForce;
+        // Query neighbors within a range based on bubbleA size and global max.
+        final double queryRadius = ((bubbleA.size + globalMaxSize) / 2) * 1.05;
+        final Rect queryRect = Rect.fromCenter(
+            center: bubbleA.currentPosition,
+            width: queryRadius * 2,
+            height: queryRadius * 2);
+        final neighbors = quadtree.query(queryRect);
 
-        // Find the grid cell of bubbleA
-        final gridX = (bubbleA.currentPosition.dx / gridSize).clamp(0, gridWidth - 1).toInt();
-        final gridY = (bubbleA.currentPosition.dy / gridSize).clamp(0, gridHeight - 1).toInt();
-
-        // Check neighboring grid cells (including the current cell)
-        for (int dx = -1; dx <= 1; dx++) {
-          for (int dy = -1; dy <= 1; dy++) {
-            final checkX = gridX + dx;
-            final checkY = gridY + dy;
-            if (checkX < 0 || checkX >= gridWidth || checkY < 0 || checkY >= gridHeight) continue;
-
-            for (final bubbleB in grid[checkX][checkY]) {
-              if (bubbleA == bubbleB) continue;
-              final Offset direction = bubbleA.currentPosition - bubbleB.currentPosition;
-              final double distance = max(direction.distance, 0.1);
-              final double minDistance = (bubbleA.size + bubbleB.size) / 2;
-
-              if (distance < minDistance * 1.05) {
-                final double forceMagnitude = repulsionForce * (minDistance * 1.05 - distance) / (minDistance * 1.05);
-                totalForce += Offset(direction.dx / distance * forceMagnitude, direction.dy / distance * forceMagnitude);
-              }
-            }
+        for (final bubbleB in neighbors) {
+          if (bubbleA == bubbleB) continue;
+          final Offset direction = bubbleA.currentPosition - bubbleB.currentPosition;
+          final double distance = max(direction.distance, 0.1);
+          final double minDistance = (bubbleA.size + bubbleB.size) / 2;
+          if (distance < minDistance * 1.05) {
+            final double forceMagnitude = repulsionForce *
+                (minDistance * 1.05 - distance) /
+                (minDistance * 1.05);
+            totalForce += Offset(
+              direction.dx / distance * forceMagnitude,
+              direction.dy / distance * forceMagnitude,
+            );
           }
         }
 
@@ -121,24 +120,20 @@ class BubblePhysics {
         final double padding = bubbleA.size / 2;
         bubbleA.currentPosition = Offset(
           bubbleA.currentPosition.dx.clamp(padding, screenSize.width - padding),
-          bubbleA.currentPosition.dy.clamp(filterPanelHeight + padding, screenSize.height - bottomNavHeight - padding),
+          bubbleA.currentPosition.dy.clamp(
+              filterPanelHeight + padding,
+              screenSize.height - bottomNavHeight - padding),
         );
         if (step == simulationSteps - 1) bubbleA.origin = bubbleA.currentPosition;
-
-        // Update grid cell for bubbleA
-        final newGridX = (bubbleA.currentPosition.dx / gridSize).clamp(0, gridWidth - 1).toInt();
-        final newGridY = (bubbleA.currentPosition.dy / gridSize).clamp(0, gridHeight - 1).toInt();
-        if (newGridX != gridX || newGridY != gridY) {
-          grid[gridX][gridY].remove(bubbleA);
-          grid[newGridX][newGridY].add(bubbleA);
-        }
       }
     }
 
+    // Initialize bubble velocities with small random offsets.
     for (final bubble in generatedBubbles) {
-      bubble.velocity = Offset((_random.nextDouble() * 2 - 1) * 0.1, (_random.nextDouble() * 2 - 1) * 0.1);
+      bubble.velocity = Offset(
+          (_random.nextDouble() * 2 - 1) * 0.1,
+          (_random.nextDouble() * 2 - 1) * 0.1);
     }
-
     return generatedBubbles;
   }
 
@@ -154,18 +149,17 @@ class BubblePhysics {
       filterPanelHeight + (availableHeight * 0.3),
     );
 
-    // Use a grid-based spatial partitioning for updates
-    final gridSize = 100.0;
-    final gridWidth = (screenSize.width / gridSize).ceil();
-    final gridHeight = (screenSize.height / gridSize).ceil();
-    final grid = List.generate(gridWidth, (_) => List.generate(gridHeight, (_) => <Bubble>[]));
-
-    // Assign bubbles to grid cells
+    // Build a quadtree for current bubble positions.
+    final quadtree = Quadtree<Bubble>(
+      Rect.fromLTWH(0, 0, screenSize.width, screenSize.height),
+      4,
+      (bubble) => bubble.currentPosition,
+    );
     for (final bubble in bubbles) {
-      final gridX = (bubble.currentPosition.dx / gridSize).clamp(0, gridWidth - 1).toInt();
-      final gridY = (bubble.currentPosition.dy / gridSize).clamp(0, gridHeight - 1).toInt();
-      grid[gridX][gridY].add(bubble);
+      quadtree.insert(bubble);
     }
+
+    final double globalMaxSize = bubbles.fold(0.0, (prev, b) => max(prev, b.size));
 
     for (final bubble in bubbles) {
       final double padding = bubble.size / 2;
@@ -174,16 +168,21 @@ class BubblePhysics {
       final double minY = filterPanelHeight + padding;
       final double maxY = screenSize.height - bottomNavHeight - padding;
 
-      // More aggressive repositioning if the bubble is outside the visible area
-      if (bubble.currentPosition.dx < minX || bubble.currentPosition.dx > maxX ||
-          bubble.currentPosition.dy < minY || bubble.currentPosition.dy > maxY) {
+      // Reposition if out of bounds.
+      if (bubble.currentPosition.dx < minX ||
+          bubble.currentPosition.dx > maxX ||
+          bubble.currentPosition.dy < minY ||
+          bubble.currentPosition.dy > maxY) {
         final double newY = filterPanelHeight + (availableHeight * (0.3 + _random.nextDouble() * 0.4));
         final double newX = screenSize.width * (0.3 + _random.nextDouble() * 0.4);
         bubble.currentPosition = Offset(newX, newY);
         bubble.origin = bubble.currentPosition;
-        bubble.velocity = Offset((_random.nextDouble() * 2 - 1) * 0.1, (_random.nextDouble() * 2 - 1) * 0.1);
+        bubble.velocity = Offset(
+            (_random.nextDouble() * 2 - 1) * 0.1,
+            (_random.nextDouble() * 2 - 1) * 0.1);
       }
 
+      // Update position based on velocity.
       final newPosition = bubble.currentPosition + bubble.velocity;
       if ((newPosition - bubble.origin).distance > bubble.size / 8) {
         bubble.velocity = -bubble.velocity * 0.95;
@@ -200,11 +199,6 @@ class BubblePhysics {
         bubble.currentPosition.dx.clamp(minX, maxX),
         bubble.currentPosition.dy.clamp(minY, maxY),
       );
-
-      // Update grid cell for the bubble
-      final gridX = (bubble.currentPosition.dx / gridSize).clamp(0, gridWidth - 1).toInt();
-      final gridY = (bubble.currentPosition.dy / gridSize).clamp(0, gridHeight - 1).toInt();
-      grid[gridX][gridY].add(bubble);
     }
   }
 }

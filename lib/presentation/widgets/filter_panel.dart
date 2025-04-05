@@ -237,7 +237,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 Expanded(
                   child: _buildFilterDropdown<int>(
                     value: widget.coinRange,
-                    items: const [10, 25, 50, 100, 200, 500, 1000],
+                    items: const [10, 25, 50, 100],
                     onChanged: (value) {
                       widget.onCoinRangeChanged(value);
                     },

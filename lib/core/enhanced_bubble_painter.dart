@@ -35,7 +35,9 @@ class EnhancedBubblePainter extends CustomPainter {
       final coin = bubble.model;
       final performance = coin.performance[timeframe] ?? 0.0;
       final isSignificant = performance.abs() > 5.0;
+      final double radius = bubble.size / 2;
 
+      // Main gradient fill using a radial gradient.
       final gradient = RadialGradient(
         center: Alignment.center,
         radius: 0.9,
@@ -49,12 +51,13 @@ class EnhancedBubblePainter extends CustomPainter {
         ],
         stops: const [0.2, 1.0],
       );
-      final paint = Paint()
+      final mainPaint = Paint()
         ..shader = gradient.createShader(
-          Rect.fromCircle(center: bubble.currentPosition, radius: bubble.size / 2),
+          Rect.fromCircle(center: bubble.currentPosition, radius: radius),
         )
         ..style = PaintingStyle.fill;
 
+      // Glow effect around the bubble.
       final glowOpacity = isSignificant
           ? 0.2 + 0.1 * (1 + math.sin(animationValue * 2 * math.pi))
           : 0.2;
@@ -62,19 +65,15 @@ class EnhancedBubblePainter extends CustomPainter {
         ..color = (performance >= 0 ? Colors.green : Colors.red).withOpacity(glowOpacity)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, bubble.size * 0.1);
 
+      // Shadow layers.
       final shadowPaint = Paint()
         ..color = Colors.black.withOpacity(0.3)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
-
       final innerShadowPaint = Paint()
         ..color = Colors.black.withOpacity(0.1)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
 
-      canvas.drawCircle(bubble.currentPosition, bubble.size / 2 + 4, glowPaint);
-      canvas.drawCircle(bubble.currentPosition, bubble.size / 2 + 2, shadowPaint);
-      canvas.drawCircle(bubble.currentPosition, bubble.size / 2, paint);
-      canvas.drawCircle(bubble.currentPosition, bubble.size / 2 - 2, innerShadowPaint);
-
+      // Border around the bubble.
       final borderOpacity = isSignificant
           ? 0.5 + 0.2 * (1 + math.sin(animationValue * 2 * math.pi))
           : 0.5;
@@ -82,29 +81,34 @@ class EnhancedBubblePainter extends CustomPainter {
         ..color = (performance >= 0 ? Colors.greenAccent : Colors.redAccent).withOpacity(borderOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
-      canvas.drawCircle(bubble.currentPosition, bubble.size / 2, borderPaint);
 
-      final isLargeBubble = bubble.size >= 80;
+      // Draw layers in order.
+      canvas.drawCircle(bubble.currentPosition, radius + 4, glowPaint);
+      canvas.drawCircle(bubble.currentPosition, radius + 2, shadowPaint);
+      canvas.drawCircle(bubble.currentPosition, radius, mainPaint);
+      canvas.drawCircle(bubble.currentPosition, radius - 2, innerShadowPaint);
+      canvas.drawCircle(bubble.currentPosition, radius, borderPaint);
 
-      // Calculate bubble boundaries
+      // Define bubble boundaries.
       final bubbleTop = bubble.currentPosition.dy - bubble.size / 2;
       final bubbleBottom = bubble.currentPosition.dy + bubble.size / 2;
 
-      // Calculate font sizes with more conservative scaling
+      // Calculate font sizes based on bubble size.
       final double baseFontSize = bubble.size * 0.12;
       final double minFontSize = 6.0;
+      final bool isLargeBubble = bubble.size >= 80;
       final double coinNameFontSize = baseFontSize.clamp(minFontSize, 14.0);
       final double sortValueFontSize = (baseFontSize * 0.8).clamp(minFontSize * 0.8, 12.0);
       final double performanceFontSize = (baseFontSize * 0.9).clamp(minFontSize * 0.9, 12.0);
       final double symbolFontSize = (baseFontSize * 1.1).clamp(minFontSize * 1.1, 14.0);
 
-      // Calculate image size with conservative scaling
+      // Calculate image size for the coin logo.
       final double baseImageSize = bubble.size * 0.3;
       final double minImageSize = 10.0;
       final double imageSize = baseImageSize.clamp(minImageSize, 40.0);
 
-      // Draw the coin image, centered in the upper half of the bubble
-      final imageTopOffset = bubbleTop + bubble.size * (isLargeBubble ? 0.2 : 0.25);
+      // Draw coin image (or placeholder) in the upper half.
+      final imageTopOffset = bubbleTop + bubble.size * 0.2;
       if (imageCache.containsKey(coin.id)) {
         final image = imageCache[coin.id]!;
         final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
@@ -130,14 +134,10 @@ class EnhancedBubblePainter extends CustomPainter {
             Rect.fromCircle(center: bubble.currentPosition, radius: bubble.size * 0.4),
           )
           ..style = PaintingStyle.fill;
-        canvas.drawCircle(
-          bubble.currentPosition,
-          bubble.size * 0.4,
-          placeholderPaint,
-        );
+        canvas.drawCircle(bubble.currentPosition, bubble.size * 0.4, placeholderPaint);
         final placeholderText = ui.ParagraphBuilder(ui.ParagraphStyle(
           textAlign: TextAlign.center,
-          fontSize: baseFontSize.clamp(minFontSize, 14.0),
+          fontSize: coinNameFontSize,
           fontWeight: FontWeight.bold,
           textDirection: TextDirection.ltr,
         ))
@@ -163,14 +163,14 @@ class EnhancedBubblePainter extends CustomPainter {
         );
       }
 
-      // Calculate the bottom of the image to position the text below it
+      // Text layout: leave extra bottom margin so the last line does not touch the bubble boundary.
       final imageBottom = imageTopOffset + imageSize;
-      // Calculate the available space for text (from image bottom to bubble bottom)
-      final availableTextSpace = bubbleBottom - imageBottom;
-      final padding = bubble.size * 0.05; // Small padding between elements
+      final double bottomMargin = bubble.size * 0.1;
+      final double availableTextSpace = bubbleBottom - imageBottom - bottomMargin;
+      final double padding = bubble.size * 0.05;
 
       if (isLargeBubble) {
-        // For large bubbles, display coin name, sort value, and performance
+        // Large bubbles: show coin name, sort value, and performance.
         final coinNameTextPainter = TextPainter(
           text: TextSpan(
             text: coin.name,
@@ -255,7 +255,7 @@ class EnhancedBubblePainter extends CustomPainter {
           canvas,
           Offset(
             bubble.currentPosition.dx - coinNameTextPainter.width / 2,
-            math.min(coinNameTop, bubbleBottom - totalTextHeight),
+            math.min(coinNameTop, bubbleBottom - totalTextHeight - bottomMargin),
           ),
         );
 
@@ -264,7 +264,7 @@ class EnhancedBubblePainter extends CustomPainter {
           canvas,
           Offset(
             bubble.currentPosition.dx - sortTextPainter.width / 2,
-            math.min(sortValueTop, bubbleBottom - sortValueHeight - performanceHeight - padding),
+            math.min(sortValueTop, bubbleBottom - performanceHeight - sortValueHeight - bottomMargin - padding),
           ),
         );
 
@@ -273,11 +273,11 @@ class EnhancedBubblePainter extends CustomPainter {
           canvas,
           Offset(
             bubble.currentPosition.dx - performanceTextPainter.width / 2,
-            math.min(performanceTop, bubbleBottom - performanceHeight),
+            math.min(performanceTop, bubbleBottom - performanceHeight - bottomMargin),
           ),
         );
       } else {
-        // For small bubbles, display the coin symbol, sort value, and performance
+        // Small bubbles: show coin symbol, sort value, and performance.
         final symbolTextPainter = TextPainter(
           text: TextSpan(
             text: coin.symbol.toUpperCase(),
@@ -299,7 +299,7 @@ class EnhancedBubblePainter extends CustomPainter {
         );
         symbolTextPainter.layout(maxWidth: bubble.size * 0.9);
         final symbolHeight = symbolTextPainter.height;
-        
+
         String sortValue = "";
         if (sortBy == "Rank") {
           sortValue = "#${coin.rank}";
@@ -331,7 +331,7 @@ class EnhancedBubblePainter extends CustomPainter {
         );
         sortValueTextPainter.layout(maxWidth: bubble.size * 0.9);
         final sortValueHeight = sortValueTextPainter.height;
-    
+
         final performanceTextPainter = TextPainter(
           text: TextSpan(
             text: '${performance >= 0 ? '+' : ''}${performance.toStringAsFixed(1)}%',
@@ -353,35 +353,35 @@ class EnhancedBubblePainter extends CustomPainter {
         );
         performanceTextPainter.layout(maxWidth: bubble.size * 0.9);
         final performanceHeight = performanceTextPainter.height;
-    
+
         final totalTextHeight = symbolHeight + sortValueHeight + performanceHeight + 2 * padding;
         final textSpaceRatio = availableTextSpace / totalTextHeight;
         final scaleFactor = math.min(1.0, textSpaceRatio);
-    
+
         final symbolTop = imageBottom + padding * scaleFactor;
         symbolTextPainter.paint(
           canvas,
           Offset(
             bubble.currentPosition.dx - symbolTextPainter.width / 2,
-            math.min(symbolTop, bubbleBottom - totalTextHeight),
+            math.min(symbolTop, bubbleBottom - totalTextHeight - bottomMargin),
           ),
         );
-    
+
         final sortValueTop = symbolTop + symbolHeight + padding * scaleFactor;
         sortValueTextPainter.paint(
           canvas,
           Offset(
             bubble.currentPosition.dx - sortValueTextPainter.width / 2,
-            math.min(sortValueTop, bubbleBottom - performanceHeight - sortValueHeight - padding),
+            math.min(sortValueTop, bubbleBottom - performanceHeight - sortValueHeight - bottomMargin - padding),
           ),
         );
-    
+
         final performanceTop = sortValueTop + sortValueHeight + padding * scaleFactor;
         performanceTextPainter.paint(
           canvas,
           Offset(
             bubble.currentPosition.dx - performanceTextPainter.width / 2,
-            math.min(performanceTop, bubbleBottom - performanceHeight),
+            math.min(performanceTop, bubbleBottom - performanceHeight - bottomMargin),
           ),
         );
       }
