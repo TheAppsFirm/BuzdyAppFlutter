@@ -61,26 +61,23 @@ class _HomeScreenState extends State<HomeScreen> {
     "United States",
   ];
 
-  final ScrollController _scrollControllerBank = ScrollController();
-  final ScrollController _scrollControllerMerchant = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
 
-    _scrollControllerBank.addListener(() {
-      if (_scrollControllerBank.position.pixels >=
-              _scrollControllerBank.position.maxScrollExtent - 50 &&
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 100 &&
           !Provider.of<UserViewModel>(context, listen: false).bankisLoadingMore &&
           _selectedCountry == 'All Countries') {
+        print("Bank scroll triggered at page: ${Provider.of<UserViewModel>(context, listen: false).bankcurrentPage}");
         Provider.of<UserViewModel>(context, listen: false)
             .getAllBanks(pageNumber: Provider.of<UserViewModel>(context, listen: false).bankcurrentPage);
       }
-    });
-
-    _scrollControllerMerchant.addListener(() {
-      if (_scrollControllerMerchant.position.pixels >=
-              _scrollControllerMerchant.position.maxScrollExtent - 50 &&
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 100 &&
           !Provider.of<UserViewModel>(context, listen: false).merchantisLoadingMore) {
         print("Merchant scroll triggered at page: ${Provider.of<UserViewModel>(context, listen: false).merchantcurrentPage}");
         Provider.of<UserViewModel>(context, listen: false)
@@ -91,8 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _scrollControllerBank.dispose();
-    _scrollControllerMerchant.dispose();
+    _scrollController.dispose();
     _searchController.dispose();
     _merchantController.dispose();
     _bankController.dispose();
@@ -177,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 10),
               Expanded(
                 child: SingleChildScrollView(
-                  controller: _scrollControllerBank,
+                  controller: _scrollController,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -211,7 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: Get.height / 5.4,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          controller: _scrollControllerMerchant,
                           itemCount: pr.merchantList.length + (pr.merchanthasMoreData ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index == pr.merchantList.length && pr.merchanthasMoreData) {
@@ -220,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       padding: EdgeInsets.all(8.0),
                                       child: Center(child: CircularProgressIndicator()),
                                     )
-                                  : SizedBox(width: 50); // Placeholder when not loading
+                                  : SizedBox(width: 50);
                             }
                             MerchantModelData model = pr.merchantList[index];
                             return InkWell(
@@ -245,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(height: 20),
                       kText(text: "Banks", fWeight: fontWeightBold, fSize: 18.0),
                       SizedBox(height: 10),
-                      if (pr.bankisLoadingMore)
+                      if (pr.bankisLoadingMore && filteredBanks.isEmpty)
                         Center(child: CircularProgressIndicator()),
                       GridView.builder(
                         shrinkWrap: true,
@@ -263,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: EdgeInsets.all(8.0),
                                     child: Center(child: CircularProgressIndicator()),
                                   )
-                                : SizedBox();
+                                : SizedBox(height: 50); // Placeholder to extend scroll
                           }
                           Bank model = filteredBanks[index];
                           return InkWell(
@@ -287,9 +282,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (_selectedCountry == 'All Countries' && !pr.bankhasMoreData && filteredBanks.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "All banks loaded",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          child: Center(
+                            child: Text(
+                              "All banks loaded",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                     ],
