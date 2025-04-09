@@ -14,12 +14,10 @@ class AuthHttpApiRepository implements AuthRepository {
   @override
   Future<ApiResponse<Responses>> loginApi(dynamic data) async {
     try {
-      dynamic response = await _apiServices
+      final response = await _apiServices
           .getPostApiResponse(
               _apiServices.getBaseURL() + _apiServices.getLoginEndPoint(), data)
-          .then((value) {
-        return ApiResponse.completed(Responses.fromJson(value));
-      });
+          .then((value) => ApiResponse.completed(Responses.fromJson(value)));
       return response;
     } catch (error) {
       return ApiResponse.error(error.toString());
@@ -29,13 +27,11 @@ class AuthHttpApiRepository implements AuthRepository {
   @override
   Future<ApiResponse<Responses>> registerApi(dynamic data) async {
     try {
-      dynamic response = await _apiServices
+      final response = await _apiServices
           .getPostApiResponse(
               _apiServices.getBaseURL() + _apiServices.getRegisterEndPoint(),
               data)
-          .then((value) {
-        return ApiResponse.completed(Responses.fromJson(value));
-      });
+          .then((value) => ApiResponse.completed(Responses.fromJson(value)));
       return response;
     } catch (error) {
       Get.back();
@@ -43,19 +39,15 @@ class AuthHttpApiRepository implements AuthRepository {
     }
   }
 
-  // profile
-
   @override
   Future<ApiResponse<Responses>> updateProfile(dynamic data, token) async {
     try {
-      dynamic response = await _apiServices
+      final response = await _apiServices
           .getPutApiResponse(
               _apiServices.getBaseURL() + _apiServices.updateProfile(),
               data,
               token)
-          .then((value) {
-        return ApiResponse.completed(Responses.fromJson(value));
-      });
+          .then((value) => ApiResponse.completed(Responses.fromJson(value)));
       return response;
     } catch (error) {
       return ApiResponse.error(error.toString());
@@ -64,61 +56,53 @@ class AuthHttpApiRepository implements AuthRepository {
 
   @override
   Future<ApiResponse<Responses>> getAllBanks({int PageNumber = 1}) async {
-    ApiResponse<Responses> response = ApiResponse.notStarted();
     try {
-      response = ApiResponse.loading();
-      dynamic result = await _apiServices
+      final response = await _apiServices
           .getGetApiResponse(
               _apiServices.getAllBankEndPoint(pageNumber: PageNumber))
-          .then((value) {
-        return ApiResponse.completed(Responses.fromJson(value));
-      }).catchError((error, stackTrace) {
-        return ApiResponse.error(error.toString());
-      });
-      response = result;
+          .then((value) => ApiResponse.completed(Responses.fromJson(value)));
+      return response;
     } catch (error) {
-      response = ApiResponse.error(error.toString());
+      return ApiResponse.error(error.toString());
     }
-    return response;
+  }
+
+  @override
+  Future<ApiResponse<Responses>> getBanksByCountry({required String country}) async {
+    try {
+      final response = await _apiServices
+          .getGetApiResponse(
+              '${_apiServices.getBaseURL()}/banks/getbyfilters?country=$country')
+          .then((value) => ApiResponse.completed(Responses.fromJson(value)));
+      return response;
+    } catch (error) {
+      return ApiResponse.error(error.toString());
+    }
   }
 
   @override
   Future<ApiResponse<Responses>> checkCoinSecurity({securityToken}) async {
-    ApiResponse<Responses> response = ApiResponse.notStarted();
     try {
-      response = ApiResponse.loading();
-      dynamic result = await _apiServices
+      final response = await _apiServices
           .getGetApiResponse(
               _apiServices.rugChecktEndPoint(securityToken: securityToken))
-          .then((value) {
-        return ApiResponse.completed(Responses.fromJson(value));
-      }).catchError((error, stackTrace) {
-        return ApiResponse.error(error.toString());
-      });
-      response = result;
+          .then((value) => ApiResponse.completed(Responses.fromJson(value)));
+      return response;
     } catch (error) {
-      response = ApiResponse.error(error.toString());
+      return ApiResponse.error(error.toString());
     }
-    return response;
   }
 
   @override
   Future<ApiResponse<Responses>> getAllMerchants({int PageNumber = 1}) async {
-    ApiResponse<Responses> response = ApiResponse.notStarted();
     try {
-      response = ApiResponse.loading();
-      dynamic result = await _apiServices
+      final response = await _apiServices
           .getGetApiResponse(
               _apiServices.getAllMerchantEndPoint(pageNumber: PageNumber))
-          .then((value) {
-        return ApiResponse.completed(Responses.fromJson(value));
-      }).catchError((error, stackTrace) {
-        return ApiResponse.error(error.toString());
-      });
-      response = result;
+          .then((value) => ApiResponse.completed(Responses.fromJson(value)));
+      return response;
     } catch (error) {
-      response = ApiResponse.error(error.toString());
+      return ApiResponse.error(error.toString());
     }
-    return response;
   }
 }

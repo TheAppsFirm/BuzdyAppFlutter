@@ -1,11 +1,6 @@
-// To parse this JSON data, do
-//
-//     final merchantModel = merchantModelFromJson(jsonString);
-
 import 'dart:convert';
 
-MerchantModel merchantModelFromJson(String str) =>
-    MerchantModel.fromJson(json.decode(str));
+MerchantModel merchantModelFromJson(String str) => MerchantModel.fromJson(json.decode(str));
 
 String merchantModelToJson(MerchantModel data) => json.encode(data.toJson());
 
@@ -21,19 +16,6 @@ class MerchantModel {
     required this.merchants,
     required this.pagination,
   });
-
-  MerchantModel copyWith({
-    int? status,
-    String? message,
-    List<MerchantModelData>? merchants,
-    Pagination? pagination,
-  }) =>
-      MerchantModel(
-        status: status ?? this.status,
-        message: message ?? this.message,
-        merchants: merchants ?? this.merchants,
-        pagination: pagination ?? this.pagination,
-      );
 
   factory MerchantModel.fromJson(Map<String, dynamic> json) => MerchantModel(
         status: json["status"],
@@ -122,79 +104,7 @@ class MerchantModelData {
     required this.placeid,
   });
 
-  MerchantModelData copyWith({
-    int? id,
-    int? managerId,
-    String? name,
-    String? slug,
-    String? headline,
-    String? email,
-    String? password,
-    dynamic description,
-    String? phone,
-    String? phoneCountryCode,
-    String? image,
-    String? country,
-    String? countryCode,
-    String? city,
-    String? timezone,
-    String? latitude,
-    String? longitude,
-    String? address,
-    int? featured,
-    String? playStore,
-    String? appStore,
-    String? facebook,
-    String? twitter,
-    String? instagram,
-    String? websiteUrl,
-    String? advertisementUrl,
-    int? isArchive,
-    int? avgRating,
-    int? categoryId,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? merchants,
-    dynamic placeid,
-  }) =>
-      MerchantModelData(
-        id: id ?? this.id,
-        managerId: managerId ?? this.managerId,
-        name: name ?? this.name,
-        slug: slug ?? this.slug,
-        headline: headline ?? this.headline,
-        email: email ?? this.email,
-        password: password ?? this.password,
-        description: description ?? this.description,
-        phone: phone ?? this.phone,
-        phoneCountryCode: phoneCountryCode ?? this.phoneCountryCode,
-        image: image ?? this.image,
-        country: country ?? this.country,
-        countryCode: countryCode ?? this.countryCode,
-        city: city ?? this.city,
-        timezone: timezone ?? this.timezone,
-        latitude: latitude ?? this.latitude,
-        longitude: longitude ?? this.longitude,
-        address: address ?? this.address,
-        featured: featured ?? this.featured,
-        playStore: playStore ?? this.playStore,
-        appStore: appStore ?? this.appStore,
-        facebook: facebook ?? this.facebook,
-        twitter: twitter ?? this.twitter,
-        instagram: instagram ?? this.instagram,
-        websiteUrl: websiteUrl ?? this.websiteUrl,
-        advertisementUrl: advertisementUrl ?? this.advertisementUrl,
-        isArchive: isArchive ?? this.isArchive,
-        avgRating: avgRating ?? this.avgRating,
-        categoryId: categoryId ?? this.categoryId,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        merchants: merchants ?? this.merchants,
-        placeid: placeid ?? this.placeid,
-      );
-
-  factory MerchantModelData.fromJson(Map<String, dynamic> json) =>
-      MerchantModelData(
+  factory MerchantModelData.fromJson(Map<String, dynamic> json) => MerchantModelData(
         id: json["id"],
         managerId: json["manager_id"],
         name: json["name"],
@@ -205,7 +115,9 @@ class MerchantModelData {
         description: json["description"],
         phone: json["phone"] ?? "",
         phoneCountryCode: json["phone_country_code"],
-        image: json["image"],
+        image: json["image"].contains('http')
+            ? json["image"]
+            : 'https://portal.buzdy.com/storage/admin/uploads/images/${json["image"]}',
         country: json["country"] ?? "",
         countryCode: json["country_code"] ?? "",
         city: json["city"] ?? "",
@@ -279,19 +191,6 @@ class Pagination {
     required this.total,
     required this.totalPages,
   });
-
-  Pagination copyWith({
-    int? pageNo,
-    int? pageSize,
-    int? total,
-    int? totalPages,
-  }) =>
-      Pagination(
-        pageNo: pageNo ?? this.pageNo,
-        pageSize: pageSize ?? this.pageSize,
-        total: total ?? this.total,
-        totalPages: totalPages ?? this.totalPages,
-      );
 
   factory Pagination.fromJson(Map<String, dynamic> json) => Pagination(
         pageNo: json["page_no"],

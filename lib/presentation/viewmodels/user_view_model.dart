@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:buzdy/mainresponse/loginresponcedata.dart';
 import 'package:buzdy/presentation/dashboard/dashboard_screen.dart';
 import 'package:buzdy/repository/auth_api/auth_http_api_repository.dart';
@@ -41,6 +40,93 @@ class UserViewModel extends ChangeNotifier {
     fetchCoins(limit: 25);
     fetchBubbleCoins();
   }
+
+  Future getAllBanks({required int pageNumber}) async {
+    if (!bankhasMoreData || bankisLoadingMore) return;
+
+    bankisLoadingMore = true;
+    notifyListeners();
+    print("Fetching all banks for page: $pageNumber, current list size: ${bankList.length}");
+
+    AuthHttpApiRepository repository = AuthHttpApiRepository();
+    ApiResponse res = await repository.getAllBanks(PageNumber: pageNumber);
+
+    if (res.status == Status.completed) {
+      Responses ress = res.data;
+      print("Raw API response for getAllBanks: ${jsonEncode(ress.data)}");
+      if (ress.status == 1) {
+        try {
+          BankModel model = BankModel.fromJson({
+            "status": ress.status,
+            "message": ress.message,
+            "banks": ress.data,
+            "pagination": ress.pagination ?? {"page_no": pageNumber, "page_size": 10, "total": 0, "totalPages": 1}
+          });
+          print("Received ${model.banks.length} banks, Total pages: ${model.pagination.totalPages}");
+
+          if (model.banks.isNotEmpty && pageNumber <= model.pagination.totalPages!) {
+            bankList.addAll(model.banks);
+            bankcurrentPage++;
+            bankhasMoreData = pageNumber < model.pagination.totalPages!;
+            print("Updated bank list size: ${bankList.length}, hasMoreData: $bankhasMoreData");
+          } else {
+            bankhasMoreData = false;
+            print("No more banks to load");
+          }
+        } catch (e) {
+          print("Error parsing BankModel: $e");
+          UIHelper.showMySnak(title: "ERROR", message: "Failed to parse bank data: $e", isError: true);
+        }
+      } else {
+        UIHelper.showMySnak(title: "ERROR", message: ress.message.toString(), isError: true);
+      }
+    } else {
+      UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
+    }
+
+    bankisLoadingMore = false;
+    notifyListeners();
+  }
+
+  Future getBanksByCountry({required String country}) async {
+  bankisLoadingMore = true;
+  bankList.clear();
+  bankcurrentPage = 1;
+  bankhasMoreData = false;
+  notifyListeners();
+  print("Fetching banks for country: $country");
+
+  AuthHttpApiRepository repository = AuthHttpApiRepository();
+  ApiResponse res = await repository.getBanksByCountry(country: country);
+
+  if (res.status == Status.completed) {
+    Responses ress = res.data;
+    print("Raw API response for getBanksByCountry: ${jsonEncode(ress.data)}");
+    if (ress.status == 1) {
+      try {
+        // ress.data is now the "banks" list directly
+        BankModel model = BankModel.fromJson({
+          "status": ress.status,
+          "message": ress.message,
+          "banks": ress.data, // Use ress.data directly
+          "pagination": {"page_no": 1, "page_size": ress.data.length, "total": ress.data.length, "totalPages": 1}
+        });
+        bankList.addAll(model.banks);
+        print("Received ${model.banks.length} banks for $country");
+      } catch (e) {
+        print("Error parsing BankModel for country filter: $e");
+        UIHelper.showMySnak(title: "ERROR", message: "Failed to parse bank data: $e", isError: true);
+      }
+    } else {
+      UIHelper.showMySnak(title: "ERROR", message: ress.message.toString(), isError: true);
+    }
+  } else {
+    UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
+  }
+
+  bankisLoadingMore = false;
+  notifyListeners();
+}
 
   Future login({dynamic payload}) async {
     AuthHttpApiRepository repository = AuthHttpApiRepository();
@@ -91,57 +177,52 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
-  Future getAllBanks({required int pageNumber}) async {
-    if (bankisLoadingMore) return;
-    bankisLoadingMore = true;
-    notifyListeners();
-
-    AuthHttpApiRepository repository = AuthHttpApiRepository();
-    ApiResponse res = await repository.getAllBanks(PageNumber: pageNumber);
-
-    if (res.status == Status.completed) {
-      Responses ress = res.data;
-      if (ress.status == 1) {
-        BankModel model = BankModel.fromJson({"status": ress.status, "message": ress.message, "banks": ress.data, "pagination": ress.pagination});
-        if (model.banks.isNotEmpty) {
-          bankList.addAll(model.banks);
-          bankcurrentPage++;
-        } else {
-          bankhasMoreData = false;
-        }
-      }
-    } else {
-      UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
-    }
-    bankisLoadingMore = false;
-    notifyListeners();
-  }
-
   Future getAllMarchants({required int pageNumber}) async {
-    if (merchantisLoadingMore) return;
-    merchantisLoadingMore = true;
-    notifyListeners();
+  if (!merchanthasMoreData || merchantisLoadingMore) return;
 
-    AuthHttpApiRepository repository = AuthHttpApiRepository();
-    ApiResponse res = await repository.getAllMerchants(PageNumber: pageNumber);
+  merchantisLoadingMore = true;
+  notifyListeners();
+  print("Fetching merchants for page: $pageNumber, current list size: ${merchantList.length}");
 
-    if (res.status == Status.completed) {
-      Responses ress = res.data;
-      if (ress.status == 1) {
-        MerchantModel model = MerchantModel.fromJson({"status": ress.status, "message": ress.message, "merchants": ress.data, "pagination": ress.pagination});
-        if (model.merchants.isNotEmpty) {
+  AuthHttpApiRepository repository = AuthHttpApiRepository();
+  ApiResponse res = await repository.getAllMerchants(PageNumber: pageNumber);
+
+  if (res.status == Status.completed) {
+    Responses ress = res.data;
+    print("Raw API response for getAllMarchants: ${jsonEncode(ress.data)}");
+    if (ress.status == 1) {
+      try {
+        MerchantModel model = MerchantModel.fromJson({
+          "status": ress.status,
+          "message": ress.message,
+          "merchants": ress.data,
+          "pagination": ress.pagination ?? {"page_no": pageNumber, "page_size": 10, "total": 0, "totalPages": 1}
+        });
+        print("Received ${model.merchants.length} merchants, Total pages: ${model.pagination.totalPages}");
+
+        if (model.merchants.isNotEmpty && pageNumber <= model.pagination.totalPages) {
           merchantList.addAll(model.merchants);
           merchantcurrentPage++;
+          merchanthasMoreData = pageNumber < model.pagination.totalPages;
+          print("Updated merchant list size: ${merchantList.length}, hasMoreData: $merchanthasMoreData");
         } else {
           merchanthasMoreData = false;
+          print("No more merchants to load");
         }
+      } catch (e) {
+        print("Error parsing MerchantModel: $e");
+        UIHelper.showMySnak(title: "ERROR", message: "Failed to parse merchant data: $e", isError: true);
       }
     } else {
-      UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
+      UIHelper.showMySnak(title: "ERROR", message: ress.message.toString(), isError: true);
     }
-    merchantisLoadingMore = false;
-    notifyListeners();
+  } else {
+    UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
   }
+
+  merchantisLoadingMore = false;
+  notifyListeners();
+}
 
   final List<CoinModel> _coins = [];
   List<CoinModel> _filteredCoins = [];
@@ -211,7 +292,9 @@ class UserViewModel extends ChangeNotifier {
       _filteredCoins = List.from(_coins);
     } else {
       _filteredCoins = _coins
-          .where((coin) => coin.name.toLowerCase().contains(query.toLowerCase()) || coin.symbol.toLowerCase().contains(query.toLowerCase()))
+          .where((coin) =>
+              coin.name.toLowerCase().contains(query.toLowerCase()) ||
+              coin.symbol.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     notifyListeners();
@@ -293,7 +376,7 @@ class UserViewModel extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         List<dynamic> jsonData = jsonDecode(response.body);
-        bubbleCoins = jsonData.map((data) => BubbleCoinModel.fromJson(data)).toList(); // Fetch all coins
+        bubbleCoins = jsonData.map((data) => BubbleCoinModel.fromJson(data)).toList();
         notifyListeners();
         return bubbleCoins;
       } else {

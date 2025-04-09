@@ -39,14 +39,14 @@ class BubbleArea extends StatefulWidget {
   _BubbleAreaState createState() => _BubbleAreaState();
 }
 
-class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateMixin {
+class _BubbleAreaState extends State<BubbleArea>
+    with SingleTickerProviderStateMixin {
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the glow animation controller
     _glowController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -67,7 +67,6 @@ class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateM
     final screenSize = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
 
-    // Define the visible area for drawing bubbles
     final visibleHeight = screenSize.height - widget.filterPanelHeight - padding.bottom;
     final visibleRect = Rect.fromLTWH(
       0,
@@ -81,10 +80,7 @@ class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateM
         gradient: RadialGradient(
           center: Alignment.center,
           radius: 1.2,
-          colors: [
-            Color(0xFF1A1A2E),
-            Colors.black,
-          ],
+          colors: [Color(0xFF1A1A2E), Colors.black],
           stops: [0.0, 1.0],
         ),
       ),
@@ -94,6 +90,7 @@ class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateM
             size: Size(screenSize.width, visibleHeight),
             painter: GridBackgroundPainter(),
           ),
+          // Show loading indicator
           if (widget.isLoading)
             const Center(
               child: Column(
@@ -111,6 +108,7 @@ class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateM
                 ],
               ),
             )
+          // Show error if present
           else if (widget.errorMessage != null)
             Center(
               child: Container(
@@ -129,9 +127,12 @@ class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateM
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.redAccent,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       widget.errorMessage!,
@@ -146,66 +147,24 @@ class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateM
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             )
-          else if (widget.bubbles.isEmpty)
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                margin: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade900.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.bubble_chart, size: 64, color: Colors.grey),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'No coins to display',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Try adjusting your filters',
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: widget.onResetFilters,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reset Filters', style: TextStyle(fontSize: 16)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
+          // After loading, always show bubble area (even if the bubble list is empty)
           else
             GestureDetector(
               onTapUp: (details) => widget.onTapBubble(details.localPosition),
               child: AnimatedBuilder(
-                animation: Listenable.merge([widget.controller, _glowController]),
+                animation:
+                    Listenable.merge([widget.controller, _glowController]),
                 builder: (context, _) => CustomPaint(
                   size: Size(screenSize.width, visibleHeight),
                   painter: EnhancedBubblePainter(
@@ -214,18 +173,19 @@ class _BubbleAreaState extends State<BubbleArea> with SingleTickerProviderStateM
                     imageCache: widget.imageCache,
                     sortBy: widget.sortBy,
                     visibleRect: visibleRect,
-                    animationValue: _glowAnimation.value, // Pass the animation value
+                    animationValue: _glowAnimation.value,
                   ),
                 ),
               ),
             ),
-
+          // Bubble count indicator – displayed when not loading and there is at least one coin
           if (!widget.isLoading && widget.bubbles.isNotEmpty)
             Positioned(
-              bottom: 16, // Position above the bottom padding
+              bottom: 16,
               right: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade900.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(20),

@@ -65,7 +65,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           CustomButton(
             () {
               // Handle OTP submission logic here
-              Get.to(ResetPAsswordScreen());
+              Get.to(ResetPasswordScreen());
               print("Email: ${_emailController.text}");
             },
             text: "Continue",

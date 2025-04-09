@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final bankModel = bankModelFromJson(jsonString);
-
 import 'dart:convert';
 
 BankModel bankModelFromJson(String str) => BankModel.fromJson(json.decode(str));
@@ -22,10 +18,10 @@ class BankModel {
   });
 
   factory BankModel.fromJson(Map<String, dynamic> json) => BankModel(
-        status: json["status"],
-        message: json["message"],
-        banks: List<Bank>.from(json["banks"].map((x) => Bank.fromJson(x))),
-        pagination: Pagination.fromJson(json["pagination"]),
+        status: json["status"] ?? 0,
+        message: json["message"] ?? "No message",
+        banks: List<Bank>.from((json["banks"] ?? []).map((x) => Bank.fromJson(x))),
+        pagination: Pagination.fromJson(json["pagination"] ?? {"page_no": 1, "page_size": 10, "total": 0, "totalPages": 1}),
       );
 
   Map<String, dynamic> toJson() => {
@@ -99,38 +95,92 @@ class Bank {
     required this.reviews,
   });
 
-  factory Bank.fromJson(Map<String, dynamic> json) => Bank(
-        id: json["id"],
-        slug: json["slug"],
-        name: json["name"],
-        email: json["email"],
-        phone: json["phone"],
-        phoneCountryCode: json["phone_country_code"] ?? "",
-        website: json["website"] ?? "",
-        advertisementUrl: json["advertisement_url"],
-        advertisementState: json["advertisement_state"] ?? 0,
-        country: json["country"] ?? "",
-        countryCode: json["country_code"] ?? "",
-        city: json["city"] ?? "",
-        timezone: json["timezone"],
-        latitude: json["latitude"],
-        longitude: json["longitude"],
-        avgRating: json["avg_rating"],
-        isArchive: json["is_archive"],
-        address: json["address"] ?? "",
-        image: json["image"] ?? "",
-        featured: json["featured"],
-        createdAt: DateTime.parse(json["created_at"]),
-        updatedAt: DateTime.parse(json["updated_at"]),
-        playStore: json["play_store"] ?? "",
-        appStore: json["app_store"] ?? "",
-        facebook: json["facebook"] ?? "",
-        twitter: json["twitter"] ?? "",
-        instagram: json["instagram"] ?? "",
-        branches:
-            List<Branch>.from(json["branches"].map((x) => Branch.fromJson(x))),
-        reviews: List<dynamic>.from(json["reviews"].map((x) => x)),
-      );
+  factory Bank.fromJson(Map<String, dynamic> json) {
+    print("Parsing bank: ${json["name"]}");
+    return Bank(
+      id: json["id"] ?? 0,
+      slug: json["slug"] ?? "",
+      name: json["name"] ?? "Unknown Bank",
+      email: json["email"] ?? "",
+      phone: json["phone"] ?? "",
+      phoneCountryCode: json["phone_country_code"] ?? "",
+      website: json["website"],
+      advertisementUrl: json["advertisement_url"],
+      advertisementState: json["advertisement_state"] ?? 0,
+      country: json["country"] ?? "",
+      countryCode: json["country_code"] ?? "",
+      city: json["city"] ?? "",
+      timezone: json["timezone"] ?? "",
+      latitude: json["latitude"] ?? "",
+      longitude: json["longitude"] ?? "",
+      avgRating: json["avg_rating"] ?? 0,
+      isArchive: json["is_archive"] ?? 0,
+      address: json["address"] ?? "",
+      image: json["image"]?.contains('http') == true
+          ? json["image"]
+          : 'https://portal.buzdy.com/storage/admin/uploads/images/${json["image"] ?? "default.jpg"}',
+      featured: json["featured"] ?? 0,
+      createdAt: DateTime.parse(json["created_at"] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json["updated_at"] ?? DateTime.now().toIso8601String()),
+      playStore: json["play_store"] ?? "",
+      appStore: json["app_store"] ?? "",
+      facebook: json["facebook"] ?? "",
+      twitter: json["twitter"] ?? "",
+      instagram: json["instagram"] ?? "",
+      branches: json["branches"] != null
+          ? List<Branch>.from((json["branches"] as List<dynamic>).map((x) {
+              try {
+                return Branch.fromJson(x);
+              } catch (e) {
+                print("Error parsing branch: $e, Branch JSON: $x");
+                return Branch(
+                  name: "Unknown Branch",
+                  email: "",
+                  phone: "",
+                  phoneCountryCode: "",
+                  advertisementUrl: null,
+                  advertisementState: 0,
+                  fax: null,
+                  country: "",
+                  city: "",
+                  timezone: "",
+                  latitude: "",
+                  longitude: "",
+                  isArchive: 0,
+                  branchCode: "",
+                  managerName: null,
+                  managerPhone: null,
+                  managerEmail: null,
+                  address: "",
+                  id: 0,
+                  bankCountryId: 0,
+                  atmOnSite: 0,
+                  atmOffSite: null,
+                  fxBranch: 0,
+                  image: "default.jpg",
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                  bankSubadminId: null,
+                  bankcountryadminId: null,
+                  branchSubadminId: null,
+                  bankId: json["id"] ?? 0,
+                  featured: 0,
+                  playStore: "",
+                  appStore: "",
+                  facebook: "",
+                  twitter: "",
+                  instagram: "",
+                  avgRating: 0,
+                  itemType: ItemType.BRANCHES,
+                  placeid: null,
+                  updatedName: 0,
+                );
+              }
+            }))
+          : [],
+      reviews: json["reviews"] != null ? List<dynamic>.from(json["reviews"].map((x) => x)) : [],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "id": id,
@@ -204,7 +254,7 @@ class Branch {
   final String instagram;
   final int avgRating;
   final ItemType itemType;
-  final String placeid;
+  final String? placeid;
   final int updatedName;
 
   Branch({
@@ -251,46 +301,48 @@ class Branch {
   });
 
   factory Branch.fromJson(Map<String, dynamic> json) => Branch(
-        name: json["name"],
+        name: json["name"] ?? "",
         email: json["email"] ?? "",
         phone: json["phone"] ?? "",
-        phoneCountryCode: json["phone_country_code"],
-        advertisementUrl: json["advertisement_url"] ?? "",
-        advertisementState: json["advertisement_state"],
-        fax: json["fax"] ?? "",
+        phoneCountryCode: json["phone_country_code"] ?? "",
+        advertisementUrl: json["advertisement_url"],
+        advertisementState: json["advertisement_state"] ?? 0,
+        fax: json["fax"],
         country: json["country"] ?? "",
         city: json["city"] ?? "",
         timezone: json["timezone"] ?? "",
-        latitude: json["latitude"],
-        longitude: json["longitude"],
-        isArchive: json["is_archive"],
-        branchCode: json["branch_code"],
-        managerName: json["manager_name"] ?? "",
-        managerPhone: json["manager_phone"] ?? "",
-        managerEmail: json["manager_email"] ?? "",
+        latitude: json["latitude"] ?? "",
+        longitude: json["longitude"] ?? "",
+        isArchive: json["is_archive"] ?? 0,
+        branchCode: json["branch_code"] ?? "",
+        managerName: json["manager_name"],
+        managerPhone: json["manager_phone"],
+        managerEmail: json["manager_email"],
         address: json["address"] ?? "",
-        id: json["id"],
-        bankCountryId: json["bank_country_id"],
+        id: json["id"] ?? 0,
+        bankCountryId: json["bank_country_id"] ?? 0,
         atmOnSite: json["atm_on_site"] ?? 0,
-        atmOffSite: json["atm_off_site"] ?? "",
+        atmOffSite: json["atm_off_site"],
         fxBranch: json["fx_branch"] ?? 0,
-        image: json["image"] ?? "",
-        createdAt: DateTime.parse(json["created_at"]),
-        updatedAt: DateTime.parse(json["updated_at"]),
-        bankSubadminId: json["bank_subadmin_id"] ?? "",
-        bankcountryadminId: json["bankcountryadmin_id"] ?? "",
-        branchSubadminId: json["branch_subadmin_id"] ?? '',
-        bankId: json["bank_id"],
-        featured: json["featured"],
+        image: json["image"]?.contains('http') == true
+            ? json["image"]
+            : 'https://portal.buzdy.com/storage/admin/uploads/images/${json["image"] ?? "default.jpg"}',
+        createdAt: DateTime.parse(json["created_at"] ?? DateTime.now().toIso8601String()),
+        updatedAt: DateTime.parse(json["updated_at"] ?? DateTime.now().toIso8601String()),
+        bankSubadminId: json["bank_subadmin_id"],
+        bankcountryadminId: json["bankcountryadmin_id"],
+        branchSubadminId: json["branch_subadmin_id"],
+        bankId: json["bank_id"] ?? 0,
+        featured: json["featured"] ?? 0,
         playStore: json["play_store"] ?? "",
         appStore: json["app_store"] ?? "",
         facebook: json["facebook"] ?? "",
         twitter: json["twitter"] ?? "",
         instagram: json["instagram"] ?? "",
-        avgRating: json["avg_rating"],
-        itemType: itemTypeValues.map[json["item_type"]]!,
+        avgRating: json["avg_rating"] ?? 0,
+        itemType: itemTypeValues.map[json["item_type"]] ?? ItemType.BRANCHES,
         placeid: json["placeid"],
-        updatedName: json["updated_name"] ?? "",
+        updatedName: json["updated_name"] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -303,7 +355,7 @@ class Branch {
         "fax": fax,
         "country": country,
         "city": city,
-        "timezone": timezoneValues.reverse[timezone],
+        "timezone": timezone,
         "latitude": latitude,
         "longitude": longitude,
         "is_archive": isArchive,
@@ -341,10 +393,6 @@ enum ItemType { BRANCHES }
 
 final itemTypeValues = EnumValues({"branches": ItemType.BRANCHES});
 
-enum Timezone { GMT_5 }
-
-final timezoneValues = EnumValues({"GMT+5": Timezone.GMT_5});
-
 class Pagination {
   final int pageNo;
   final int pageSize;
@@ -359,8 +407,8 @@ class Pagination {
   });
 
   factory Pagination.fromJson(Map<String, dynamic> json) => Pagination(
-        pageNo: json["page_no"],
-        pageSize: json["page_size"],
+        pageNo: json["page_no"] ?? 1,
+        pageSize: json["page_size"] ?? 10,
         total: json["total"],
         totalPages: json["totalPages"],
       );
