@@ -29,37 +29,80 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   String _selectedCountry = 'All Countries';
+  String? _selectedCity;
+
   final List<String> countryList = [
     "All Countries",
-    "Algeria",
-    "Australia",
-    "Bahrain",
-    "Bangladesh",
-    "Belgium",
-    "Canada",
-    "China",
-    "Finland",
-    "France",
-    "Germany",
-    "India",
-    "Indonesia",
-    "Japan",
-    "Kuwait",
-    "Moldova",
-    "Netherlands",
-    "Norway",
-    "Oman",
-    "Pakistan",
-    "Qatar",
-    "Saudi Arabia",
-    "Singapore",
-    "South Korea",
-    "Sweden",
-    "Switzerland",
-    "United Arab Emirates",
-    "United Kingdom",
-    "United States",
+    "DZA", "AUS", "BHR", "BGD", "BEL", "CAN", "CHN", "FIN", "FRA", "DEU",
+    "IND", "IDN", "JPN", "KWT", "MDA", "NLD", "NOR", "OMN", "PAK", "QAT",
+    "SAU", "SGP", "KOR", "SWE", "CHE", "UAE", "GBR", "USA",
   ];
+
+  final Map<String, String> countryMapping = {
+  "All Countries": "All Countries",
+  "DZA": "Algeria",
+  "AUS": "Australia",
+  "BHR": "Bahrain",
+  "BGD": "Bangladesh",
+  "BEL": "Belgium",
+  "CAN": "Canada",
+  "CHN": "China",
+  "FIN": "Finland",
+  "FRA": "France",
+  "DEU": "Germany",
+  "IND": "India",
+  "IDN": "Indonesia",
+  "JPN": "Japan",
+  "KWT": "Kuwait",
+  "MDA": "Moldova",
+  "NLD": "Netherlands",
+  "NOR": "Norway",
+  "OMN": "Oman",
+  "PAK": "Pakistan",
+  "QAT": "Qatar",
+  "SAU": "Saudi Arabia",
+  "SGP": "Singapore",
+  "KOR": "South Korea",
+  "SWE": "Sweden",
+  "CHE": "Switzerland",
+  "UAE": "United Arab Emirates",
+  "GBR": "United Kingdom",
+  "USA": "United States",
+};
+
+final Map<String, List<String>> cityMap = {
+  "Algeria": ["Alger", "Algeria", "Algiers", "Bab Ezzouar", "Mascara"],
+  "Switzerland": ["Aarau", "Basel", "Bern", "Luzern", "Zürich", "Genève"],
+  "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah", "Fujairah", "Ras Al Khaimah", "Ajman"],
+  "Canada": ["Ottawa", "Toronto", "Montreal", "Oakville, Ontario", "Saskatoon"],
+  "United States": ["Boston", "New York", "San Francisco", "Dallas", "Cincinnati", "Cleveland", "Charlotte", "Mclean", "Pittsburgh"],
+  "Germany": ["Berlin", "Frankfurt", "Frankfurt am Main", "Hannover", "Köln", "Stuttgart", "Wiesbaden", "München"],
+  "United Kingdom": ["London", "Birmingham", "Bradford", "Leicester", "Manchester", "Sutton", "Wellingborough", "Blyth", "Glasgow", "Surrey", "Warley"],
+  "France": ["Paris"],
+  "India": ["Chennai", "Kolkata", "Mumbai", "New Dehli", "Shivajinagar", "Bengluru", "Karur", "Nainital", "Thrissur", "Vadodara"],
+  "Pakistan": ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad", "Peshawar", "Muzaffarabad"],
+  "Bangladesh": ["Dhaka"],
+  "Oman": ["Muscat", "Sohar"],
+  "Qatar": ["Doha"],
+  "Saudi Arabia": ["Riyadh", "Jeddah"],
+  "Kuwait": ["kuwait"],
+  "Indonesia": ["Jakarta"],
+  "Japan": ["Tokyo", "Osaka", "Chiyoda"],
+  "South Korea": ["Seoul"],
+  "Australia": ["Melbourne", "bendigo", "sydeny", "Sydney"],
+  "Netherlands": ["Amsterdam", "Den Haag", "Driebergen-Rijsenburg", "Utrecht"],
+  "Belgium": ["Antwerp", "Brussels"],
+  "Moldova": ["Chisinau"],
+  "Bahrain": ["Manama"],
+  "China": ["Beijing", "Shanghai", "Shenzhen"],
+  "Singapore": ["Marina Bay Link Mall", "People's Park Centre"],
+  "Norway": ["Oslo", "Lysaker", "Stavanger"],
+  "Sweden": ["Stockholm"],
+  "Hong Kong": ["Robinson Road"],
+  "South Africa": ["hoofddroop"],
+};
+
+
 
   final ScrollController _scrollController = ScrollController();
 
@@ -69,19 +112,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 100 &&
-          !Provider.of<UserViewModel>(context, listen: false).bankisLoadingMore &&
-          _selectedCountry == 'All Countries') {
-        print("Bank scroll triggered at page: ${Provider.of<UserViewModel>(context, listen: false).bankcurrentPage}");
-        Provider.of<UserViewModel>(context, listen: false)
-            .getAllBanks(pageNumber: Provider.of<UserViewModel>(context, listen: false).bankcurrentPage);
-      }
-      if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 100 &&
-          !Provider.of<UserViewModel>(context, listen: false).merchantisLoadingMore) {
-        print("Merchant scroll triggered at page: ${Provider.of<UserViewModel>(context, listen: false).merchantcurrentPage}");
-        Provider.of<UserViewModel>(context, listen: false)
-            .getAllMarchants(pageNumber: Provider.of<UserViewModel>(context, listen: false).merchantcurrentPage);
+          _scrollController.position.maxScrollExtent - 100) {
+        final viewModel = Provider.of<UserViewModel>(context, listen: false);
+        if (_selectedCountry == 'All Countries') {
+          if (!viewModel.merchantisLoadingMore && viewModel.merchanthasMoreData) {
+            viewModel.getAllMarchants(pageNumber: viewModel.merchantcurrentPage);
+          }
+          if (!viewModel.bankisLoadingMore && viewModel.bankhasMoreData) {
+            viewModel.getAllBanks(pageNumber: viewModel.bankcurrentPage);
+          }
+        } else {
+          if (!viewModel.merchantisLoadingMore && viewModel.merchanthasMoreData) {
+            viewModel.getMerchantsByCountry(
+              country: countryMapping[_selectedCountry]!.toLowerCase(),
+              city: _selectedCity?.toLowerCase(),
+              pageNumber: viewModel.merchantcurrentPage,
+            );
+          }
+          if (!viewModel.bankisLoadingMore && viewModel.bankhasMoreData) {
+            viewModel.getBanksByCountry(
+              country: countryMapping[_selectedCountry]!.toLowerCase(),
+              city: _selectedCity?.toLowerCase(),
+              pageNumber: viewModel.bankcurrentPage,
+            );
+          }
+        }
       }
     });
   }
@@ -109,6 +164,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Consumer<UserViewModel>(builder: (context, pr, c) {
           List<Bank> filteredBanks = pr.bankList
               .where((bank) => bank.name.toLowerCase().contains(_searchController.text.toLowerCase()))
+              .toList();
+          List<MerchantModelData> filteredMerchants = pr.merchantList
+              .where((merchant) => merchant.name.toLowerCase().contains(_searchController.text.toLowerCase()))
               .toList();
 
           return Column(
@@ -140,15 +198,25 @@ class _HomeScreenState extends State<HomeScreen> {
                           .toList(),
                       textStyle: TextStyle(fontSize: 14),
                       onChanged: (value) {
+                        if (value == null || value.value == _selectedCountry) return;
                         setState(() {
                           _selectedCountry = value.value;
+                          _selectedCity = null;
+                          pr.resetFilters();
                           if (_selectedCountry == 'All Countries') {
-                            pr.bankList.clear();
-                            pr.bankcurrentPage = 1;
-                            pr.bankhasMoreData = true;
-                            pr.getAllBanks(pageNumber: pr.bankcurrentPage);
+                            pr.getAllBanks(pageNumber: 1);
+                            pr.getAllMarchants(pageNumber: 1);
                           } else {
-                            pr.getBanksByCountry(country: _selectedCountry.toLowerCase());
+                            pr.getBanksByCountry(
+                              country: countryMapping[_selectedCountry]!.toLowerCase(),
+                              city: null,
+                              pageNumber: 1,
+                            );
+                            pr.getMerchantsByCountry(
+                              country: countryMapping[_selectedCountry]!.toLowerCase(),
+                              city: null,
+                              pageNumber: 1,
+                            );
                           }
                         });
                       },
@@ -161,15 +229,56 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         _searchController.clear();
                         _selectedCountry = 'All Countries';
-                        pr.bankList.clear();
-                        pr.bankcurrentPage = 1;
-                        pr.bankhasMoreData = true;
-                        pr.getAllBanks(pageNumber: pr.bankcurrentPage);
+                        _selectedCity = null;
+                        pr.resetFilters();
+                        pr.getAllBanks(pageNumber: 1);
+                        pr.getAllMarchants(pageNumber: 1);
                       });
                     },
                   ),
                 ],
               ),
+              SizedBox(height: 10),
+              if (_selectedCountry != 'All Countries' && cityMap[countryMapping[_selectedCountry]!] != null)
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropDownTextField(
+                        controller: SingleValueDropDownController(
+                          data: DropDownValueModel(
+                            name: _selectedCity ?? "Select City",
+                            value: _selectedCity,
+                          ),
+                        ),
+                        clearOption: true,
+                        textFieldDecoration: customInputDecoration(hintText: "Select City"),
+                        dropDownList: [
+                          DropDownValueModel(name: "Select City", value: null),
+                          ...cityMap[countryMapping[_selectedCountry]!]!
+                              .map((city) => DropDownValueModel(name: city, value: city))
+                              .toList(),
+                        ],
+                        textStyle: TextStyle(fontSize: 14),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCity = value.value;
+                            pr.resetFilters();
+                            pr.getBanksByCountry(
+                              country: countryMapping[_selectedCountry]!.toLowerCase(),
+                              city: _selectedCity?.toLowerCase(),
+                              pageNumber: 1,
+                            );
+                            pr.getMerchantsByCountry(
+                              country: countryMapping[_selectedCountry]!.toLowerCase(),
+                              city: _selectedCity?.toLowerCase(),
+                              pageNumber: 1,
+                            );
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               SizedBox(height: 10),
               Expanded(
                 child: SingleChildScrollView(
@@ -182,109 +291,174 @@ class _HomeScreenState extends State<HomeScreen> {
                         clearOption: false,
                         enableSearch: true,
                         textFieldDecoration: customInputDecoration(hintText: "Select Merchant"),
-                        dropDownItemCount: pr.merchantList.length,
-                        dropDownList: pr.merchantList.map((MerchantModelData merchant) {
-                          return DropDownValueModel(name: merchant.name, value: merchant.id);
-                        }).toList(),
-                        onChanged: (value) {},
+                        dropDownList: [
+                          DropDownValueModel(name: "All Merchants", value: "All Items"),
+                          ...filteredMerchants.map((merchant) => DropDownValueModel(name: merchant.name, value: merchant.id)),
+                        ],
+                        onChanged: (value) {
+                          if (value != null && value.value != "All Items") {
+                            final selectedMerchant = filteredMerchants.firstWhere(
+                              (merchant) => merchant.id == value.value,
+                              orElse: () => filteredMerchants.first,
+                            );
+                            Get.to(() => MerchnatDetailScreen(
+                                  model: selectedMerchant,
+                                  title: selectedMerchant.name,
+                                  imageUrls: [
+                                    selectedMerchant.image ??
+                                        "https://portal.buzdy.com/storage/admin/uploads/images/default.jpg"
+                                  ],
+                                  description: selectedMerchant.description ?? "",
+                                  address: selectedMerchant.address ?? "",
+                                  email: selectedMerchant.email ?? "",
+                                  phone: selectedMerchant.phone ?? "",
+                                  operatingHours: "08:00:00 - 18:00:00",
+                                  offDays: "Saturday, Sunday",
+                                ));
+                          }
+                        },
                       ),
                       SizedBox(height: 10),
                       DropDownTextField(
                         controller: _bankController,
                         clearOption: false,
                         enableSearch: true,
-                        dropDownItemCount: filteredBanks.length,
-                        dropDownList: filteredBanks.map((Bank bank) {
-                          return DropDownValueModel(name: bank.name, value: bank.id);
-                        }).toList(),
                         textFieldDecoration: customInputDecoration(hintText: "Select Bank"),
-                        onChanged: (value) {},
+                        dropDownList: [
+                          DropDownValueModel(name: "All Banks", value: "All Items"),
+                          ...filteredBanks.map((bank) => DropDownValueModel(name: bank.name, value: bank.id)),
+                        ],
+                        onChanged: (value) {
+                          if (value != null && value.value != "All Items") {
+                            final selectedBank = filteredBanks.firstWhere(
+                              (bank) => bank.id == value.value,
+                              orElse: () => filteredBanks.first,
+                            );
+                            Get.to(() => DetailScreen(
+                                  model: selectedBank,
+                                  title: selectedBank.name,
+                                  imageUrls: [
+                                    selectedBank.image ??
+                                        "https://portal.buzdy.com/storage/admin/uploads/images/default.jpg"
+                                  ],
+                                  description: "Banking services provided by ${selectedBank.name}",
+                                  address: selectedBank.address ?? "",
+                                  email: selectedBank.email ?? "",
+                                  phone: selectedBank.phone ?? "",
+                                  operatingHours: "08:00:00 - 18:00:00",
+                                  offDays: "Saturday, Sunday",
+                                ));
+                          }
+                        },
                       ),
                       SizedBox(height: 20),
                       kText(text: "Merchants", fWeight: fontWeightBold, fSize: 18.0),
                       SizedBox(height: 10),
+                      if (pr.merchantisLoadingMore && filteredMerchants.isEmpty)
+                        Center(child: CircularProgressIndicator()),
                       SizedBox(
                         height: Get.height / 5.4,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: pr.merchantList.length + (pr.merchanthasMoreData ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == pr.merchantList.length && pr.merchanthasMoreData) {
-                              return pr.merchantisLoadingMore
-                                  ? Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Center(child: CircularProgressIndicator()),
-                                    )
-                                  : SizedBox(width: 50);
-                            }
-                            MerchantModelData model = pr.merchantList[index];
-                            return InkWell(
-                              onTap: () {
-                                Get.to(MerchnatDetailScreen(
-                                  model: model,
-                                  title: model.name,
-                                  imageUrls: [model.image],
-                                  description: model.description ?? "",
-                                  address: model.address ?? "",
-                                  email: model.email ?? "",
-                                  phone: model.phone ?? "",
-                                  operatingHours: "08:00:00 - 18:00:00",
-                                  offDays: "Saturday, Sunday",
-                                ));
-                              },
-                              child: listWidget(model: model),
-                            );
-                          },
-                        ),
+                        child: filteredMerchants.isEmpty && !pr.merchantisLoadingMore
+                            ? Center(child: Text("No merchants found"))
+                            : ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: filteredMerchants.length +
+                                    (pr.merchanthasMoreData ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index == filteredMerchants.length && pr.merchanthasMoreData) {
+                                    return pr.merchantisLoadingMore
+                                        ? Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: Center(child: CircularProgressIndicator()),
+                                          )
+                                        : SizedBox(width: 50);
+                                  }
+                                  MerchantModelData model = filteredMerchants[index];
+                                  return InkWell(
+                                    onTap: () {
+                                      Get.to(() => MerchnatDetailScreen(
+                                            model: model,
+                                            title: model.name,
+                                            imageUrls: [
+                                              model.image ??
+                                                  "https://portal.buzdy.com/storage/admin/uploads/images/default.jpg"
+                                            ],
+                                            description: model.description ?? "",
+                                            address: model.address ?? "",
+                                            email: model.email ?? "",
+                                            phone: model.phone ?? "",
+                                            operatingHours: "08:00:00 - 18:00:00",
+                                            offDays: "Saturday, Sunday",
+                                          ));
+                                    },
+                                    child: listWidget(model: model),
+                                  );
+                                },
+                              ),
                       ),
                       SizedBox(height: 20),
                       kText(text: "Banks", fWeight: fontWeightBold, fSize: 18.0),
                       SizedBox(height: 10),
                       if (pr.bankisLoadingMore && filteredBanks.isEmpty)
                         Center(child: CircularProgressIndicator()),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 5.0,
-                          mainAxisSpacing: 5.0,
-                        ),
-                        itemCount: filteredBanks.length + (_selectedCountry == 'All Countries' && pr.bankhasMoreData ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == filteredBanks.length && _selectedCountry == 'All Countries' && pr.bankhasMoreData) {
-                            return pr.bankisLoadingMore
-                                ? Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Center(child: CircularProgressIndicator()),
-                                  )
-                                : SizedBox(height: 50); // Placeholder to extend scroll
-                          }
-                          Bank model = filteredBanks[index];
-                          return InkWell(
-                            onTap: () {
-                              Get.to(DetailScreen(
-                                model: model,
-                                title: model.name,
-                                imageUrls: [model.image],
-                                description: "Banking services provided by ${model.name}",
-                                address: model.address ?? "",
-                                email: model.email ?? "",
-                                phone: model.phone ?? "",
-                                operatingHours: "08:00:00 - 18:00:00",
-                                offDays: "Saturday, Sunday",
-                              ));
-                            },
-                            child: gridWidgetWidget(model),
-                          );
-                        },
-                      ),
-                      if (_selectedCountry == 'All Countries' && !pr.bankhasMoreData && filteredBanks.isNotEmpty)
+                      filteredBanks.isEmpty && !pr.bankisLoadingMore
+                          ? Center(child: Text("No banks found"))
+                          : GridView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 5.0,
+                                mainAxisSpacing: 5.0,
+                              ),
+                              itemCount: filteredBanks.length + (pr.bankhasMoreData ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == filteredBanks.length && pr.bankhasMoreData) {
+                                  return pr.bankisLoadingMore
+                                      ? Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Center(child: CircularProgressIndicator()),
+                                        )
+                                      : SizedBox(height: 50);
+                                }
+                                Bank model = filteredBanks[index];
+                                return InkWell(
+                                  onTap: () {
+                                    Get.to(() => DetailScreen(
+                                          model: model,
+                                          title: model.name,
+                                          imageUrls: [
+                                            model.image ??
+                                                "https://portal.buzdy.com/storage/admin/uploads/images/default.jpg"
+                                          ],
+                                          description: "Banking services provided by ${model.name}",
+                                          address: model.address ?? "",
+                                          email: model.email ?? "",
+                                          phone: model.phone ?? "",
+                                          operatingHours: "08:00:00 - 18:00:00",
+                                          offDays: "Saturday, Sunday",
+                                        ));
+                                  },
+                                  child: gridWidgetWidget(model),
+                                );
+                              },
+                            ),
+                      if (!pr.bankhasMoreData && filteredBanks.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Center(
                             child: Text(
                               "All banks loaded",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      if (!pr.merchanthasMoreData && filteredMerchants.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
+                              "All merchants loaded",
                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -301,6 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   SizedBox listWidget({MerchantModelData? model}) {
+    print("Merchant Image URL: ${model!.image}"); // Log the image URL
     return SizedBox(
       width: Get.width / 2.3,
       child: Padding(
@@ -314,13 +489,20 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               Expanded(
-                child: Image.network(
-                  model!.image.contains('http')
-                      ? model.image
-                      : 'https://portal.buzdy.com/storage/admin/uploads/images/${model.image}',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
-                ),
+                child: model.image != null
+                    ? Image.network(
+                        model.image!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print("Image load error for ${model.name}: $error"); // Log errors
+                          return Icon(Icons.broken_image, size: 50);
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(child: CircularProgressIndicator());
+                        },
+                      )
+                    : Icon(Icons.image_not_supported, size: 50),
               ),
               Expanded(
                 child: Column(
@@ -359,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             }),
                           ),
                           kText(
-                            text: "1 reviews",
+                            text: "1 reviews", // Update dynamically if review data available
                             fWeight: fontWeightBold,
                             tColor: mainBlackcolor,
                             fSize: 10.0,
@@ -378,8 +560,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   SizedBox gridWidgetWidget(Bank model) {
+    print("Bank Image URL: ${model.image}"); // Log the image URL
     int avgRating = model.avgRating.round();
-
     return SizedBox(
       child: Card(
         color: whiteColor,
@@ -390,13 +572,20 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Expanded(
-              child: Image.network(
-                model.image.contains('http')
-                    ? model.image
-                    : 'https://portal.buzdy.com/storage/admin/uploads/images/${model.image}',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
-              ),
+              child: model.image != null
+                  ? Image.network(
+                      model.image!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        print("Image load error for ${model.name}: $error"); // Log errors
+                        return Icon(Icons.broken_image, size: 50);
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(child: CircularProgressIndicator());
+                      },
+                    )
+                  : Icon(Icons.image_not_supported, size: 50),
             ),
             Expanded(
               child: Column(

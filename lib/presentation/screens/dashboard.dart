@@ -1,6 +1,7 @@
 import 'package:buzdy/presentation/screens/dashboard/crypto/CryptoScreen.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/feed.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/bank.dart';
+import 'package:buzdy/presentation/screens/dashboard/products/products.dart';
 import 'package:buzdy/presentation/screens/dashboard/profile.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/core/colors.dart';
@@ -23,6 +24,7 @@ class _DashBoradState extends State<DashBorad> {
   final List<Widget> _pages = const [
     CryptoScreen(),
     HomeScreen(),
+    ProductsScreen(), 
     FeedScreen(),
     ProfileScreen(),
   ];
@@ -69,8 +71,13 @@ class _DashBoradState extends State<DashBorad> {
               ),
               BottomNavigationBarItem(
                 icon: iconShow(image: "images/home.png"),
-                label: 'Banks'.tr,
+                label: 'Business'.tr,
                 activeIcon: activeIcon(image: 'images/home.png'),
+              ),
+              BottomNavigationBarItem(
+                icon: iconShow(image: 'images/cubes.png'),
+                label: 'Products'.tr,
+                activeIcon: activeIcon(image: 'images/cubes.png'),
               ),
               BottomNavigationBarItem(
                 icon: iconShow(image: 'images/youtube.png'),
@@ -96,7 +103,6 @@ class _DashBoradState extends State<DashBorad> {
   Widget activeIcon({required String image}) {
     return Container(
       padding: const EdgeInsets.all(4.0),
-      // Removed the border radius for a simple tab style.
       child: Image.asset(image, height: 23, width: 23),
     );
   }
