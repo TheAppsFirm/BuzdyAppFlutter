@@ -23,6 +23,7 @@ class CoinDetailScreen extends StatefulWidget {
 class _CoinDetailScreenState extends State<CoinDetailScreen> {
   int riskLevel = 0; // Ensuring it's an integer
   String investmentRecommendation = "No data available";
+  Map<String, dynamic>? aiAnalysis;
 
   @override
   void initState() {
@@ -123,6 +124,14 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                 color: redColor,
                 () => _showSecurityDialog(),
                 text: "Check Coin Security",
+              ),
+            ),
+            UIHelper.verticalSpaceSm10,
+            Center(
+              child: CustomButton(
+                color: appButtonColor,
+                () => _fetchAndShowAiAnalysis(),
+                text: "AI Analysis",
               ),
             ),
           ],
@@ -255,6 +264,35 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
         );
       },
     );
+  }
+
+  void _fetchAndShowAiAnalysis() async {
+    UserViewModel userViewModel =
+        Provider.of<UserViewModel>(context, listen: false);
+    final result =
+        await userViewModel.fetchCoinAnalysis(coin: widget.coin);
+    if (result != null && result['analysis'] != null) {
+      aiAnalysis = result['analysis'];
+      _showAiDialog();
+    }
+  }
+
+  void _showAiDialog() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('AI Analysis'),
+            content: SingleChildScrollView(
+              child: Text(aiAnalysis?['HeadsUp'] ?? 'No analysis available'),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'))
+            ],
+          );
+        });
   }
 
   /// 🔹 Get Risk Level Color
