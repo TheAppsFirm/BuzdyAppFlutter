@@ -688,6 +688,43 @@ Future getAllProductsWithFilters({
     return investmentRanking;
   }
 
+  Future<Map<String, dynamic>?> fetchCoinAnalysis({required CoinModel coin}) async {
+    final url = Uri.parse('https://api.buzdy.com/coinanalysis');
+    Map<String, dynamic> body = {
+      "crypto": {
+        "name": coin.name,
+        "price": coin.rate ?? 0,
+        "performance": {"day": coin.delta?.day ?? 0},
+        "volume": coin.volume ?? 0,
+        "technicals": {"rsi": 55},
+        "btc_correlation": 0.0
+      },
+      "preferences": {"risk_tolerance": "moderate"},
+      "timeframe": "short-term"
+    };
+
+    _logRequest('POST', url.toString(), payload: body);
+
+    final response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+        },
+        body: jsonEncode(body));
+
+    _logResponse(url.toString(), jsonDecode(response.body), statusCode: response.statusCode);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      UIHelper.showMySnak(
+          title: "ERROR",
+          message: "Failed to fetch analysis: ${response.statusCode}",
+          isError: true);
+      return null;
+    }
+  }
+
   void searchCoins(String query) {
     if (query.isEmpty) {
       _filteredCoins = List.from(_coins);
