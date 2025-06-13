@@ -1,6 +1,7 @@
 import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/coinModel.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/presentation/widgets/appBar.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:buzdy/core/colors.dart';
 import 'package:buzdy/presentation/widgets/customText.dart';
@@ -8,6 +9,9 @@ import 'package:buzdy/core/ui_helpers.dart';
 import 'package:buzdy/presentation/widgets/CustomButton.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:http/http.dart' as http;
+import 'package:get/get.dart';
+import 'FullScreenChart.dart';
 
 class CoinDetailScreen extends StatefulWidget {
   final CoinModel coin;
@@ -21,10 +25,12 @@ class CoinDetailScreen extends StatefulWidget {
 class _CoinDetailScreenState extends State<CoinDetailScreen> {
   Map<String, dynamic>? aiAnalysis;
   bool isLoadingAiAnalysis = false;
+  String? extraDescription;
 
   @override
   void initState() {
     super.initState();
+    _fetchOnlineDescription();
   }
 
   @override
@@ -68,32 +74,52 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             ),
             UIHelper.verticalSpaceSm10,
 
-            // Description
-            if (widget.coin.description.trim().isNotEmpty)
-              _buildDetailSection("Description", widget.coin.description),
+            // Description from API when available
+            if (((widget.coin.description.trim().isNotEmpty &&
+                        widget.coin.description != 'No description available') ||
+                    (extraDescription != null && extraDescription!.isNotEmpty)))
+              _buildDetailSection(
+                "Description",
+                widget.coin.description.trim().isNotEmpty &&
+                        widget.coin.description != 'No description available'
+                    ? widget.coin.description
+                    : extraDescription ?? '',
+                maxLines: 3,
+              ),
 
             // TradingView Chart (only if a valid code or symbol is available)
             if ((widget.coin.code ?? widget.coin.symbol).trim().isNotEmpty &&
                 (widget.coin.code ?? widget.coin.symbol).toUpperCase() != 'N/A')
               SizedBox(
                 height: 300,
-                child: Card(
-                  clipBehavior: Clip.antiAlias,
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                  child: InAppWebView(
-                    // Build and encode the TradingView symbol using ASCII code
-                    initialUrlRequest: URLRequest(
-                      url: WebUri(
-                        'https://s.tradingview.com/widgetembed/'
-                        '?symbol=${_encodedTradingViewSymbol()}'
-                        '&interval=D'
-                        '&theme=dark'
-                        '&hidesidetoolbar=1',
+                child: Stack(
+                  children: [
+                    Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      child: InAppWebView(
+                        initialUrlRequest: URLRequest(
+                          url: WebUri(
+                            'https://s.tradingview.com/widgetembed/'
+                            '?symbol=${_encodedTradingViewSymbol()}'
+                            '&interval=D'
+                            '&theme=dark'
+                            '&hidesidetoolbar=1',
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        icon: const Icon(Icons.fullscreen, color: Colors.white),
+                        onPressed: _openFullScreenChart,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             UIHelper.verticalSpaceSm20,
@@ -147,7 +173,7 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
     return "${date.day}-${date.month}-${date.year}";
   }
 
-  Widget _buildDetailSection(String title, String value) {
+  Widget _buildDetailSection(String title, String value, {int? maxLines}) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -162,7 +188,9 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
         ),
         subtitle: Text(
           value,
-          style: TextStyle(fontSize: 14, color: Colors.white),
+          style: const TextStyle(fontSize: 14, color: Colors.white),
+          maxLines: maxLines,
+          overflow: maxLines != null ? TextOverflow.ellipsis : null,
         ),
       ),
     );
@@ -182,6 +210,41 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
     setState(() {
       isLoadingAiAnalysis = false;
     });
+  }
+
+  Future<void> _fetchOnlineDescription() async {
+    if (widget.coin.description.trim().isNotEmpty &&
+        widget.coin.description != 'No description available') {
+      return;
+    }
+    final query = (widget.coin.code ?? widget.coin.symbol).toLowerCase();
+    final searchUrl =
+        Uri.parse('https://api.coingecko.com/api/v3/search?query=$query');
+    final searchRes = await http.get(searchUrl);
+    if (searchRes.statusCode == 200) {
+      final id = jsonDecode(searchRes.body)['coins']?.first?['id'];
+      if (id != null) {
+        final coinUrl = Uri.parse('https://api.coingecko.com/api/v3/coins/$id');
+        final coinRes = await http.get(coinUrl);
+        if (coinRes.statusCode == 200) {
+          final desc = jsonDecode(coinRes.body)['description']['en'];
+          if (desc != null && desc is String && desc.trim().isNotEmpty) {
+            setState(() {
+              extraDescription = desc
+                  .replaceAll(RegExp(r'<[^>]*>'), '')
+                  .replaceAll('\r', '')
+                  .replaceAll('\n', ' ');
+            });
+          }
+        }
+      }
+    }
+  }
+
+  void _openFullScreenChart() {
+    final url =
+        'https://s.tradingview.com/widgetembed/?symbol=${_encodedTradingViewSymbol()}&interval=D&theme=dark&hidesidetoolbar=1';
+    Get.to(FullScreenChart(url: url));
   }
 
   String _encodedTradingViewSymbol() {
