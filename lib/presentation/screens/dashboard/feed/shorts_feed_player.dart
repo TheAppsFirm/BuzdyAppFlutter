@@ -22,7 +22,11 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     _controllers = widget.items
         .map((item) => YoutubePlayerController(
               initialVideoId: item.videoId ?? '',
-              flags: const YoutubePlayerFlags(autoPlay: false, mute: false),
+              flags: const YoutubePlayerFlags(
+                autoPlay: false,
+                mute: false,
+                forceHD: true,
+              ),
             ))
         .toList();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -57,6 +61,7 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       body: PageView.builder(
         controller: _pageController,
         scrollDirection: Axis.vertical,
+        physics: const BouncingScrollPhysics(),
         onPageChanged: _onPageChanged,
         itemCount: widget.items.length,
         itemBuilder: (context, index) {

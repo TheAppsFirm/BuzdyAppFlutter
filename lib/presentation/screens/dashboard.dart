@@ -20,11 +20,12 @@ class DashBorad extends StatefulWidget {
 
 class _DashBoradState extends State<DashBorad> {
   int _selectedIndex = 0;
+  late PageController _pageController;
 
   final List<Widget> _pages = const [
     CryptoScreen(),
     HomeScreen(),
-    ProductsScreen(), 
+    ProductsScreen(),
     FeedScreen(),
     ProfileScreen(),
   ];
@@ -33,12 +34,22 @@ class _DashBoradState extends State<DashBorad> {
     setState(() {
       _selectedIndex = index;
     });
+    _pageController.animateToPage(index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut);
   }
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.index;
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -47,9 +58,9 @@ class _DashBoradState extends State<DashBorad> {
       builder: (context, viewmodel, child) {
         return Scaffold(
           backgroundColor: whiteColor,
-          // Preserve the state for each page using IndexedStack.
-          body: IndexedStack(
-            index: _selectedIndex,
+          body: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
             children: _pages,
           ),
           bottomNavigationBar: BottomNavigationBar(
