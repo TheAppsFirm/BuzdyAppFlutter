@@ -68,7 +68,8 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             UIHelper.verticalSpaceSm10,
 
             // Description
-            _buildDetailSection("Description", widget.coin.description),
+            if (widget.coin.description.trim().isNotEmpty)
+              _buildDetailSection("Description", widget.coin.description),
 
             // TradingView Chart
             SizedBox(
@@ -81,7 +82,7 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                 child: InAppWebView(
                   initialUrlRequest: URLRequest(
                     url: WebUri(
-                        'https://s.tradingview.com/widgetembed/?symbol=${widget.coin.symbol.toUpperCase()}USD&interval=D&theme=dark&hidesidetoolbar=1'),
+                        'https://s.tradingview.com/widgetembed/?symbol=BINANCE:${widget.coin.symbol.toUpperCase()}USDT&interval=D&theme=dark&hidesidetoolbar=1'),
                   ),
                 ),
               ),
@@ -93,6 +94,7 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                 () => _fetchAndShowAiAnalysis(),
                 color: appButtonColor,
                 text: "AI Analysis",
+                isLoading: isLoadingAiAnalysis,
               ),
             ),
             UIHelper.verticalSpaceSm10,
@@ -100,9 +102,10 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             UIHelper.verticalSpaceSm20,
 
             // Market Cap
-            _buildDetailSection(
-                "Market Cap",
-                "\$${widget.coin.usdMarketCap.toStringAsFixed(2)}"),
+            if (widget.coin.usdMarketCap != 0)
+              _buildDetailSection(
+                  "Market Cap",
+                  "\$${widget.coin.usdMarketCap.toStringAsFixed(2)}"),
 
             // Website
             if (widget.coin.website.isNotEmpty)
@@ -120,8 +123,9 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                   "Telegram", widget.coin.telegram, Icons.telegram),
 
             // Created Timestamp
-            _buildDetailSection(
-                "Created", _formatDate(widget.coin.createdTimestamp)),
+            if (widget.coin.createdTimestamp != 0)
+              _buildDetailSection(
+                  "Created", _formatDate(widget.coin.createdTimestamp)),
           ],
         ),
       ),
@@ -173,7 +177,7 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
 
   Widget _buildAiAnalysisSection() {
     if (isLoadingAiAnalysis) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox();
     }
     if (aiAnalysis == null) {
       return const SizedBox();
