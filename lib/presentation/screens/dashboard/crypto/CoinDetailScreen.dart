@@ -82,9 +82,15 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15)),
                   child: InAppWebView(
+                    // Build and encode the TradingView symbol
                     initialUrlRequest: URLRequest(
                       url: WebUri(
-                          'https://s.tradingview.com/widgetembed/?symbol=BINANCE:${widget.coin.symbol.toUpperCase()}USDT&interval=D&theme=dark&hidesidetoolbar=1'),
+                        'https://s.tradingview.com/widgetembed/'
+                        '?symbol=${Uri.encodeComponent('BINANCE:${widget.coin.symbol.toUpperCase()}USDT')}'
+                        '&interval=D'
+                        '&theme=dark'
+                        '&hidesidetoolbar=1',
+                      ),
                     ),
                   ),
                 ),
