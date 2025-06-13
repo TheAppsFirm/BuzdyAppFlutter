@@ -184,9 +184,12 @@ class _CryptoListView extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        coin.symbol.trim().isNotEmpty
-                                            ? coin.symbol
-                                            : "N/A",
+                                        coin.code != null &&
+                                                coin.code!.trim().isNotEmpty
+                                            ? coin.code!
+                                            : (coin.symbol.trim().isNotEmpty
+                                                ? coin.symbol
+                                                : "N/A"),
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.grey,

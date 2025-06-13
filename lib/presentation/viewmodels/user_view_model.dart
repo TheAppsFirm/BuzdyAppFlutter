@@ -791,7 +791,7 @@ Future getAllProductsWithFilters({
     }
 
     var url = Uri.parse(
-        'https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UCZNZj3mkdCGJfCoKyl4bSYQ&maxResults=5&pageToken=${nextPageTokenShorts ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
+        'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&channelId=UCZNZj3mkdCGJfCoKyl4bSYQ&maxResults=5&pageToken=${nextPageTokenShorts ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
 
     _logRequest('GET', url.toString());
 
@@ -827,7 +827,7 @@ Future getAllProductsWithFilters({
     }
 
     var url = Uri.parse(
-        'https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UCqK_GSMbpiV8spgD3ZGloSw&maxResults=10&pageToken=${nextPageTokenVideos ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
+        'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&channelId=UCqK_GSMbpiV8spgD3ZGloSw&maxResults=10&pageToken=${nextPageTokenVideos ?? ''}&key=AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw');
 
     _logRequest('GET', url.toString());
 
