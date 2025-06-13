@@ -71,22 +71,24 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             if (widget.coin.description.trim().isNotEmpty)
               _buildDetailSection("Description", widget.coin.description),
 
-            // TradingView Chart
-            SizedBox(
-              height: 300,
-              child: Card(
-                clipBehavior: Clip.antiAlias,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                child: InAppWebView(
-                  initialUrlRequest: URLRequest(
-                    url: WebUri(
-                        'https://s.tradingview.com/widgetembed/?symbol=BINANCE:${widget.coin.symbol.toUpperCase()}USDT&interval=D&theme=dark&hidesidetoolbar=1'),
+            // TradingView Chart (only if symbol is available)
+            if (widget.coin.symbol.trim().isNotEmpty &&
+                widget.coin.symbol.toUpperCase() != 'N/A')
+              SizedBox(
+                height: 300,
+                child: Card(
+                  clipBehavior: Clip.antiAlias,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                  child: InAppWebView(
+                    initialUrlRequest: URLRequest(
+                      url: WebUri(
+                          'https://s.tradingview.com/widgetembed/?symbol=BINANCE:${widget.coin.symbol.toUpperCase()}USDT&interval=D&theme=dark&hidesidetoolbar=1'),
+                    ),
                   ),
                 ),
               ),
-            ),
             UIHelper.verticalSpaceSm20,
 
             Center(
