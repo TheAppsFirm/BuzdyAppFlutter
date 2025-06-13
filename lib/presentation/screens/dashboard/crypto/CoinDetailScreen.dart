@@ -47,7 +47,13 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: NetworkImage(widget.coin.imageUri),
+                backgroundImage: NetworkImage(
+                  widget.coin.png64 != null && widget.coin.png64!.isNotEmpty
+                      ? widget.coin.png64!
+                      : widget.coin.webp64 != null && widget.coin.webp64!.isNotEmpty
+                          ? widget.coin.webp64!
+                          : widget.coin.imageUri,
+                ),
               ),
             ),
             UIHelper.verticalSpaceSm20,

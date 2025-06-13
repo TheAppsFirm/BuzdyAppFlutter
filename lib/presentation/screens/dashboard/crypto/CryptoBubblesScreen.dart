@@ -10,6 +10,7 @@ import 'package:buzdy/utils/image_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
+import 'package:buzdy/presentation/screens/dashboard/crypto/CoinDetailScreen.dart';
 
 class CryptoBubblesScreen extends StatefulWidget {
   const CryptoBubblesScreen({Key? key}) : super(key: key);
@@ -206,10 +207,22 @@ class _CryptoBubblesScreenState extends State<CryptoBubblesScreen>
             bubble: bubble,
             selectedTimeframe: _selectedTimeframe,
             imageCache: _imageCache,
+            onViewDetail: () => _openDetail(bubble),
           ),
         );
         break;
       }
+    }
+  }
+
+  void _openDetail(Bubble bubble) async {
+    final userVM = Provider.of<UserViewModel>(context, listen: false);
+    final coin = await userVM.fetchCoinDetail(bubble.model.symbol);
+    if (coin != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => CoinDetailScreen(coin: coin)),
+      );
     }
   }
 
