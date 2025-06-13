@@ -21,31 +21,12 @@ class CoinDetailScreen extends StatefulWidget {
 }
 
 class _CoinDetailScreenState extends State<CoinDetailScreen> {
-  int riskLevel = 0; // Ensuring it's an integer
-  String investmentRecommendation = "No data available";
   Map<String, dynamic>? aiAnalysis;
+  bool isLoadingAiAnalysis = false;
 
   @override
   void initState() {
     super.initState();
-    checkCoinSecurity();
-  }
-
-  /// Fetch security details
-  checkCoinSecurity() async {
-    UserViewModel userViewModel =
-        Provider.of<UserViewModel>(context, listen: false);
-
-    print("Checking Security for Coin: ${widget.coin.mint}");
-
-    final result =
-        await userViewModel.checkCoinSecurity(securityToken: widget.coin.mint);
-
-    if (result != null) {
-      riskLevel = result.score; // Ensuring it's stored as an integer
-      investmentRecommendation = result.recommendation;
-      userViewModel.refresh();
-    }
   }
 
   @override
@@ -54,15 +35,7 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
       appBar: appBarrWitAction(
         title: "",
         leadinIconColor: appButtonColor,
-        actionwidget: Center(
-          child: CustomButton(
-            width: 80,
-            color: redColor,
-            () => _showSecurityDialog(),
-            text: "Security",
-            fsize: 12.0,
-          ),
-        ),
+        actionwidget: const SizedBox.shrink(),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -118,22 +91,16 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
 
             UIHelper.verticalSpaceSm20,
 
-            // Check Coin Security Button
-            Center(
-              child: CustomButton(
-                color: redColor,
-                () => _showSecurityDialog(),
-                text: "Check Coin Security",
-              ),
-            ),
-            UIHelper.verticalSpaceSm10,
             Center(
               child: CustomButton(
                 color: appButtonColor,
                 () => _fetchAndShowAiAnalysis(),
                 text: "AI Analysis",
+                isLoading: isLoadingAiAnalysis,
               ),
             ),
+            UIHelper.verticalSpaceSm10,
+            _buildAiAnalysisSection(),
           ],
         ),
       ),
@@ -167,186 +134,78 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
     );
   }
 
-  /// Show Security Details in a Dialog
-  void _showSecurityDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.topCenter,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.only(top: 50),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: _getRiskLevelColor(),
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Investment Security Check",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Risk Level
-                    _buildSecurityInfo("Risk Level:", riskLevel.toString()),
-
-                    // Investment Advice
-                    _buildSecurityInfo(
-                        "Investment Advice:", investmentRecommendation),
-
-                    const SizedBox(height: 20),
-
-                    // Close Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.all(12),
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          "Close",
-                          style: TextStyle(
-                            color: _getRiskLevelMainColor(),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Floating Icon at the Top
-              Positioned(
-                top: -40,
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    _getRiskIcon(),
-                    size: 45,
-                    color: _getRiskLevelMainColor(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   void _fetchAndShowAiAnalysis() async {
+    setState(() {
+      isLoadingAiAnalysis = true;
+    });
     UserViewModel userViewModel =
         Provider.of<UserViewModel>(context, listen: false);
     final result =
         await userViewModel.fetchCoinAnalysis(coin: widget.coin);
     if (result != null && result['analysis'] != null) {
       aiAnalysis = result['analysis'];
-      _showAiDialog();
     }
+    setState(() {
+      isLoadingAiAnalysis = false;
+    });
   }
 
-  void _showAiDialog() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('AI Analysis'),
-            content: SingleChildScrollView(
-              child: Text(aiAnalysis?['HeadsUp'] ?? 'No analysis available'),
+  Widget _buildAiAnalysisSection() {
+    if (isLoadingAiAnalysis) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (aiAnalysis == null) {
+      return const SizedBox();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: aiAnalysis!.entries.map((entry) {
+        final value = entry.value;
+        if (value is Map) {
+          return _buildAnalysisCard(entry.key, value.cast<String, dynamic>());
+        }
+        return _buildDetailSection(entry.key, value.toString());
+      }).toList(),
+    );
+  }
+
+  Widget _buildAnalysisCard(String title, Map<String, dynamic> data) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'))
-            ],
-          );
-        });
-  }
-
-  /// 🔹 Get Risk Level Color
-  List<Color> _getRiskLevelColor() {
-    if (riskLevel <= 25) {
-      return [Colors.redAccent, Colors.red]; // High risk (0 to 25)
-    } else if (riskLevel <= 50) {
-      return [Colors.orangeAccent, Colors.orange]; // Medium risk (26 to 50)
-    } else {
-      return [Colors.greenAccent, Colors.green]; // Low risk (51 and above)
-    }
-  }
-
-  /// 🔹 Get Risk Level Main Color
-  Color _getRiskLevelMainColor() {
-    if (riskLevel <= 25) {
-      return Colors.red;
-    } else if (riskLevel <= 50) {
-      return Colors.orange;
-    } else {
-      return Colors.green;
-    }
-  }
-
-  /// 🔹 Get Risk Icon
-  IconData _getRiskIcon() {
-    if (riskLevel <= 25) {
-      return Icons.warning_amber_rounded;
-    } else if (riskLevel <= 50) {
-      return Icons.info_outline;
-    } else {
-      return Icons.check_circle;
-    }
-  }
-
-  /// 🔹 Builds Security Info with Icons & Styling
-  Widget _buildSecurityInfo(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle_outline, color: Colors.white, size: 22),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              "$title $value",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            ...data.entries.map((e) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          e.key,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(e.value.toString()),
+                      ),
+                    ],
+                  ),
+                ))
+          ],
+        ),
       ),
     );
   }
