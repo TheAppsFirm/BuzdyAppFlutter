@@ -689,7 +689,7 @@ Future getAllProductsWithFilters({
   }
 
   Future<Map<String, dynamic>?> fetchCoinAnalysis({required CoinModel coin}) async {
-    final url = Uri.parse('https://api.buzdy.com/coinanalysis');
+    final url = Uri.parse('https://api.buzdy.com/coinanalysis?isPremium=true');
     Map<String, dynamic> body = {
       "crypto": {
         "name": coin.name,
@@ -720,6 +720,38 @@ Future getAllProductsWithFilters({
       UIHelper.showMySnak(
           title: "ERROR",
           message: "Failed to fetch analysis: ${response.statusCode}",
+          isError: true);
+      return null;
+    }
+  }
+
+  /// Fetch detailed coin information from LiveCoinWatch
+  Future<CoinModel?> fetchCoinDetail(String symbol) async {
+    final url = Uri.parse('https://api.livecoinwatch.com/coins/single');
+    const apiKey = '6170a07c-9d50-4fc1-89bc-3a9e7030751c';
+    final body = jsonEncode({
+      "currency": "USD",
+      "code": symbol.toUpperCase(),
+      "meta": true
+    });
+
+    _logRequest('POST', url.toString(), payload: body);
+
+    final response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
+        },
+        body: body);
+
+    _logResponse(url.toString(), jsonDecode(response.body), statusCode: response.statusCode);
+
+    if (response.statusCode == 200) {
+      return CoinModel.fromJson(jsonDecode(response.body));
+    } else {
+      UIHelper.showMySnak(
+          title: "ERROR",
+          message: "Failed to load coin details: ${response.statusCode}",
           isError: true);
       return null;
     }
