@@ -21,7 +21,7 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     _pageController = PageController(initialPage: widget.initialIndex);
     _controllers = widget.items
         .map((item) => YoutubePlayerController(
-              initialVideoId: item.id ?? '',
+              initialVideoId: item.videoId ?? '',
               flags: const YoutubePlayerFlags(autoPlay: false, mute: false),
             ))
         .toList();

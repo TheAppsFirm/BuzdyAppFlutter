@@ -47,19 +47,24 @@ class Item {
   final String? kind;
   final String? etag;
   final String? id;
+  final String? videoId;
   final Snippet? snippet;
 
   Item({
     this.kind,
     this.etag,
     this.id,
+    this.videoId,
     this.snippet,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
         kind: json["kind"] ?? "",
         etag: json["etag"] ?? "",
-        id: json["id"] ?? "",
+        id: json["id"] is String
+            ? json["id"]
+            : json["id"]?["playlistId"] ?? json["id"]?["videoId"] ?? "",
+        videoId: json["id"] is Map ? json["id"]?["videoId"] : json["id"],
         snippet:
             json["snippet"] != null ? Snippet.fromJson(json["snippet"]) : null,
       );
@@ -68,6 +73,7 @@ class Item {
         "kind": kind,
         "etag": etag,
         "id": id,
+        "videoId": videoId,
         "snippet": snippet?.toJson(),
       };
 }
