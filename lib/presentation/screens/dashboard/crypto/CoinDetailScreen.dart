@@ -80,8 +80,9 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                     borderRadius: BorderRadius.circular(15)),
                 child: InAppWebView(
                   initialUrlRequest: URLRequest(
-                      url: Uri.parse(
-                          'https://s.tradingview.com/widgetembed/?symbol=${widget.coin.symbol.toUpperCase()}USD&interval=D&theme=dark&hidesidetoolbar=1')),
+                    url: WebUri(
+                        'https://s.tradingview.com/widgetembed/?symbol=${widget.coin.symbol.toUpperCase()}USD&interval=D&theme=dark&hidesidetoolbar=1'),
+                  ),
                 ),
               ),
             ),
