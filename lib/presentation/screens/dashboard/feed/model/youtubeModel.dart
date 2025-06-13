@@ -63,8 +63,12 @@ class Item {
         etag: json["etag"] ?? "",
         id: json["id"] is String
             ? json["id"]
-            : json["id"]?["playlistId"] ?? json["id"]?["videoId"] ?? "",
-        videoId: json["id"] is Map ? json["id"]?["videoId"] : json["id"],
+            : (json["id"] as Map?)?['playlistId'] ??
+                (json["id"] as Map?)?['videoId'] ??
+                "",
+        videoId: json["id"] is Map
+            ? (json["id"] as Map?)?['videoId']
+            : json["id"],
         snippet:
             json["snippet"] != null ? Snippet.fromJson(json["snippet"]) : null,
       );
