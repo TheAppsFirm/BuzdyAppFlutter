@@ -19,8 +19,8 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
-class UserViewModel extends ChangeNotifier {
+import 'base_view_model.dart';
+class UserViewModel extends BaseViewModel {
   List<Map<String, dynamic>> listCoins = [];
   List<Bank> bankList = [];
   int bankcurrentPage = 1;
@@ -86,58 +86,61 @@ class UserViewModel extends ChangeNotifier {
   }
 
   Future login({dynamic payload}) async {
-    AuthHttpApiRepository repository = AuthHttpApiRepository();
-    easyLoadingStart();
+    final repository = AuthHttpApiRepository();
     _logRequest('POST', 'login', payload: payload);
-
-    ApiResponse res = await repository.loginApi(payload);
-    Responses ress = res.data;
-    _logResponse('login', ress.data, statusCode: ress.status);
-
-    if (ress.status == 1) {
-      easyLoadingStop();
-      UIHelper.showMySnak(title: "Buzdy", message: "Login successfully", isError: false);
-      userModel = UserModelData.fromJson(ress.data);
-      await savetoken(token: ress.data['token'].toString());
-      await saveUserId(userId: ress.data['id'].toString());
-      Get.offAll(() => DashboardScreen());
-      notifyListeners();
-    } else {
-      easyLoadingStop();
-      UIHelper.showMySnak(title: "ERROR", message: ress.message.toString(), isError: true);
+    setLoading(true);
+    try {
+      final res = await repository.loginApi(payload);
+      Responses ress = res.data;
+      _logResponse('login', ress.data, statusCode: ress.status);
+      if (ress.status == 1) {
+        UIHelper.showMySnak(title: "Buzdy", message: "Login successfully", isError: false);
+        userModel = UserModelData.fromJson(ress.data);
+        await savetoken(token: ress.data['token'].toString());
+        await saveUserId(userId: ress.data['id'].toString());
+        Get.offAll(() => DashboardScreen());
+        setMessage("Login successful");
+      } else {
+        setError(ress.message);
+        UIHelper.showMySnak(title: "ERROR", message: ress.message.toString(), isError: true);
+      }
+    } catch (e) {
+      setError(e.toString());
+      UIHelper.showMySnak(title: "ERROR", message: "Login failed: $e", isError: true);
+    } finally {
+      setLoading(false);
     }
   }
 
   Future register({dynamic payload}) async {
-    AuthHttpApiRepository repository = AuthHttpApiRepository();
-    easyLoadingStart();
+    final repository = AuthHttpApiRepository();
     _logRequest('POST', 'register', payload: payload);
-
+    setLoading(true);
     try {
-      ApiResponse res = await repository.registerApi(payload);
+      final res = await repository.registerApi(payload);
       if (res.data == null) {
-        easyLoadingStop();
+        setError('Unexpected error. Please try again.');
         UIHelper.showMySnak(title: "ERROR", message: "Unexpected error. Please try again.", isError: true);
         return;
       }
       Responses ress = res.data;
       _logResponse('register', ress.data, statusCode: ress.status);
-
       if (ress.status == 1) {
-        easyLoadingStop();
         UIHelper.showMySnak(title: "Buzdy", message: ress.message ?? "Signup successful", isError: false);
         userModel = UserModelData.fromJson(ress.data);
         await savetoken(token: ress.data['token'].toString());
         await saveUserId(userId: ress.data['id'].toString());
         Get.offAll(() => DashboardScreen());
-        notifyListeners();
+        setMessage("Signup successful");
       } else {
-        easyLoadingStop();
+        setError(ress.message);
         UIHelper.showMySnak(title: "ERROR", message: ress.message ?? "Something went wrong", isError: true);
       }
     } catch (e) {
-      easyLoadingStop();
+      setError(e.toString());
       UIHelper.showMySnak(title: "ERROR", message: "An unexpected error occurred: $e", isError: true);
+    } finally {
+      setLoading(false);
     }
   }
 

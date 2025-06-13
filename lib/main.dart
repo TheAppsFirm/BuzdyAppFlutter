@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: lightTheme,
         darkTheme: darkTheme,
+        themeMode: ThemeMode.system,
         home: SplashScreen(),
         builder: EasyLoading.init(),
       ),
