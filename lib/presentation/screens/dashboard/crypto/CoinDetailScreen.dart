@@ -74,19 +74,6 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             ),
             UIHelper.verticalSpaceSm10,
 
-            // Description from API when available
-            if (((widget.coin.description.trim().isNotEmpty &&
-                        widget.coin.description != 'No description available') ||
-                    (extraDescription != null && extraDescription!.isNotEmpty)))
-              _buildDetailSection(
-                "Description",
-                widget.coin.description.trim().isNotEmpty &&
-                        widget.coin.description != 'No description available'
-                    ? widget.coin.description
-                    : extraDescription ?? '',
-                maxLines: 3,
-              ),
-
             // TradingView Chart (only if a valid code or symbol is available)
             if ((widget.coin.code ?? widget.coin.symbol).trim().isNotEmpty &&
                 (widget.coin.code ?? widget.coin.symbol).toUpperCase() != 'N/A')
@@ -100,10 +87,12 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15)),
                       child: InAppWebView(
+                        // Build the symbol and encode it for the TradingView URL
                         initialUrlRequest: URLRequest(
                           url: WebUri(
                             'https://s.tradingview.com/widgetembed/'
-                            '?symbol=${_encodedTradingViewSymbol()}'
+                            '?symbol='
+                            '${Uri.encodeComponent('BINANCE:${(widget.coin.code ?? widget.coin.symbol).toUpperCase()}USDT')}'
                             '&interval=D'
                             '&theme=dark'
                             '&hidesidetoolbar=1',
@@ -121,6 +110,19 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                     ),
                   ],
                 ),
+              ),
+            UIHelper.verticalSpaceSm20,
+
+            // Description from API when available (full text below the chart)
+            if (((widget.coin.description.trim().isNotEmpty &&
+                        widget.coin.description != 'No description available') ||
+                    (extraDescription != null && extraDescription!.isNotEmpty)))
+              _buildDetailSection(
+                "Description",
+                widget.coin.description.trim().isNotEmpty &&
+                        widget.coin.description != 'No description available'
+                    ? widget.coin.description
+                    : extraDescription ?? '',
               ),
             UIHelper.verticalSpaceSm20,
 
