@@ -59,7 +59,8 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             // Coin Name & Symbol
             Center(
               child: kText(
-                text: "${widget.coin.name} (${widget.coin.symbol})",
+                text:
+                    "${widget.coin.name} (${widget.coin.code ?? widget.coin.symbol})",
                 fSize: 22.0,
                 fWeight: FontWeight.bold,
                 tColor: mainBlackcolor,
@@ -71,9 +72,9 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             if (widget.coin.description.trim().isNotEmpty)
               _buildDetailSection("Description", widget.coin.description),
 
-            // TradingView Chart (only if symbol is available)
-            if (widget.coin.symbol.trim().isNotEmpty &&
-                widget.coin.symbol.toUpperCase() != 'N/A')
+            // TradingView Chart (only if a valid code or symbol is available)
+            if ((widget.coin.code ?? widget.coin.symbol).trim().isNotEmpty &&
+                (widget.coin.code ?? widget.coin.symbol).toUpperCase() != 'N/A')
               SizedBox(
                 height: 300,
                 child: Card(

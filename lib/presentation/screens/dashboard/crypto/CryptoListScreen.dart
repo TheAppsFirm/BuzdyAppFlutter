@@ -123,8 +123,8 @@ class _CryptoListView extends StatelessWidget {
                   return InkWell(
                     onTap: () async {
                       userViewModel.easyLoadingStart();
-                      final detail =
-                          await userViewModel.fetchCoinDetail(coin.symbol);
+                      final detail = await userViewModel
+                          .fetchCoinDetail(coin.code ?? coin.symbol);
                       userViewModel.easyLoadingStop();
                       if (detail != null) {
                         Get.to(CoinDetailScreen(coin: detail));
@@ -190,9 +190,12 @@ class _CryptoListView extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        coin.symbol.trim().isNotEmpty
-                                            ? coin.symbol
-                                            : "N/A",
+                                        coin.code != null &&
+                                                coin.code!.trim().isNotEmpty
+                                            ? coin.code!
+                                            : (coin.symbol.trim().isNotEmpty
+                                                ? coin.symbol
+                                                : "N/A"),
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.grey,
