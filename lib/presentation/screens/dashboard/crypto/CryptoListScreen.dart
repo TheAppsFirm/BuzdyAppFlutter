@@ -121,8 +121,14 @@ class _CryptoListView extends StatelessWidget {
                   }
                   final coin = userViewModel.coins[index];
                   return InkWell(
-                    onTap: () {
-                      Get.to(CoinDetailScreen(coin: coin));
+                    onTap: () async {
+                      userViewModel.easyLoadingStart();
+                      final detail =
+                          await userViewModel.fetchCoinDetail(coin.symbol);
+                      userViewModel.easyLoadingStop();
+                      if (detail != null) {
+                        Get.to(CoinDetailScreen(coin: detail));
+                      }
                     },
                     child: Card(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),

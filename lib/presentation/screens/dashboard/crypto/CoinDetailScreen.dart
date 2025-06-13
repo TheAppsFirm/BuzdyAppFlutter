@@ -10,6 +10,7 @@ import 'package:buzdy/presentation/widgets/customText.dart';
 import 'package:buzdy/core/ui_helpers.dart';
 import 'package:buzdy/presentation/widgets/CustomButton.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class CoinDetailScreen extends StatefulWidget {
   final CoinModel coin;
@@ -72,8 +73,37 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             // Description
             _buildDetailSection("Description", widget.coin.description),
 
+            // TradingView Chart
+            SizedBox(
+              height: 300,
+              child: Card(
+                clipBehavior: Clip.antiAlias,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                child: InAppWebView(
+                  initialUrlRequest: URLRequest(
+                      url: Uri.parse(
+                          'https://s.tradingview.com/widgetembed/?symbol=${widget.coin.symbol.toUpperCase()}USD&interval=D&theme=dark&hidesidetoolbar=1')),
+                ),
+              ),
+            ),
+            UIHelper.verticalSpaceSm20,
+
+            Center(
+              child: CustomButton(
+                color: appButtonColor,
+                () => _fetchAndShowAiAnalysis(),
+                text: "AI Analysis",
+              ),
+            ),
+            UIHelper.verticalSpaceSm10,
+            _buildAiAnalysisSection(),
+            UIHelper.verticalSpaceSm20,
+
             // Market Cap
-            _buildDetailSection("Market Cap",
+            _buildDetailSection(
+                "Market Cap",
                 "\$${widget.coin.usdMarketCap.toStringAsFixed(2)}"),
 
             // Website
@@ -94,19 +124,6 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
             // Created Timestamp
             _buildDetailSection(
                 "Created", _formatDate(widget.coin.createdTimestamp)),
-
-            UIHelper.verticalSpaceSm20,
-
-            Center(
-              child: CustomButton(
-                color: appButtonColor,
-                () => _fetchAndShowAiAnalysis(),
-                text: "AI Analysis",
-                isLoading: isLoadingAiAnalysis,
-              ),
-            ),
-            UIHelper.verticalSpaceSm10,
-            _buildAiAnalysisSection(),
           ],
         ),
       ),
