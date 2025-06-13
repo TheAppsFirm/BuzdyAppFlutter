@@ -1,6 +1,3 @@
-//////
-///
-library;
 import 'package:buzdy/presentation/screens/dashboard/crypto/model.dart/coinModel.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/presentation/widgets/appBar.dart';
@@ -92,8 +89,8 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
 
             Center(
               child: CustomButton(
-                color: appButtonColor,
                 () => _fetchAndShowAiAnalysis(),
+                color: appButtonColor,
                 text: "AI Analysis",
               ),
             ),
