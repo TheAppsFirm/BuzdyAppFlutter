@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../../../services/video_downloader.dart';
+import '../../../../services/video_downloader.dart';
 import 'model/youtubeModel.dart';
 
 class ShortsFeedPlayer extends StatefulWidget {
