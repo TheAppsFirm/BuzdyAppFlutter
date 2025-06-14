@@ -25,19 +25,20 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       EasyLoading.showError('Unable to share this video');
       return;
     }
-    final url = 'https://youtu.be/$id';
+
+    final uri = Uri.parse('https://youtu.be/$id');
 
     try {
       if (Platform.isIOS) {
         final box = context.findRenderObject() as RenderBox?;
-        await Share.share(
-          url,
+        await Share.shareUri(
+          uri,
           sharePositionOrigin: box == null
               ? Rect.fromLTWH(0, 0, 1, 1)
               : box.localToGlobal(Offset.zero) & box.size,
         );
       } else {
-        await Share.share(url);
+        await Share.shareUri(uri);
       }
     } catch (e) {
       EasyLoading.showError('Sharing not available');
