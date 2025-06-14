@@ -19,7 +19,7 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
   late PageController _pageController;
   late List<YoutubePlayerController> _controllers;
 
-  Future<void> _shareVideo(int index) async {
+  void _shareVideo(int index) {
     final id = widget.items[index].videoId;
     if (id == null || id.isEmpty) {
       EasyLoading.showError('Unable to share this video');
@@ -28,15 +28,9 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
 
     final url = 'https://youtu.be/$id';
 
-    final params = ShareParams(
-      text: url,
-      subject: 'Check out this video',
-    );
-    try {
-      await SharePlus.instance.share(params);
-    } catch (e) {
+    Share.share(url, subject: 'Check out this video').catchError((e) {
       EasyLoading.showError('Sharing not available');
-    }
+    });
   }
 
   Future<void> _downloadVideo(int index) async {

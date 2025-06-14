@@ -21,18 +21,12 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late YoutubePlayerController _controller;
 
-  Future<void> _shareVideo() async {
+  void _shareVideo() {
     final videoUrl = 'https://www.youtube.com/watch?v=${widget.videoId}';
     final title = widget.videoTitle ?? 'Check out this video';
-    final params = ShareParams(
-      text: '$title\n$videoUrl',
-      subject: title,
-    );
-    try {
-      await SharePlus.instance.share(params);
-    } catch (_) {
+    Share.share('$title\n$videoUrl', subject: title).catchError((_) {
       EasyLoading.showError('Sharing not available');
-    }
+    });
   }
 
   Future<void> _downloadVideo() async {
