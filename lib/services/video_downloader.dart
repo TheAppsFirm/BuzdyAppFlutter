@@ -11,6 +11,7 @@ class VideoDownloader {
   /// on success. Displays an error using [EasyLoading] on failure.
   static Future<String?> download(String videoId) async {
     try {
+      EasyLoading.show(status: 'Downloading...');
       final status = await Permission.storage.request();
       if (!status.isGranted) {
         EasyLoading.showError('Storage permission denied');
@@ -31,11 +32,12 @@ class VideoDownloader {
       await output.close();
       // Close the YoutubeExplode client to free resources.
       yt.close();
-
       EasyLoading.showSuccess('Video downloaded');
+      EasyLoading.dismiss();
       return filePath;
     } catch (e) {
       EasyLoading.showError('Download failed: $e');
+      EasyLoading.dismiss();
       return null;
     }
   }

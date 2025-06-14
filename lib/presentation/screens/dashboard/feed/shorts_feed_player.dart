@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../../services/video_downloader.dart';
 import 'model/youtubeModel.dart';
@@ -16,6 +17,25 @@ class ShortsFeedPlayer extends StatefulWidget {
 class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
   late PageController _pageController;
   late List<YoutubePlayerController> _controllers;
+
+  void _shareVideo(int index) {
+    final id = widget.items[index].videoId;
+    if (id == null || id.isEmpty) {
+      EasyLoading.showError('Unable to share this video');
+      return;
+    }
+    final url = 'https://youtu.be/$id';
+    Share.share(url);
+  }
+
+  Future<void> _downloadVideo(int index) async {
+    final id = widget.items[index].videoId;
+    if (id == null || id.isEmpty) {
+      EasyLoading.showError('Video not available');
+      return;
+    }
+    await VideoDownloader.download(id);
+  }
 
   @override
   void initState() {
@@ -87,18 +107,12 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
                         IconButton(
                           color: Colors.white,
                           icon: const Icon(Icons.share),
-                          onPressed: () {
-                            final url = 'https://youtu.be/${widget.items[index].videoId}';
-                            Share.share(url);
-                          },
+                          onPressed: () => _shareVideo(index),
                         ),
                         IconButton(
                           color: Colors.white,
                           icon: const Icon(Icons.download),
-                          onPressed: () async {
-                            final id = widget.items[index].videoId ?? '';
-                            await VideoDownloader.download(id);
-                          },
+                          onPressed: () => _downloadVideo(index),
                         ),
                       ],
                     ),
