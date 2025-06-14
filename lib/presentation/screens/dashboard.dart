@@ -2,7 +2,6 @@ import 'package:buzdy/presentation/screens/dashboard/crypto/CryptoScreen.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/feed.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/bank.dart';
 import 'package:buzdy/presentation/screens/dashboard/products/products.dart';
-import 'package:buzdy/presentation/screens/dashboard/profile.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/core/colors.dart';
 import 'package:buzdy/core/text_styles.dart';
@@ -22,12 +21,12 @@ class _DashBoradState extends State<DashBorad> {
   int _selectedIndex = 0;
   late PageController _pageController;
 
+  // Show only four tabs in the bottom navigation bar.
   final List<Widget> _pages = const [
     CryptoScreen(),
     HomeScreen(),
     ProductsScreen(),
     FeedScreen(),
-    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -94,11 +93,6 @@ class _DashBoradState extends State<DashBorad> {
                 icon: iconShow(image: 'images/youtube.png'),
                 label: 'Feed'.tr,
                 activeIcon: activeIcon(image: 'images/youtube.png'),
-              ),
-              BottomNavigationBarItem(
-                icon: iconShow(image: 'images/user.png'),
-                label: 'Profile'.tr,
-                activeIcon: activeIcon(image: 'images/user.png'),
               ),
             ],
           ),
