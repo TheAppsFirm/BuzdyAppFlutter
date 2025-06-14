@@ -29,7 +29,8 @@ class VideoDownloader {
       await stream.pipe(output);
       await output.flush();
       await output.close();
-      await yt.close();
+      // Close the YoutubeExplode client to free resources.
+      yt.close();
 
       EasyLoading.showSuccess('Video downloaded');
       return filePath;
