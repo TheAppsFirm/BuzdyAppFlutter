@@ -4,7 +4,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 /// Utility class to download YouTube videos to a temporary directory.
 class VideoDownloader {
@@ -56,8 +56,8 @@ class VideoDownloader {
       await output.close();
       yt.close();
 
-      final result = await ImageGallerySaver.saveFile(filePath);
-      if (result == null || result['isSuccess'] != true) {
+      final saved = await GallerySaver.saveVideo(filePath);
+      if (saved != true) {
         EasyLoading.showError('Failed to save to gallery');
         return null;
       }
