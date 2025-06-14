@@ -25,7 +25,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     final videoUrl = 'https://www.youtube.com/watch?v=${widget.videoId}';
     final title = widget.videoTitle ?? 'Check out this video';
     try {
-      await Share.share('$title\n$videoUrl', subject: title);
+      final params = ShareParams(text: '$title\n$videoUrl', subject: title);
+      await SharePlus.instance.share(params);
     } catch (_) {
       EasyLoading.showError('Sharing not available');
     }
