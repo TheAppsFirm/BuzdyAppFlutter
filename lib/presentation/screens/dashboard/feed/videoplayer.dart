@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../../services/video_downloader.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:buzdy/services/video_downloader.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoId;
@@ -24,11 +24,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void _shareVideo() {
     final videoUrl = 'https://www.youtube.com/watch?v=${widget.videoId}';
     final title = widget.videoTitle ?? 'Check out this video';
-    Share.share('$title\n$videoUrl', subject: title).catchError((_) async {
-      final uri = Uri.parse(videoUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+    Share.share('$title\n$videoUrl', subject: title).catchError((_) {
+      EasyLoading.showError('Sharing not available');
     });
   }
 

@@ -3,8 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../../services/video_downloader.dart';
+import 'package:buzdy/services/video_downloader.dart';
 import 'model/youtubeModel.dart';
 
 class ShortsFeedPlayer extends StatefulWidget {
@@ -32,12 +31,7 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     try {
       await Share.share(url);
     } catch (e) {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        EasyLoading.showError('Sharing not available');
-      }
+      EasyLoading.showError('Sharing not available');
     }
   }
 
