@@ -27,16 +27,20 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     }
     final url = 'https://youtu.be/$id';
 
-    if (Platform.isIOS) {
-      final box = context.findRenderObject() as RenderBox?;
-      await Share.share(
-        url,
-        sharePositionOrigin: box == null
-            ? Rect.fromLTWH(0, 0, 1, 1)
-            : box.localToGlobal(Offset.zero) & box.size,
-      );
-    } else {
-      await Share.share(url);
+    try {
+      if (Platform.isIOS) {
+        final box = context.findRenderObject() as RenderBox?;
+        await Share.share(
+          url,
+          sharePositionOrigin: box == null
+              ? Rect.fromLTWH(0, 0, 1, 1)
+              : box.localToGlobal(Offset.zero) & box.size,
+        );
+      } else {
+        await Share.share(url);
+      }
+    } catch (e) {
+      EasyLoading.showError('Sharing not available');
     }
   }
 
