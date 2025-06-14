@@ -29,11 +29,10 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     final url = 'https://youtu.be/$id';
 
     try {
-      final params = ShareParams(
-        text: url,
+      await Share.share(
+        url,
         subject: 'Check out this video',
       );
-      await SharePlus.instance.share(params);
     } catch (e) {
       EasyLoading.showError('Sharing not available');
     }
