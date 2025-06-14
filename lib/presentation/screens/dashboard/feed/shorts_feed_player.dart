@@ -29,17 +29,13 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     final uri = Uri.parse('https://youtu.be/$id');
 
     try {
-      if (Platform.isIOS) {
-        final box = context.findRenderObject() as RenderBox?;
-        await Share.shareUri(
-          uri,
-          sharePositionOrigin: box == null
-              ? Rect.fromLTWH(0, 0, 1, 1)
-              : box.localToGlobal(Offset.zero) & box.size,
-        );
-      } else {
-        await Share.shareUri(uri);
-      }
+      final box = context.findRenderObject() as RenderBox?;
+      await Share.share(
+        uri.toString(),
+        sharePositionOrigin: box == null
+            ? Rect.fromLTWH(0, 0, 1, 1)
+            : box.localToGlobal(Offset.zero) & box.size,
+      );
     } catch (e) {
       EasyLoading.showError('Sharing not available');
     }
