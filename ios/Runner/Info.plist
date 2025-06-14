@@ -43,7 +43,10 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
+        <key>UIApplicationSupportsIndirectInputEvents</key>
+        <true/>
+        <!-- Permission message for saving downloaded videos -->
+        <key>NSPhotoLibraryAddUsageDescription</key>
+        <string>Allow access to save videos to your photo library.</string>
 </dict>
 </plist>

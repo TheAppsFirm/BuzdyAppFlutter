@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../../../services/video_downloader.dart';
 import 'model/youtubeModel.dart';
 
 class ShortsFeedPlayer extends StatefulWidget {
@@ -15,6 +19,40 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
   late PageController _pageController;
   late List<YoutubePlayerController> _controllers;
 
+  Future<void> _shareVideo(int index) async {
+    final id = widget.items[index].videoId;
+    if (id == null || id.isEmpty) {
+      EasyLoading.showError('Unable to share this video');
+      return;
+    }
+    final url = 'https://youtu.be/$id';
+
+    try {
+      if (Platform.isIOS) {
+        final box = context.findRenderObject() as RenderBox?;
+        await Share.share(
+          url,
+          sharePositionOrigin: box == null
+              ? Rect.fromLTWH(0, 0, 1, 1)
+              : box.localToGlobal(Offset.zero) & box.size,
+        );
+      } else {
+        await Share.share(url);
+      }
+    } catch (e) {
+      EasyLoading.showError('Sharing not available');
+    }
+  }
+
+  Future<void> _downloadVideo(int index) async {
+    final id = widget.items[index].videoId;
+    if (id == null || id.isEmpty) {
+      EasyLoading.showError('Video not available');
+      return;
+    }
+    await VideoDownloader.download(id);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -22,14 +60,13 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     _controllers = widget.items
         .map((item) => YoutubePlayerController(
               initialVideoId: item.videoId ?? '',
-              flags: const YoutubePlayerFlags(autoPlay: false, mute: false),
+              flags: const YoutubePlayerFlags(
+                autoPlay: true,
+                mute: false,
+                forceHD: true,
+              ),
             ))
         .toList();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_controllers.isNotEmpty) {
-        _controllers[widget.initialIndex].play();
-      }
-    });
   }
 
   @override
@@ -57,6 +94,7 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       body: PageView.builder(
         controller: _pageController,
         scrollDirection: Axis.vertical,
+        physics: const BouncingScrollPhysics(),
         onPageChanged: _onPageChanged,
         itemCount: widget.items.length,
         itemBuilder: (context, index) {
@@ -72,9 +110,29 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
                 bottom: 20,
                 left: 20,
                 right: 20,
-                child: Text(
-                  title,
-                  style: const TextStyle(color: Colors.white),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.share),
+                          onPressed: () => _shareVideo(index),
+                        ),
+                        IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.download),
+                          onPressed: () => _downloadVideo(index),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
