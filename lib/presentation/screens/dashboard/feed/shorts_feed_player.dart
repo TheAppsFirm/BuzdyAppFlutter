@@ -19,23 +19,24 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
   late PageController _pageController;
   late List<YoutubePlayerController> _controllers;
 
-  void _shareVideo(int index) {
+  Future<void> _shareVideo(int index) async {
     final id = widget.items[index].videoId;
     if (id == null || id.isEmpty) {
       EasyLoading.showError('Unable to share this video');
       return;
     }
     final url = 'https://youtu.be/$id';
+
     if (Platform.isIOS) {
       final box = context.findRenderObject() as RenderBox?;
-      Share.share(
+      await Share.share(
         url,
         sharePositionOrigin: box == null
-            ? Rect.zero
+            ? Rect.fromLTWH(0, 0, 1, 1)
             : box.localToGlobal(Offset.zero) & box.size,
       );
     } else {
-      Share.share(url);
+      await Share.share(url);
     }
   }
 
