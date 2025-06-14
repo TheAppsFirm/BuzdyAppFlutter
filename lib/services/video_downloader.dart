@@ -11,34 +11,57 @@ class VideoDownloader {
   /// on success. Displays an error using [EasyLoading] on failure.
   static Future<String?> download(String videoId) async {
     try {
-      EasyLoading.show(status: 'Downloading...');
-      final status = await Permission.storage.request();
-      if (!status.isGranted) {
-        EasyLoading.showError('Storage permission denied');
-        return null;
+      EasyLoading.show(status: 'Preparing...');
+
+      Directory saveDir;
+      if (Platform.isAndroid) {
+        final perm = await Permission.storage.request();
+        if (!perm.isGranted) {
+          EasyLoading.showError('Storage permission denied');
+          return null;
+        }
+        saveDir = await getExternalStorageDirectory() ??
+            await getTemporaryDirectory();
+      } else if (Platform.isIOS) {
+        final perm = await Permission.photosAddOnly.request();
+        if (!perm.isGranted) {
+          EasyLoading.showError('Photo permission denied');
+          return null;
+        }
+        saveDir = await getApplicationDocumentsDirectory();
+      } else {
+        saveDir = await getTemporaryDirectory();
       }
 
       final yt = YoutubeExplode();
       final manifest = await yt.videos.streamsClient.getManifest(videoId);
       final streamInfo = manifest.muxed.withHighestBitrate();
+      final total = streamInfo.size.totalBytes;
       final stream = yt.videos.streamsClient.get(streamInfo);
 
-      final dir = await getTemporaryDirectory();
-      final filePath = '${dir.path}/$videoId.mp4';
+      final filePath = '${saveDir.path}/$videoId.mp4';
       final file = File(filePath);
       final output = file.openWrite();
-      await stream.pipe(output);
+
+      var count = 0;
+      await for (final data in stream) {
+        count += data.length;
+        output.add(data);
+        final progress = count / total;
+        EasyLoading.showProgress(progress,
+            status: 'Downloading ${(progress * 100).toStringAsFixed(0)}%');
+      }
       await output.flush();
       await output.close();
-      // Close the YoutubeExplode client to free resources.
       yt.close();
-      EasyLoading.showSuccess('Video downloaded');
-      EasyLoading.dismiss();
+
+      EasyLoading.showSuccess('Saved to ${saveDir.path}');
       return filePath;
     } catch (e) {
       EasyLoading.showError('Download failed: $e');
-      EasyLoading.dismiss();
       return null;
+    } finally {
+      EasyLoading.dismiss();
     }
   }
 }

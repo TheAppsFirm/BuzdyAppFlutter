@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../../services/video_downloader.dart';
 import 'model/youtubeModel.dart';
@@ -25,7 +26,17 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       return;
     }
     final url = 'https://youtu.be/$id';
-    Share.share(url);
+    if (Platform.isIOS) {
+      final box = context.findRenderObject() as RenderBox?;
+      Share.share(
+        url,
+        sharePositionOrigin: box == null
+            ? Rect.zero
+            : box.localToGlobal(Offset.zero) & box.size,
+      );
+    } else {
+      Share.share(url);
+    }
   }
 
   Future<void> _downloadVideo(int index) async {
