@@ -63,6 +63,7 @@ dependencies:
   permission_handler: ^11.3.0
   path_provider: ^2.1.2
   youtube_explode_dart: ^2.0.2
+  gallery_saver: ^2.3.2
   
   
 

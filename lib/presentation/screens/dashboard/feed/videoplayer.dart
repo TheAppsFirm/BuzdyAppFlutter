@@ -33,7 +33,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   Future<void> _downloadVideo() async {
-    await VideoDownloader.download(widget.videoId);
+    final path = await VideoDownloader.download(widget.videoId);
+    if (path != null) {
+      EasyLoading.showSuccess('Video saved');
+    }
   }
 
   @override
