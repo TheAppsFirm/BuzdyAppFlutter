@@ -785,7 +785,7 @@ Future getAllProductsWithFilters({
   Future<void> fetchYoutubeShorts({bool isRefresh = false}) async {
     if (isFetchingShorts || !hasMoreShorts) return;
     isFetchingShorts = true;
-    notifyListeners();
+    setLoading(true);
 
     if (isRefresh) {
       nextPageTokenShorts = null;
@@ -815,13 +815,13 @@ Future getAllProductsWithFilters({
       UIHelper.showMySnak(title: "ERROR", message: "Failed to load YouTube shorts: ${response.statusCode}", isError: true);
     }
     isFetchingShorts = false;
-    notifyListeners();
+    setLoading(false);
   }
 
   Future<void> fetchYoutubeVideos({bool isRefresh = false}) async {
     if (isFetchingVideos || !hasMoreVideos) return;
     isFetchingVideos = true;
-    notifyListeners();
+    setLoading(true);
 
     if (isRefresh) {
       nextPageTokenVideos = null;
@@ -851,7 +851,7 @@ Future getAllProductsWithFilters({
       UIHelper.showMySnak(title: "ERROR", message: "Failed to load YouTube videos: ${response.statusCode}", isError: true);
     }
     isFetchingVideos = false;
-    notifyListeners();
+    setLoading(false);
   }
 
   Future<List<BubbleCoinModel>> fetchBubbleCoins() async {

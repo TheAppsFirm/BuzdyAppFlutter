@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
@@ -5,11 +6,15 @@ import 'constants.dart';
 final ColorScheme _lightColorScheme =
     ColorScheme.fromSeed(seedColor: kAppButtonColor);
 final ColorScheme _darkColorScheme =
-    ColorScheme.fromSeed(seedColor: kAppButtonColor, brightness: Brightness.dark);
+    ColorScheme.fromSeed(
+  seedColor: kAppButtonColor,
+  brightness: Brightness.dark,
+);
 
 ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   colorScheme: _lightColorScheme,
+  cupertinoOverrideTheme: const CupertinoThemeData(primaryColor: kAppButtonColor),
   scaffoldBackgroundColor: kWhiteColor,
   textTheme: GoogleFonts.poppinsTextTheme(),
   appBarTheme: AppBarTheme(
@@ -31,6 +36,13 @@ ThemeData lightTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
   ),
+  visualDensity: VisualDensity.adaptivePlatformDensity,
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: {
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+    },
+  ),
 );
 
 ThemeData darkTheme = ThemeData(
@@ -51,5 +63,12 @@ ThemeData darkTheme = ThemeData(
   ),
   inputDecorationTheme: InputDecorationTheme(
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+  ),
+  visualDensity: VisualDensity.adaptivePlatformDensity,
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: {
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+    },
   ),
 );

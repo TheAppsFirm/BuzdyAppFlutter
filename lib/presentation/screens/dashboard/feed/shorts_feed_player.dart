@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../../services/video_downloader.dart';
 import 'model/youtubeModel.dart';
 
 class ShortsFeedPlayer extends StatefulWidget {
@@ -23,17 +25,12 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
         .map((item) => YoutubePlayerController(
               initialVideoId: item.videoId ?? '',
               flags: const YoutubePlayerFlags(
-                autoPlay: false,
+                autoPlay: true,
                 mute: false,
                 forceHD: true,
               ),
             ))
         .toList();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_controllers.isNotEmpty) {
-        _controllers[widget.initialIndex].play();
-      }
-    });
   }
 
   @override
@@ -77,9 +74,35 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
                 bottom: 20,
                 left: 20,
                 right: 20,
-                child: Text(
-                  title,
-                  style: const TextStyle(color: Colors.white),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.share),
+                          onPressed: () {
+                            final url = 'https://youtu.be/${widget.items[index].videoId}';
+                            Share.share(url);
+                          },
+                        ),
+                        IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.download),
+                          onPressed: () async {
+                            final id = widget.items[index].videoId ?? '';
+                            await VideoDownloader.download(id);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
