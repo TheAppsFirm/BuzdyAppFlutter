@@ -19,8 +19,8 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
-class UserViewModel extends ChangeNotifier {
+import 'base_view_model.dart';
+class UserViewModel extends BaseViewModel {
   List<Map<String, dynamic>> listCoins = [];
   List<Bank> bankList = [];
   int bankcurrentPage = 1;
@@ -86,58 +86,61 @@ class UserViewModel extends ChangeNotifier {
   }
 
   Future login({dynamic payload}) async {
-    AuthHttpApiRepository repository = AuthHttpApiRepository();
-    easyLoadingStart();
+    final repository = AuthHttpApiRepository();
     _logRequest('POST', 'login', payload: payload);
-
-    ApiResponse res = await repository.loginApi(payload);
-    Responses ress = res.data;
-    _logResponse('login', ress.data, statusCode: ress.status);
-
-    if (ress.status == 1) {
-      easyLoadingStop();
-      UIHelper.showMySnak(title: "Buzdy", message: "Login successfully", isError: false);
-      userModel = UserModelData.fromJson(ress.data);
-      await savetoken(token: ress.data['token'].toString());
-      await saveUserId(userId: ress.data['id'].toString());
-      Get.offAll(() => DashboardScreen());
-      notifyListeners();
-    } else {
-      easyLoadingStop();
-      UIHelper.showMySnak(title: "ERROR", message: ress.message.toString(), isError: true);
+    setLoading(true);
+    try {
+      final res = await repository.loginApi(payload);
+      final Responses? ress = res.data;
+      _logResponse('login', ress?.data, statusCode: ress?.status);
+      if (ress != null && ress.status == 1) {
+        UIHelper.showMySnak(title: "Buzdy", message: "Login successfully", isError: false);
+        userModel = UserModelData.fromJson(ress.data);
+        await savetoken(token: ress.data['token'].toString());
+        await saveUserId(userId: ress.data['id'].toString());
+        Get.offAll(() => DashboardScreen());
+        setMessage("Login successful");
+      } else {
+        setError(ress?.message);
+        UIHelper.showMySnak(title: "ERROR", message: ress?.message.toString() ?? 'Login failed', isError: true);
+      }
+    } catch (e) {
+      setError(e.toString());
+      UIHelper.showMySnak(title: "ERROR", message: "Login failed: $e", isError: true);
+    } finally {
+      setLoading(false);
     }
   }
 
   Future register({dynamic payload}) async {
-    AuthHttpApiRepository repository = AuthHttpApiRepository();
-    easyLoadingStart();
+    final repository = AuthHttpApiRepository();
     _logRequest('POST', 'register', payload: payload);
-
+    setLoading(true);
     try {
-      ApiResponse res = await repository.registerApi(payload);
+      final res = await repository.registerApi(payload);
       if (res.data == null) {
-        easyLoadingStop();
+        setError('Unexpected error. Please try again.');
         UIHelper.showMySnak(title: "ERROR", message: "Unexpected error. Please try again.", isError: true);
         return;
       }
-      Responses ress = res.data;
-      _logResponse('register', ress.data, statusCode: ress.status);
-
-      if (ress.status == 1) {
-        easyLoadingStop();
+      final Responses? ress = res.data;
+      _logResponse('register', ress?.data, statusCode: ress?.status);
+      if (ress != null && ress.status == 1) {
         UIHelper.showMySnak(title: "Buzdy", message: ress.message ?? "Signup successful", isError: false);
         userModel = UserModelData.fromJson(ress.data);
         await savetoken(token: ress.data['token'].toString());
         await saveUserId(userId: ress.data['id'].toString());
         Get.offAll(() => DashboardScreen());
-        notifyListeners();
+        setMessage("Signup successful");
       } else {
-        easyLoadingStop();
-        UIHelper.showMySnak(title: "ERROR", message: ress.message ?? "Something went wrong", isError: true);
+        setError(ress?.message);
+        UIHelper.showMySnak(title: "ERROR", message: ress?.message ?? "Something went wrong", isError: true);
       }
     } catch (e) {
-      easyLoadingStop();
+      setError(e.toString());
       UIHelper.showMySnak(title: "ERROR", message: "An unexpected error occurred: $e", isError: true);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -152,16 +155,16 @@ class UserViewModel extends ChangeNotifier {
     AuthHttpApiRepository repository = AuthHttpApiRepository();
     ApiResponse res = await repository.getAllBanks(PageNumber: pageNumber);
 
-    if (res.status == Status.completed && res.data != null) {
-      Responses ress = res.data;
-      _logResponse('getAllBanks', ress.data, statusCode: ress.status);
+      if (res.status == Status.completed && res.data != null) {
+        final Responses? ress = res.data;
+        _logResponse('getAllBanks', ress?.data, statusCode: ress?.status);
 
-      if (ress.status == 1 && ress.data != null) {
-        try {
-          BankModel model = BankModel.fromJson({
-            "status": ress.status,
-            "message": ress.message,
-            "banks": ress.data,
+        if (ress != null && ress.status == 1 && ress.data != null) {
+          try {
+            BankModel model = BankModel.fromJson({
+              "status": ress.status,
+              "message": ress.message,
+              "banks": ress.data,
             "pagination": ress.pagination ?? {
               "page_no": pageNumber,
               "page_size": 10,
@@ -178,10 +181,10 @@ class UserViewModel extends ChangeNotifier {
           UIHelper.showMySnak(title: "ERROR", message: "Failed to parse bank data: $e", isError: true);
           bankhasMoreData = false;
         }
-      } else {
-        UIHelper.showMySnak(title: "ERROR", message: ress.message ?? "No banks found", isError: true);
-        bankhasMoreData = false;
-      }
+        } else {
+          UIHelper.showMySnak(title: "ERROR", message: ress?.message ?? "No banks found", isError: true);
+          bankhasMoreData = false;
+        }
     } else {
       UIHelper.showMySnak(title: "ERROR", message: res.message ?? "Failed to fetch banks", isError: true);
       bankhasMoreData = false;
@@ -220,16 +223,16 @@ class UserViewModel extends ChangeNotifier {
       pageSize: pageSize,
     );
 
-    if (res.status == Status.completed && res.data != null) {
-      Responses ress = res.data;
-      _logResponse('getBanksByCountry', ress.data, statusCode: ress.status);
+      if (res.status == Status.completed && res.data != null) {
+        final Responses? ress = res.data;
+        _logResponse('getBanksByCountry', ress?.data, statusCode: ress?.status);
 
-      if (ress.status == 1 && ress.data != null) {
-        try {
-          BankModel model = BankModel.fromJson({
-            "status": ress.status,
-            "message": ress.message,
-            "banks": ress.data,
+        if (ress != null && ress.status == 1 && ress.data != null) {
+          try {
+            BankModel model = BankModel.fromJson({
+              "status": ress.status,
+              "message": ress.message,
+              "banks": ress.data,
             "pagination": ress.pagination ?? {
               "page_no": pageNumber,
               "page_size": pageSize,
@@ -245,10 +248,10 @@ class UserViewModel extends ChangeNotifier {
           UIHelper.showMySnak(title: "ERROR", message: "Failed to parse bank data: $e", isError: true);
           bankhasMoreData = false;
         }
-      } else {
-        UIHelper.showMySnak(title: "ERROR", message: ress.message ?? "No banks found", isError: true);
-        bankhasMoreData = false;
-      }
+        } else {
+          UIHelper.showMySnak(title: "ERROR", message: ress?.message ?? "No banks found", isError: true);
+          bankhasMoreData = false;
+        }
     } else {
       UIHelper.showMySnak(title: "ERROR", message: res.message ?? "Failed to fetch banks", isError: true);
       bankhasMoreData = false;
@@ -269,16 +272,16 @@ class UserViewModel extends ChangeNotifier {
     AuthHttpApiRepository repository = AuthHttpApiRepository();
     ApiResponse res = await repository.getAllMerchants(PageNumber: pageNumber);
 
-    if (res.status == Status.completed && res.data != null) {
-      Responses ress = res.data;
-      _logResponse('getAllMerchants', ress.data, statusCode: ress.status);
+      if (res.status == Status.completed && res.data != null) {
+        final Responses? ress = res.data;
+        _logResponse('getAllMerchants', ress?.data, statusCode: ress?.status);
 
-      if (ress.status == 1 && ress.data != null) {
-        try {
-          MerchantModel model = MerchantModel.fromJson({
-            "status": ress.status,
-            "message": ress.message,
-            "merchants": ress.data,
+        if (ress != null && ress.status == 1 && ress.data != null) {
+          try {
+            MerchantModel model = MerchantModel.fromJson({
+              "status": ress.status,
+              "message": ress.message,
+              "merchants": ress.data,
             "pagination": ress.pagination ?? {
               "page_no": pageNumber,
               "page_size": 10,
@@ -295,10 +298,10 @@ class UserViewModel extends ChangeNotifier {
           UIHelper.showMySnak(title: "ERROR", message: "Failed to parse merchant data: $e", isError: true);
           merchanthasMoreData = false;
         }
-      } else {
-        UIHelper.showMySnak(title: "ERROR", message: ress.message ?? "No merchants found", isError: true);
-        merchanthasMoreData = false;
-      }
+        } else {
+          UIHelper.showMySnak(title: "ERROR", message: ress?.message ?? "No merchants found", isError: true);
+          merchanthasMoreData = false;
+        }
     } else {
       UIHelper.showMySnak(title: "ERROR", message: res.message ?? "Failed to fetch merchants", isError: true);
       merchanthasMoreData = false;
@@ -337,16 +340,16 @@ class UserViewModel extends ChangeNotifier {
       pageSize: pageSize,
     );
 
-    if (res.status == Status.completed && res.data != null) {
-      Responses ress = res.data;
-      _logResponse('getMerchantsByCountry', ress.data, statusCode: ress.status);
+      if (res.status == Status.completed && res.data != null) {
+        final Responses? ress = res.data;
+        _logResponse('getMerchantsByCountry', ress?.data, statusCode: ress?.status);
 
-      if (ress.status == 1 && ress.data != null) {
-        try {
-          MerchantModel model = MerchantModel.fromJson({
-            "status": ress.status,
-            "message": ress.message,
-            "merchants": ress.data,
+        if (ress != null && ress.status == 1 && ress.data != null) {
+          try {
+            MerchantModel model = MerchantModel.fromJson({
+              "status": ress.status,
+              "message": ress.message,
+              "merchants": ress.data,
             "pagination": ress.pagination ?? {
               "page_no": pageNumber,
               "page_size": pageSize,
@@ -362,10 +365,10 @@ class UserViewModel extends ChangeNotifier {
           UIHelper.showMySnak(title: "ERROR", message: "Failed to parse merchant data: $e", isError: true);
           merchanthasMoreData = false;
         }
-      } else {
-        UIHelper.showMySnak(title: "ERROR", message: ress.message ?? "No merchants found", isError: true);
-        merchanthasMoreData = false;
-      }
+        } else {
+          UIHelper.showMySnak(title: "ERROR", message: ress?.message ?? "No merchants found", isError: true);
+          merchanthasMoreData = false;
+        }
     } else {
       UIHelper.showMySnak(title: "ERROR", message: res.message ?? "Failed to fetch merchants", isError: true);
       merchanthasMoreData = false;
@@ -393,8 +396,8 @@ Future getAllProducts({required int pageNumber, int retryCount = 0}) async {
 
     if (res.status == Status.completed && res.data != null) {
       Map<String, dynamic> rawData;
-      if (res.data is Responses) {
-        Responses ress = res.data as Responses;
+        if (res.data is Responses) {
+          final Responses ress = res.data as Responses;
         rawData = {
           "status": ress.status,
           "message": ress.message,
@@ -515,8 +518,8 @@ Future getAllProductsWithFilters({
     print(
         "Filtered API Response Status: ${res.status}, Message: ${res.message}, Data type: ${res.data.runtimeType}");
 
-    if (res.status == Status.completed && res.data != null) {
-      Responses ress = res.data as Responses;
+      if (res.status == Status.completed && res.data != null) {
+        final Responses ress = res.data as Responses;
       _logResponse('getAllProductsWithFilters', ress.data,
           statusCode: ress.status);
 
@@ -673,13 +676,13 @@ Future getAllProductsWithFilters({
 
     AuthHttpApiRepository repository = AuthHttpApiRepository();
     ApiResponse res = await repository.checkCoinSecurity(securityToken: securityToken);
-    Responses ress = res.data;
+    final Responses? ress = res.data;
 
     InvestmentRanking? investmentRanking;
-    _logResponse('checkCoinSecurity', ress.data, statusCode: ress.status);
+    _logResponse('checkCoinSecurity', ress?.data, statusCode: ress?.status);
 
-    if (res.status == Status.completed && ress.status == 1) {
-      investmentRanking = InvestmentRanking.fromJson(ress.data["investmentRanking"]);
+    if (res.status == Status.completed && ress?.status == 1) {
+      investmentRanking = InvestmentRanking.fromJson(ress!.data["investmentRanking"]);
     } else {
       UIHelper.showMySnak(title: "ERROR", message: res.message.toString(), isError: true);
     }
@@ -782,7 +785,7 @@ Future getAllProductsWithFilters({
   Future<void> fetchYoutubeShorts({bool isRefresh = false}) async {
     if (isFetchingShorts || !hasMoreShorts) return;
     isFetchingShorts = true;
-    notifyListeners();
+    setLoading(true);
 
     if (isRefresh) {
       nextPageTokenShorts = null;
@@ -812,13 +815,13 @@ Future getAllProductsWithFilters({
       UIHelper.showMySnak(title: "ERROR", message: "Failed to load YouTube shorts: ${response.statusCode}", isError: true);
     }
     isFetchingShorts = false;
-    notifyListeners();
+    setLoading(false);
   }
 
   Future<void> fetchYoutubeVideos({bool isRefresh = false}) async {
     if (isFetchingVideos || !hasMoreVideos) return;
     isFetchingVideos = true;
-    notifyListeners();
+    setLoading(true);
 
     if (isRefresh) {
       nextPageTokenVideos = null;
@@ -848,7 +851,7 @@ Future getAllProductsWithFilters({
       UIHelper.showMySnak(title: "ERROR", message: "Failed to load YouTube videos: ${response.statusCode}", isError: true);
     }
     isFetchingVideos = false;
-    notifyListeners();
+    setLoading(false);
   }
 
   Future<List<BubbleCoinModel>> fetchBubbleCoins() async {

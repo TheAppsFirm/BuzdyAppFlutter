@@ -1,9 +1,7 @@
-import 'package:buzdy/presentation/screens/auth/login/login.dart';
 import 'package:buzdy/presentation/screens/dashboard.dart';
 import 'package:buzdy/core/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,16 +38,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? ""; // Retrieve saved token
-
-    if (token.isNotEmpty) {
-      Get.offAll(() => DashBorad(
-            index: 0,
-          )); // Navigate to HomeScreen if token exists
-    } else {
-      Get.offAll(() => LoginScreen()); // Navigate to LoginScreen otherwise
-    }
+    // Always navigate directly to the dashboard.  Authentication
+    // is temporarily disabled so we skip any token checks.
+    Get.offAll(() => const DashBorad(index: 0));
   }
 
   @override
