@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../services/video_downloader.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoId;
-  const VideoPlayerScreen({super.key, required this.videoId});
+  final String? videoTitle;
+
+  const VideoPlayerScreen({
+    super.key,
+    required this.videoId,
+    this.videoTitle,
+  });
 
   @override
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
@@ -11,6 +20,21 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late YoutubePlayerController _controller;
+
+  void _shareVideo() {
+    final videoUrl = 'https://www.youtube.com/watch?v=${widget.videoId}';
+    final title = widget.videoTitle ?? 'Check out this video';
+    Share.share('$title\n$videoUrl', subject: title).catchError((_) async {
+      final uri = Uri.parse(videoUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    });
+  }
+
+  Future<void> _downloadVideo() async {
+    await VideoDownloader.download(widget.videoId);
+  }
 
   @override
   void initState() {
@@ -27,7 +51,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Now Playing")),
+      appBar: AppBar(
+        title: const Text('Now Playing'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: _shareVideo,
+          ),
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: _downloadVideo,
+          ),
+        ],
+      ),
       body: Center(
         child: YoutubePlayer(
           controller: _controller,

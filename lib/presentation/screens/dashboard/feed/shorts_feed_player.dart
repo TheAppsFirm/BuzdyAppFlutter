@@ -3,6 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../services/video_downloader.dart';
 import 'model/youtubeModel.dart';
 
@@ -26,18 +27,17 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       return;
     }
 
-    final uri = Uri.parse('https://youtu.be/$id');
+    final url = 'https://youtu.be/$id';
 
     try {
-      final box = context.findRenderObject() as RenderBox?;
-      await Share.share(
-        uri.toString(),
-        sharePositionOrigin: box == null
-            ? Rect.fromLTWH(0, 0, 1, 1)
-            : box.localToGlobal(Offset.zero) & box.size,
-      );
+      await Share.share(url);
     } catch (e) {
-      EasyLoading.showError('Sharing not available');
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        EasyLoading.showError('Sharing not available');
+      }
     }
   }
 
