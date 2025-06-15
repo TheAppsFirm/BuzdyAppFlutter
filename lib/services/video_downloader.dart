@@ -18,7 +18,6 @@ class VideoDownloader {
 
       final tempDir = await getTemporaryDirectory();
       Directory saveDir = tempDir;
-      debugPrint('Using temporary directory: ${saveDir.path}');
 
       if (Platform.isAndroid) {
         var status = await Permission.videos.request();
@@ -37,6 +36,13 @@ class VideoDownloader {
           }
           return null;
         }
+
+        // use external storage if available
+        final externalDir = await getExternalStorageDirectory();
+        if (externalDir != null) {
+          saveDir = externalDir;
+          debugPrint('Using external directory: ${saveDir.path}');
+        }
       } else if (Platform.isIOS) {
         var status = await Permission.photosAddOnly.request();
         if (!status.isGranted) {
@@ -52,6 +58,9 @@ class VideoDownloader {
           }
           return null;
         }
+
+        saveDir = await getApplicationDocumentsDirectory();
+        debugPrint('Using documents directory: ${saveDir.path}');
       }
 
       final yt = YoutubeExplode();
