@@ -153,6 +153,11 @@ class VideoDownloader {
         await debugAvailableStreams(videoId);
 
         // Download separate video and audio streams then merge them
+        if (manifest.videoOnly.isEmpty || manifest.audioOnly.isEmpty) {
+          debugPrint('No separate video/audio streams available');
+          return null;
+        }
+
         final videoInfo = manifest.videoOnly.withHighestBitrate();
         final audioInfo = manifest.audioOnly.withHighestBitrate();
 
