@@ -87,7 +87,14 @@ class VideoDownloader {
 
       debugPrint('Using directory: ${saveDir.path}');
       final yt = YoutubeExplode();
-      final manifest = await yt.videos.streamsClient.getManifest(videoId);
+      StreamManifest manifest;
+      try {
+        manifest = await yt.videos.streamsClient.getManifest(videoId);
+      } catch (e) {
+        debugPrint('Failed to fetch stream manifest: $e');
+        yt.close();
+        return null;
+      }
       if (manifest.muxed.isEmpty) {
         debugPrint('Video stream not available');
         yt.close();
