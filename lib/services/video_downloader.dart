@@ -16,7 +16,12 @@ class VideoDownloader {
 
       Directory saveDir;
       if (Platform.isAndroid) {
-        final perm = await Permission.storage.request();
+        // Request the modern videos permission first (Android 13+)
+        var perm = await Permission.videos.request();
+        // Fallback to the old storage permission for older Android versions
+        if (!perm.isGranted) {
+          perm = await Permission.storage.request();
+        }
         if (!perm.isGranted) {
           EasyLoading.showError('Storage permission denied');
           return null;
@@ -56,7 +61,10 @@ class VideoDownloader {
       await output.close();
       yt.close();
 
-      final result = await ImageGallerySaverPlus.saveFile(filePath);
+      final result = await ImageGallerySaverPlus.saveFile(
+        filePath,
+        isReturnPathOfIOS: true,
+      );
       if (result['isSuccess'] != true) {
         EasyLoading.showError('Failed to save to gallery');
         return null;
