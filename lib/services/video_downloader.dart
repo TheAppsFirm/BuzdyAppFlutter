@@ -7,8 +7,37 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:flutter/foundation.dart';
 
-/// Utility class to download YouTube videos to a temporary directory.
+/// Utility class to download YouTube videos and keep them locally.
 class VideoDownloader {
+  /// Returns the directory where downloaded videos are stored locally.
+  static Future<Directory> _getSavedDir() async {
+    Directory base;
+    if (Platform.isAndroid) {
+      final ext = await getExternalStorageDirectory();
+      base = ext ?? await getTemporaryDirectory();
+    } else {
+      base = await getApplicationDocumentsDirectory();
+    }
+    final dir = Directory('${base.path}/saved_videos');
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
+  }
+
+  /// Lists all locally saved videos.
+  static Future<List<FileSystemEntity>> listSavedVideos() async {
+    final dir = await _getSavedDir();
+    final files = dir
+        .listSync()
+        .where((f) => f.path.toLowerCase().endsWith('.mp4'))
+        .toList();
+    files.sort((a, b) => FileStat.statSync(b.path)
+        .modified
+        .compareTo(FileStat.statSync(a.path).modified));
+    return files;
+  }
+
   /// Downloads the video for the given [videoId] and returns the file path
   /// on success. Displays an error using [EasyLoading] on failure.
   static Future<String?> download(String videoId) async {
@@ -16,8 +45,7 @@ class VideoDownloader {
       debugPrint('VideoDownloader: starting download for $videoId');
       EasyLoading.show(status: 'Preparing...');
 
-      final tempDir = await getTemporaryDirectory();
-      Directory saveDir = tempDir;
+      Directory saveDir = await _getSavedDir();
 
       if (Platform.isAndroid) {
         // Request the scoped videos permission on newer Android first
@@ -38,12 +66,7 @@ class VideoDownloader {
           return null;
         }
 
-        // use external storage if available
-        final externalDir = await getExternalStorageDirectory();
-        if (externalDir != null) {
-          saveDir = externalDir;
-          debugPrint('Using external directory: ${saveDir.path}');
-        }
+        debugPrint('Using directory: ${saveDir.path}');
       } else if (Platform.isIOS) {
         var status = await Permission.photosAddOnly.request();
         if (!status.isGranted) {
@@ -60,8 +83,7 @@ class VideoDownloader {
           return null;
         }
 
-        saveDir = await getApplicationDocumentsDirectory();
-        debugPrint('Using documents directory: ${saveDir.path}');
+        debugPrint('Using directory: ${saveDir.path}');
       }
 
       final yt = YoutubeExplode();
@@ -106,13 +128,7 @@ class VideoDownloader {
       final savedPath = result['filePath'] ?? result['file_path'];
       debugPrint('File saved to gallery path: $savedPath');
 
-      // Remove the temporary file once it has been added to the gallery
-      try {
-        await file.delete();
-        debugPrint('Temporary file deleted');
-      } catch (e) {
-        debugPrint('Failed to delete temp file: $e');
-      }
+
 
       EasyLoading.showSuccess('Video saved to gallery');
       return savedPath is String ? savedPath : filePath;
