@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -38,12 +37,14 @@ class VideoDownloader {
     return files;
   }
 
-  /// Downloads the video for the given [videoId] and returns the file path
-  /// on success. Displays an error using [EasyLoading] on failure.
-  static Future<String?> download(String videoId) async {
+  /// Downloads the video for the given [videoId] and returns the file path on
+  /// success. Progress updates are reported through [onProgress].
+  static Future<String?> download(
+    String videoId, {
+    void Function(double progress)? onProgress,
+  }) async {
     try {
       debugPrint('VideoDownloader: starting download for $videoId');
-      EasyLoading.show(status: 'Preparing...');
 
       Directory saveDir = await _getSavedDir();
 
@@ -57,12 +58,9 @@ class VideoDownloader {
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
-            EasyLoading.showError(
-                'Please enable video access in settings');
             await openAppSettings();
-          } else {
-            EasyLoading.showError('Storage permission denied');
           }
+          debugPrint('Storage permission denied');
           return null;
         }
 
@@ -74,12 +72,9 @@ class VideoDownloader {
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
-            EasyLoading.showError(
-                'Please enable photo access in Settings');
             await openAppSettings();
-          } else {
-            EasyLoading.showError('Photo permission denied');
           }
+          debugPrint('Photo permission denied');
           return null;
         }
 
@@ -89,7 +84,7 @@ class VideoDownloader {
       final yt = YoutubeExplode();
       final manifest = await yt.videos.streamsClient.getManifest(videoId);
       if (manifest.muxed.isEmpty) {
-        EasyLoading.showError('Video stream not available');
+        debugPrint('Video stream not available');
         yt.close();
         return null;
       }
@@ -108,8 +103,7 @@ class VideoDownloader {
         count += data.length;
         output.add(data);
         final progress = count / total;
-        EasyLoading.showProgress(progress,
-            status: 'Downloading ${(progress * 100).toStringAsFixed(0)}%');
+        if (onProgress != null) onProgress(progress);
         debugPrint('Download progress ${(progress * 100).toStringAsFixed(0)}%');
       }
       await output.flush();
@@ -122,7 +116,7 @@ class VideoDownloader {
       );
       debugPrint('Gallery save result: $result');
       if (result['isSuccess'] != true) {
-        EasyLoading.showError('Failed to save to gallery');
+        debugPrint('Failed to save to gallery');
         return null;
       }
 
@@ -131,15 +125,12 @@ class VideoDownloader {
 
 
 
-      EasyLoading.showSuccess('Video saved to gallery');
       return savedPath is String ? savedPath : filePath;
     } catch (e) {
       debugPrint('VideoDownloader error: $e');
-      EasyLoading.showError('Download failed: $e');
       return null;
     } finally {
       debugPrint('VideoDownloader finished');
-      EasyLoading.dismiss();
     }
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:buzdy/services/video_downloader.dart';
 import 'package:buzdy/core/utils.dart';
 
@@ -32,15 +31,23 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         subject: title,
       );
     } catch (_) {
-      EasyLoading.showError('Sharing not available');
+      showAppSnackBar(context, 'Sharing not available', isError: true);
     }
   }
 
+  double? _downloadProgress;
+
   Future<void> _downloadVideo() async {
-    showAppSnackBar(context, 'Downloading video...');
-    final path = await VideoDownloader.download(widget.videoId);
+    setState(() => _downloadProgress = 0);
+    final path = await VideoDownloader.download(
+      widget.videoId,
+      onProgress: (p) => setState(() => _downloadProgress = p),
+    );
+    setState(() => _downloadProgress = null);
     if (path != null) {
       showAppSnackBar(context, 'Video saved to gallery');
+    } else {
+      showAppSnackBar(context, 'Download failed', isError: true);
     }
   }
 
@@ -62,6 +69,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
+          if (_downloadProgress != null)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(value: _downloadProgress),
+            ),
           Positioned.fill(
             child: YoutubePlayer(
               controller: _controller,

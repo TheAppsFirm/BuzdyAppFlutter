@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:buzdy/core/utils.dart';
 import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -23,7 +22,7 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
   Future<void> _shareVideo(int index) async {
     final id = widget.items[index].videoId;
     if (id == null || id.isEmpty) {
-      EasyLoading.showError('Unable to share this video');
+      showAppSnackBar(context, 'Unable to share this video', isError: true);
       return;
     }
 
@@ -35,20 +34,28 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
         subject: 'Check out this video',
       );
     } catch (e) {
-      EasyLoading.showError('Sharing not available');
+      showAppSnackBar(context, 'Sharing not available', isError: true);
     }
   }
+
+  double? _downloadProgress;
 
   Future<void> _downloadVideo(int index) async {
     final id = widget.items[index].videoId;
     if (id == null || id.isEmpty) {
-      EasyLoading.showError('Video not available');
+      showAppSnackBar(context, 'Video not available', isError: true);
       return;
     }
-    showAppSnackBar(context, 'Downloading video...');
-    final path = await VideoDownloader.download(id);
+    setState(() => _downloadProgress = 0);
+    final path = await VideoDownloader.download(
+      id,
+      onProgress: (p) => setState(() => _downloadProgress = p),
+    );
+    setState(() => _downloadProgress = null);
     if (path != null) {
       showAppSnackBar(context, 'Video saved to gallery');
+    } else {
+      showAppSnackBar(context, 'Download failed', isError: true);
     }
   }
 
@@ -104,6 +111,14 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
           final title = widget.items[index].snippet?.title ?? '';
           return Stack(
             children: [
+              if (_downloadProgress != null)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child:
+                      LinearProgressIndicator(value: _downloadProgress),
+                ),
               Positioned.fill(child: player),
               Positioned(
                 bottom: 20,
