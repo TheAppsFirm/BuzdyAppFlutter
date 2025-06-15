@@ -27,6 +27,18 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
     });
   }
 
+  Future<void> _deleteVideo(File file) async {
+    try {
+      await file.delete();
+      await _loadVideos();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Video deleted')));
+    } catch (_) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Delete failed'), backgroundColor: Colors.red));
+    }
+  }
+
   Future<void> _saveToGallery(File file) async {
     final ok = await VideoDownloader.saveToGallery(file.path);
     if (ok) {
@@ -67,6 +79,10 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
                       IconButton(
                         icon: const Icon(Icons.play_arrow),
                         onPressed: () => _openPlayer(file),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteVideo(file),
                       ),
                     ],
                   ),

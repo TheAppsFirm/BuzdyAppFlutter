@@ -76,8 +76,14 @@ class VideoDownloader {
       String videoPath, String audioPath, String outputPath) async {
     try {
       final cmd = "-y -i '$videoPath' -i '$audioPath' -c copy '$outputPath'";
-      await FFmpegKit.execute(cmd);
-      return _MergeResult.success;
+      final session = await FFmpegKit.execute(cmd);
+      final rc = await session.getReturnCode();
+      final success = rc != null && rc.isValueSuccess();
+      if (success && await File(outputPath).exists()) {
+        return _MergeResult.success;
+      }
+      debugPrint('ffmpeg exit code: $rc');
+      return _MergeResult.failure;
     } on MissingPluginException catch (e) {
       debugPrint('FFmpeg plugin missing: $e');
       return _MergeResult.pluginMissing;
@@ -87,7 +93,6 @@ class VideoDownloader {
     }
   }
 
-  /// Downloads the video for the given [videoId] and returns the file path on
   /// success. Progress updates are reported through [onProgress].
   static Future<String?> download(
     String videoId, {
