@@ -14,16 +14,13 @@ class VideoDownloader {
     try {
       EasyLoading.show(status: 'Preparing...');
 
-      Directory saveDir;
+      final tempDir = await getTemporaryDirectory();
+      Directory saveDir = tempDir;
+
       if (Platform.isAndroid) {
-        // Request the modern videos permission first (Android 13+)
-        var perm = await Permission.videos.request();
-        // Fallback to the old storage permission for older Android versions
-        if (!perm.isGranted) {
-          perm = await Permission.storage.request();
-        }
-        if (!perm.isGranted) {
-          if (perm.isPermanentlyDenied) {
+        var status = await Permission.storage.request();
+        if (!status.isGranted) {
+          if (status.isPermanentlyDenied) {
             EasyLoading.showError(
                 'Please enable storage permission in settings');
             await openAppSettings();
@@ -32,12 +29,13 @@ class VideoDownloader {
           }
           return null;
         }
-        saveDir = await getExternalStorageDirectory() ??
-            await getTemporaryDirectory();
       } else if (Platform.isIOS) {
-        final perm = await Permission.photosAddOnly.request();
-        if (!perm.isGranted) {
-          if (perm.isPermanentlyDenied) {
+        var status = await Permission.photosAddOnly.request();
+        if (!status.isGranted) {
+          status = await Permission.photos.request();
+        }
+        if (!status.isGranted) {
+          if (status.isPermanentlyDenied) {
             EasyLoading.showError(
                 'Please enable photo access in Settings');
             await openAppSettings();
@@ -46,9 +44,6 @@ class VideoDownloader {
           }
           return null;
         }
-        saveDir = await getApplicationDocumentsDirectory();
-      } else {
-        saveDir = await getTemporaryDirectory();
       }
 
       final yt = YoutubeExplode();
