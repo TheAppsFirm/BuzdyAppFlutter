@@ -18,9 +18,9 @@ class VideoDownloader {
       Directory saveDir = tempDir;
 
       if (Platform.isAndroid) {
-        var status = await Permission.videos.request();
+        var status = await Permission.storage.request();
         if (!status.isGranted) {
-          status = await Permission.storage.request();
+          status = await Permission.videos.request();
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
@@ -80,8 +80,9 @@ class VideoDownloader {
         return null;
       }
 
+      final savedPath = result['filePath'] ?? result['file_path'];
       EasyLoading.showSuccess('Video saved to gallery');
-      return filePath;
+      return savedPath is String ? savedPath : filePath;
     } catch (e) {
       EasyLoading.showError('Download failed: $e');
       return null;
