@@ -167,8 +167,15 @@ class VideoDownloader {
           return null;
         }
 
-        final videoInfo = manifest.videoOnly.withHighestBitrate();
-        final audioInfo = manifest.audioOnly.withHighestBitrate();
+        StreamInfo? videoInfo;
+        StreamInfo? audioInfo;
+        try {
+          videoInfo = manifest.videoOnly.withHighestBitrate();
+          audioInfo = manifest.audioOnly.withHighestBitrate();
+        } catch (_) {
+          debugPrint('No streams found with highest bitrate');
+          return null;
+        }
 
         final videoTemp = '${saveDir.path}/$videoId-$timestamp-v.mp4';
         final audioTemp = '${saveDir.path}/$videoId-$timestamp-a.m4a';
@@ -217,7 +224,13 @@ class VideoDownloader {
           }
         }
       } else {
-        final streamInfo = manifest.muxed.withHighestBitrate();
+        StreamInfo? streamInfo;
+        try {
+          streamInfo = manifest.muxed.withHighestBitrate();
+        } catch (_) {
+          debugPrint('No muxed stream available');
+          return null;
+        }
         final total = streamInfo.size.totalBytes;
         final stream = yt.videos.streamsClient.get(streamInfo);
         final file = File(outputPath);
@@ -281,8 +294,15 @@ class VideoDownloader {
       final video = await yt.videos.get(videoUrl);
       final manifest = await yt.videos.streamsClient.getManifest(video.id);
 
-      final videoInfo = manifest.videoOnly.withHighestBitrate();
-      final audioInfo = manifest.audioOnly.withHighestBitrate();
+      StreamInfo? videoInfo;
+      StreamInfo? audioInfo;
+      try {
+        videoInfo = manifest.videoOnly.withHighestBitrate();
+        audioInfo = manifest.audioOnly.withHighestBitrate();
+      } catch (_) {
+        debugPrint('No available streams for $videoUrl');
+        return null;
+      }
 
       final dir = await getApplicationDocumentsDirectory();
       final videoPath = '${dir.path}/${video.id}.mp4';
