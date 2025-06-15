@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:flutter/foundation.dart';
 
 /// Utility class to download YouTube videos to a temporary directory.
 class VideoDownloader {
@@ -12,15 +13,19 @@ class VideoDownloader {
   /// on success. Displays an error using [EasyLoading] on failure.
   static Future<String?> download(String videoId) async {
     try {
+      debugPrint('VideoDownloader: starting download for $videoId');
       EasyLoading.show(status: 'Preparing...');
 
       final tempDir = await getTemporaryDirectory();
       Directory saveDir = tempDir;
+      debugPrint('Using temporary directory: ${saveDir.path}');
 
       if (Platform.isAndroid) {
-        var status = await Permission.storage.request();
+        var status = await Permission.videos.request();
+        debugPrint('Video permission status: $status');
         if (!status.isGranted) {
-          status = await Permission.videos.request();
+          status = await Permission.storage.request();
+          debugPrint('Storage permission status: $status');
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
@@ -57,6 +62,7 @@ class VideoDownloader {
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final filePath = '${saveDir.path}/$videoId-$timestamp.mp4';
+      debugPrint('Saving video to: $filePath');
       final file = File(filePath);
       final output = file.openWrite();
 
@@ -67,6 +73,7 @@ class VideoDownloader {
         final progress = count / total;
         EasyLoading.showProgress(progress,
             status: 'Downloading ${(progress * 100).toStringAsFixed(0)}%');
+        debugPrint('Download progress ${(progress * 100).toStringAsFixed(0)}%');
       }
       await output.flush();
       await output.close();
@@ -82,12 +89,15 @@ class VideoDownloader {
       }
 
       final savedPath = result['filePath'] ?? result['file_path'];
+      debugPrint('File saved to gallery path: $savedPath');
       EasyLoading.showSuccess('Video saved to gallery');
       return savedPath is String ? savedPath : filePath;
     } catch (e) {
+      debugPrint('VideoDownloader error: $e');
       EasyLoading.showError('Download failed: $e');
       return null;
     } finally {
+      debugPrint('VideoDownloader finished');
       EasyLoading.dismiss();
     }
   }
