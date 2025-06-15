@@ -24,3 +24,27 @@ flutter pub get
 ```
 
 Run this whenever `pubspec.yaml` changes to avoid package resolution errors.
+
+## Video download setup
+
+This project saves YouTube videos locally using
+[`youtube_explode_dart`](https://pub.dev/packages/youtube_explode_dart).
+Add the following dependencies in your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  permission_handler: ^11.3.0
+  path_provider: ^2.1.2
+  youtube_explode_dart: ^2.0.2
+  image_gallery_saver_plus: ^4.0.1
+```
+
+On Android include these permissions in
+`android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="28" />
+```

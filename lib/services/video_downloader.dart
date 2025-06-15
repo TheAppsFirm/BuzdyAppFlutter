@@ -145,5 +145,20 @@ class VideoDownloader {
       debugPrint('VideoDownloader finished');
     }
   }
+
+  /// Downloads a video and updates [progressNotifier] with the download
+  /// progress (0.0 to 1.0). Returns the saved file path on success or `null`
+  /// if the download failed or permissions were denied.
+  static Future<String?> downloadWithNotifier(
+    String videoId,
+    ValueNotifier<double> progressNotifier,
+  ) async {
+    // Reset progress
+    progressNotifier.value = 0.0;
+    return download(
+      videoId,
+      onProgress: (p) => progressNotifier.value = p,
+    );
+  }
 }
 
