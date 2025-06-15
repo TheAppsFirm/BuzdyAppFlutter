@@ -120,6 +120,7 @@ class VideoDownloader {
         filePath,
         isReturnPathOfIOS: true,
       );
+      debugPrint('Gallery save result: $result');
       if (result['isSuccess'] != true) {
         EasyLoading.showError('Failed to save to gallery');
         return null;

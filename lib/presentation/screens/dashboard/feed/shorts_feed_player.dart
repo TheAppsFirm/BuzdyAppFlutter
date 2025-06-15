@@ -108,28 +108,27 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
               Positioned(
                 bottom: 20,
                 left: 20,
+                child: Text(
+                  title,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+              Positioned(
+                bottom: 60,
                 right: 20,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(color: Colors.white),
+                    IconButton(
+                      color: Colors.white,
+                      icon: const Icon(Icons.share),
+                      onPressed: () => _shareVideo(index),
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        IconButton(
-                          color: Colors.white,
-                          icon: const Icon(Icons.share),
-                          onPressed: () => _shareVideo(index),
-                        ),
-                        IconButton(
-                          color: Colors.white,
-                          icon: const Icon(Icons.download),
-                          onPressed: () => _downloadVideo(index),
-                        ),
-                      ],
+                    const SizedBox(height: 20),
+                    IconButton(
+                      color: Colors.white,
+                      icon: const Icon(Icons.download),
+                      onPressed: () => _downloadVideo(index),
                     ),
                   ],
                 ),
