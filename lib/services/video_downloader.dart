@@ -56,6 +56,11 @@ class VideoDownloader {
 
       final yt = YoutubeExplode();
       final manifest = await yt.videos.streamsClient.getManifest(videoId);
+      if (manifest.muxed.isEmpty) {
+        EasyLoading.showError('Video stream not available');
+        yt.close();
+        return null;
+      }
       final streamInfo = manifest.muxed.withHighestBitrate();
       final total = streamInfo.size.totalBytes;
       final stream = yt.videos.streamsClient.get(streamInfo);
