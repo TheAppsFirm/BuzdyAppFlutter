@@ -18,11 +18,14 @@ class VideoDownloader {
       Directory saveDir = tempDir;
 
       if (Platform.isAndroid) {
-        var status = await Permission.storage.request();
+        var status = await Permission.videos.request();
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
             EasyLoading.showError(
-                'Please enable storage permission in settings');
+                'Please enable video access in settings');
             await openAppSettings();
           } else {
             EasyLoading.showError('Storage permission denied');
