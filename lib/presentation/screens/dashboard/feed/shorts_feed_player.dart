@@ -18,6 +18,7 @@ class ShortsFeedPlayer extends StatefulWidget {
 class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
   late PageController _pageController;
   late List<YoutubePlayerController> _controllers;
+  final ValueNotifier<double?> _progress = ValueNotifier(null);
 
   Future<void> _shareVideo(int index) async {
     final id = widget.items[index].videoId;
@@ -38,8 +39,6 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     }
   }
 
-  double? _downloadProgress;
-
   Future<void> _downloadVideo(int index) async {
     final id = widget.items[index].videoId;
     if (id == null || id.isEmpty) {
@@ -47,12 +46,12 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       return;
     }
     showAppSnackBar(context, 'Downloading video...');
-    setState(() => _downloadProgress = 0);
+    _progress.value = 0;
     final path = await VideoDownloader.download(
       id,
-      onProgress: (p) => setState(() => _downloadProgress = p),
+      onProgress: (p) => _progress.value = p,
     );
-    setState(() => _downloadProgress = null);
+    _progress.value = null;
     if (path != null) {
       showAppSnackBar(context, 'Video saved to gallery');
     } else {
@@ -112,14 +111,19 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
           final title = widget.items[index].snippet?.title ?? '';
           return Stack(
             children: [
-              if (_downloadProgress != null)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child:
-                      LinearProgressIndicator(value: _downloadProgress),
-                ),
+              ValueListenableBuilder<double?>(
+                valueListenable: _progress,
+                builder: (context, value, child) {
+                  return value == null
+                      ? const SizedBox.shrink()
+                      : Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: LinearProgressIndicator(value: value),
+                        );
+                },
+              ),
               Positioned.fill(child: player),
               Positioned(
                 bottom: 20,

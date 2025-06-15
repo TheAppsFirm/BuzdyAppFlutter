@@ -20,6 +20,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late YoutubePlayerController _controller;
+  final ValueNotifier<double?> _progress = ValueNotifier(null);
 
   Future<void> _shareVideo() async {
     final videoUrl = 'https://www.youtube.com/watch?v=${widget.videoId}';
@@ -35,16 +36,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     }
   }
 
-  double? _downloadProgress;
-
   Future<void> _downloadVideo() async {
     showAppSnackBar(context, 'Downloading video...');
-    setState(() => _downloadProgress = 0);
+    _progress.value = 0;
     final path = await VideoDownloader.download(
       widget.videoId,
-      onProgress: (p) => setState(() => _downloadProgress = p),
+      onProgress: (p) => _progress.value = p,
     );
-    setState(() => _downloadProgress = null);
+    _progress.value = null;
     if (path != null) {
       showAppSnackBar(context, 'Video saved to gallery');
     } else {
@@ -70,13 +69,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          if (_downloadProgress != null)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: LinearProgressIndicator(value: _downloadProgress),
-            ),
+          ValueListenableBuilder<double?>(
+            valueListenable: _progress,
+            builder: (context, value, child) {
+              return value == null
+                  ? const SizedBox.shrink()
+                  : Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: LinearProgressIndicator(value: value),
+                    );
+            },
+          ),
           Positioned.fill(
             child: YoutubePlayer(
               controller: _controller,
