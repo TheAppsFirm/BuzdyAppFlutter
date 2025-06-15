@@ -69,8 +69,8 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
                 final name = file.path.split('/').last;
                 return ListTile(
                   title: Text(name),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  trailing: Wrap(
+                    spacing: 4,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.save_alt),

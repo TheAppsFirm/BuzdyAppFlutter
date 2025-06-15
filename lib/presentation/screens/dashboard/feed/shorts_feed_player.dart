@@ -47,16 +47,21 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     }
     showAppSnackBar(context, 'Downloading video...');
     _progress.value = 0;
-    final path = await VideoDownloader.download(
+    final localPath = await VideoDownloader.download(
       id,
       onProgress: (p) => _progress.value = p,
     );
-    _progress.value = null;
-    if (path != null) {
-      showAppSnackBar(context, 'Video saved locally');
+    if (localPath != null) {
+      final ok = await VideoDownloader.saveToGallery(localPath);
+      if (ok) {
+        showAppSnackBar(context, 'Video saved to gallery');
+      } else {
+        showAppSnackBar(context, 'Failed to save to gallery', isError: true);
+      }
     } else {
       showAppSnackBar(context, 'Download failed', isError: true);
     }
+    _progress.value = null;
   }
 
   @override
