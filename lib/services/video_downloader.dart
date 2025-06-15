@@ -20,11 +20,12 @@ class VideoDownloader {
       Directory saveDir = tempDir;
 
       if (Platform.isAndroid) {
-        var status = await Permission.videos.request();
-        debugPrint('Video permission status: $status');
+        // Request the common storage permission first for broad compatibility
+        var status = await Permission.storage.request();
+        debugPrint('Storage permission status: $status');
         if (!status.isGranted) {
-          status = await Permission.storage.request();
-          debugPrint('Storage permission status: $status');
+          status = await Permission.videos.request();
+          debugPrint('Video permission status: $status');
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
@@ -104,6 +105,15 @@ class VideoDownloader {
 
       final savedPath = result['filePath'] ?? result['file_path'];
       debugPrint('File saved to gallery path: $savedPath');
+
+      // Remove the temporary file once it has been added to the gallery
+      try {
+        await file.delete();
+        debugPrint('Temporary file deleted');
+      } catch (e) {
+        debugPrint('Failed to delete temp file: $e');
+      }
+
       EasyLoading.showSuccess('Video saved to gallery');
       return savedPath is String ? savedPath : filePath;
     } catch (e) {
