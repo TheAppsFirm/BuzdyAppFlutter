@@ -55,7 +55,8 @@ class VideoDownloader {
       final total = streamInfo.size.totalBytes;
       final stream = yt.videos.streamsClient.get(streamInfo);
 
-      final filePath = '${saveDir.path}/$videoId.mp4';
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filePath = '${saveDir.path}/$videoId-$timestamp.mp4';
       final file = File(filePath);
       final output = file.openWrite();
 
