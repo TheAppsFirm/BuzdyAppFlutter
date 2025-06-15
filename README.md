@@ -48,3 +48,13 @@ On Android include these permissions in
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
     android:maxSdkVersion="28" />
 ```
+
+If a video fails to download with `Video stream not available` in the log, you
+can inspect available streams with:
+
+```dart
+await VideoDownloader.debugAvailableStreams('YOUR_VIDEO_ID');
+```
+
+This prints audio-only and video-only stream information to help diagnose
+issues.

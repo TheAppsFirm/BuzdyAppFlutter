@@ -37,6 +37,35 @@ class VideoDownloader {
     return files;
   }
 
+  /// Logs all available streams for debugging purposes. This helps
+  /// diagnose cases where no muxed stream is available.
+  static Future<void> debugAvailableStreams(String videoId) async {
+    final yt = YoutubeExplode();
+    try {
+      final manifest = await yt.videos.streamsClient.getManifest(videoId);
+      if (manifest.muxed.isEmpty) {
+        debugPrint('No muxed streams for $videoId');
+      } else {
+        debugPrint('Muxed streams for $videoId:');
+        for (final m in manifest.muxed) {
+          debugPrint('  ${m.videoQualityLabel} ${m.bitrate} tag:${m.tag}');
+        }
+      }
+      debugPrint('Audio only streams:');
+      for (final a in manifest.audioOnly) {
+        debugPrint('  ${a.bitrate} ${a.codec} tag:${a.tag}');
+      }
+      debugPrint('Video only streams:');
+      for (final v in manifest.videoOnly) {
+        debugPrint('  ${v.videoQualityLabel} ${v.bitrate} ${v.codec} tag:${v.tag}');
+      }
+    } catch (e) {
+      debugPrint('Error listing streams for $videoId: $e');
+    } finally {
+      yt.close();
+    }
+  }
+
   /// Downloads the video for the given [videoId] and returns the file path on
   /// success. Progress updates are reported through [onProgress].
   static Future<String?> download(
@@ -97,6 +126,7 @@ class VideoDownloader {
       }
       if (manifest.muxed.isEmpty) {
         debugPrint('Video stream not available');
+        await debugAvailableStreams(videoId);
         yt.close();
         return null;
       }
