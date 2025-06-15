@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
 import 'package:flutter/foundation.dart';
 
 /// Utility class to download YouTube videos and keep them locally.
@@ -124,36 +125,75 @@ class VideoDownloader {
         yt.close();
         return null;
       }
-      if (manifest.muxed.isEmpty) {
-        debugPrint('Video stream not available');
-        await debugAvailableStreams(videoId);
-        yt.close();
-        return null;
-      }
-      final streamInfo = manifest.muxed.withHighestBitrate();
-      final total = streamInfo.size.totalBytes;
-      final stream = yt.videos.streamsClient.get(streamInfo);
-
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final filePath = '${saveDir.path}/$videoId-$timestamp.mp4';
-      debugPrint('Saving video to: $filePath');
-      final file = File(filePath);
-      final output = file.openWrite();
+      final outputPath = '${saveDir.path}/$videoId-$timestamp.mp4';
 
-      var count = 0;
-      await for (final data in stream) {
-        count += data.length;
-        output.add(data);
-        final progress = count / total;
-        if (onProgress != null) onProgress(progress);
-        debugPrint('Download progress ${(progress * 100).toStringAsFixed(0)}%');
+      if (manifest.muxed.isEmpty) {
+        debugPrint('Video stream not available, falling back to merge');
+        await debugAvailableStreams(videoId);
+
+        // Download separate video and audio streams then merge them
+        final videoInfo = manifest.videoOnly.withHighestBitrate();
+        final audioInfo = manifest.audioOnly.withHighestBitrate();
+
+        final videoTemp = '${saveDir.path}/$videoId-$timestamp-v.mp4';
+        final audioTemp = '${saveDir.path}/$videoId-$timestamp-a.m4a';
+
+        Future<void> _saveStream(Stream<List<int>> stream, String path,
+            int totalBytes, double startRatio) async {
+          final file = File(path).openWrite();
+          var count = 0;
+          await for (final data in stream) {
+            count += data.length;
+            file.add(data);
+            final progress = startRatio +
+                (count / totalBytes) * 0.5; // each stream ~50%
+            onProgress?.call(progress);
+          }
+          await file.flush();
+          await file.close();
+        }
+
+        await _saveStream(
+          yt.videos.streamsClient.get(videoInfo),
+          videoTemp,
+          videoInfo.size.totalBytes,
+          0.0,
+        );
+        await _saveStream(
+          yt.videos.streamsClient.get(audioInfo),
+          audioTemp,
+          audioInfo.size.totalBytes,
+          0.5,
+        );
+
+        // Merge using ffmpeg
+        final cmd =
+            "-y -i '$videoTemp' -i '$audioTemp' -c copy '$outputPath'";
+        await FFmpegKit.execute(cmd);
+        await File(videoTemp).delete();
+        await File(audioTemp).delete();
+      } else {
+        final streamInfo = manifest.muxed.withHighestBitrate();
+        final total = streamInfo.size.totalBytes;
+        final stream = yt.videos.streamsClient.get(streamInfo);
+        final file = File(outputPath);
+        final output = file.openWrite();
+        var count = 0;
+        await for (final data in stream) {
+          count += data.length;
+          output.add(data);
+          final progress = count / total;
+          onProgress?.call(progress);
+        }
+        await output.flush();
+        await output.close();
       }
-      await output.flush();
-      await output.close();
+
       yt.close();
 
       final result = await ImageGallerySaverPlus.saveFile(
-        filePath,
+        outputPath,
         isReturnPathOfIOS: true,
       );
       debugPrint('Gallery save result: $result');
@@ -165,9 +205,7 @@ class VideoDownloader {
       final savedPath = result['filePath'] ?? result['file_path'];
       debugPrint('File saved to gallery path: $savedPath');
 
-
-
-      return savedPath is String ? savedPath : filePath;
+      return savedPath is String ? savedPath : outputPath;
     } catch (e) {
       debugPrint('VideoDownloader error: $e');
       return null;

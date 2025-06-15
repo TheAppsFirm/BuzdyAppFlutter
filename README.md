@@ -60,8 +60,12 @@ await VideoDownloader.debugAvailableStreams('YOUR_VIDEO_ID');
 This prints audio-only and video-only stream information to help diagnose
 issues.
 
-### Download separate streams
+### Download separate streams and merging fallback
 
-The helper also exposes `VideoDownloader.downloadStreams` which downloads the
-highest quality video-only and audio-only streams to the app documents
-directory. Use this if you need to merge the tracks manually with ffmpeg.
+If a muxed stream is unavailable the downloader automatically fetches the best
+video-only and audio-only streams, merges them with `ffmpeg_kit`, and saves the
+resulting `.mp4` to the gallery.
+
+You can also call `VideoDownloader.downloadStreams` to retrieve the raw
+video-only and audio-only files in the app documents directory without merging.
+This can be useful when you need custom ffmpeg processing.
