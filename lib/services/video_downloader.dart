@@ -99,6 +99,7 @@ class VideoDownloader {
 
       Directory saveDir = await _getSavedDir();
       bool permissionGranted = true;
+      debugPrint('Checking permissions...');
 
       if (Platform.isAndroid) {
         // Request scoped videos permission first then storage if needed
@@ -110,6 +111,7 @@ class VideoDownloader {
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
+            debugPrint('Storage permission permanently denied, opening settings');
             await openAppSettings();
           }
           debugPrint('Storage permission denied');
@@ -124,6 +126,7 @@ class VideoDownloader {
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
+            debugPrint('Photo permission permanently denied, opening settings');
             await openAppSettings();
           }
           debugPrint('Photo permission denied');
@@ -132,6 +135,7 @@ class VideoDownloader {
       }
 
       if (!permissionGranted) {
+        debugPrint('Required permission not granted, aborting download');
         return null;
       }
 
@@ -193,6 +197,7 @@ class VideoDownloader {
         );
 
         // Merge using ffmpeg
+        debugPrint('Merging video and audio using ffmpeg');
         final mergeResult =
             await _mergeWithFFmpeg(videoTemp, audioTemp, outputPath);
         if (mergeResult == _MergeResult.pluginMissing) {
