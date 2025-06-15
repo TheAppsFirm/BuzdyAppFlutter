@@ -23,7 +23,7 @@ void configLoading() {
     ..boxShadow = []
     ..indicatorColor = Colors.transparent
     ..radius = 0
-    ..textColor = Colors.transparent
+    ..textColor = Colors.white
     ..dismissOnTap = false
     ..indicatorWidget = Lottie.asset("images/buzdysplash.json", width: 150, height: 150);
 }

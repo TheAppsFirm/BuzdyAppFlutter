@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:buzdy/services/video_downloader.dart';
+import 'package:buzdy/core/utils.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoId;
@@ -20,6 +20,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late YoutubePlayerController _controller;
+  final ValueNotifier<double?> _progress = ValueNotifier(null);
 
   Future<void> _shareVideo() async {
     final videoUrl = 'https://www.youtube.com/watch?v=${widget.videoId}';
@@ -31,14 +32,22 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         subject: title,
       );
     } catch (_) {
-      EasyLoading.showError('Sharing not available');
+      showAppSnackBar(context, 'Sharing not available', isError: true);
     }
   }
 
   Future<void> _downloadVideo() async {
-    final path = await VideoDownloader.download(widget.videoId);
+    showAppSnackBar(context, 'Downloading video...');
+    _progress.value = 0;
+    final path = await VideoDownloader.download(
+      widget.videoId,
+      onProgress: (p) => _progress.value = p,
+    );
+    _progress.value = null;
     if (path != null) {
-      EasyLoading.showSuccess('Video saved');
+      showAppSnackBar(context, 'Video saved locally');
+    } else {
+      showAppSnackBar(context, 'Download failed', isError: true);
     }
   }
 
@@ -57,24 +66,55 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Now Playing'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () => _shareVideo(),
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          ValueListenableBuilder<double?>(
+            valueListenable: _progress,
+            builder: (context, value, child) {
+              return value == null
+                  ? const SizedBox.shrink()
+                  : Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: LinearProgressIndicator(value: value),
+                    );
+            },
           ),
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: _downloadVideo,
+          Positioned.fill(
+            child: YoutubePlayer(
+              controller: _controller,
+              showVideoProgressIndicator: true,
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 8,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          Positioned(
+            right: 16,
+            bottom: 40,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.share, color: Colors.white),
+                  onPressed: _shareVideo,
+                ),
+                const SizedBox(height: 20),
+                IconButton(
+                  icon: const Icon(Icons.download, color: Colors.white),
+                  onPressed: _downloadVideo,
+                ),
+              ],
+            ),
           ),
         ],
-      ),
-      body: Center(
-        child: YoutubePlayer(
-          controller: _controller,
-          showVideoProgressIndicator: true,
-        ),
       ),
     );
   }
