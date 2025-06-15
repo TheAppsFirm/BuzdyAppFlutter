@@ -230,22 +230,11 @@ class VideoDownloader {
 
       yt.close();
 
-      final result = await ImageGallerySaverPlus.saveFile(
-        outputPath,
-        isReturnPathOfIOS: true,
-      );
-      debugPrint('Gallery save result: $result');
-      if (result['isSuccess'] != true) {
-        debugPrint('Failed to save to gallery');
-        return null;
-      }
-
+      // Finished downloading locally
       onProgress?.call(1.0);
+      debugPrint('File saved locally at $outputPath');
 
-      final savedPath = result['filePath'] ?? result['file_path'];
-      debugPrint('File saved to gallery path: $savedPath');
-
-      return savedPath is String ? savedPath : outputPath;
+      return outputPath;
     } catch (e) {
       debugPrint('VideoDownloader error: $e');
       return null;
@@ -331,6 +320,41 @@ class VideoDownloader {
     } finally {
       yt.close();
     }
+  }
+
+  /// Save a downloaded video file to the user's gallery. Returns true if the
+  /// gallery save succeeded.
+  static Future<bool> saveToGallery(String filePath) async {
+    bool granted = true;
+    if (Platform.isAndroid) {
+      var status = await Permission.videos.request();
+      if (!status.isGranted) {
+        status = await Permission.storage.request();
+      }
+      if (!status.isGranted) {
+        if (status.isPermanentlyDenied) await openAppSettings();
+        granted = false;
+      }
+    } else if (Platform.isIOS) {
+      var status = await Permission.photosAddOnly.request();
+      if (!status.isGranted) status = await Permission.photos.request();
+      if (!status.isGranted) {
+        if (status.isPermanentlyDenied) await openAppSettings();
+        granted = false;
+      }
+    }
+
+    if (!granted) {
+      debugPrint('Gallery permission denied');
+      return false;
+    }
+
+    final result = await ImageGallerySaverPlus.saveFile(
+      filePath,
+      isReturnPathOfIOS: true,
+    );
+    debugPrint('Gallery save result: $result');
+    return result['isSuccess'] == true;
   }
 }
 

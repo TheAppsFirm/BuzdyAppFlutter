@@ -27,6 +27,17 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
     });
   }
 
+  Future<void> _saveToGallery(File file) async {
+    final ok = await VideoDownloader.saveToGallery(file.path);
+    if (ok) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Saved to gallery')));
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Failed to save'), backgroundColor: Colors.red));
+    }
+  }
+
   void _openPlayer(File file) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => _LocalVideoPlayer(file: file)),
@@ -46,8 +57,19 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
                 final name = file.path.split('/').last;
                 return ListTile(
                   title: Text(name),
-                  trailing: const Icon(Icons.play_arrow),
-                  onTap: () => _openPlayer(file),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.save_alt),
+                        onPressed: () => _saveToGallery(file),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.play_arrow),
+                        onPressed: () => _openPlayer(file),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),

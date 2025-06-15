@@ -64,7 +64,10 @@ issues.
 
 If a muxed stream is unavailable the downloader automatically fetches the best
 video-only and audio-only streams, merges them with `ffmpeg_kit`, and saves the
-resulting `.mp4` to the gallery.
+resulting `.mp4` in the app's storage directory.
+
+Open the **Saved Videos** screen from the feed to view your downloads. Each
+video can then be saved to the device gallery on demand.
 
 You can also call `VideoDownloader.downloadStreams` to retrieve the raw
 video-only and audio-only files in the app documents directory without merging.

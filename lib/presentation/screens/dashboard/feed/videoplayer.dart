@@ -45,7 +45,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     );
     _progress.value = null;
     if (path != null) {
-      showAppSnackBar(context, 'Video saved to gallery');
+      showAppSnackBar(context, 'Video saved locally');
     } else {
       showAppSnackBar(context, 'Download failed', isError: true);
     }
