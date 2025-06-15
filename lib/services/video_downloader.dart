@@ -23,7 +23,13 @@ class VideoDownloader {
           perm = await Permission.storage.request();
         }
         if (!perm.isGranted) {
-          EasyLoading.showError('Storage permission denied');
+          if (perm.isPermanentlyDenied) {
+            EasyLoading.showError(
+                'Please enable storage permission in settings');
+            await openAppSettings();
+          } else {
+            EasyLoading.showError('Storage permission denied');
+          }
           return null;
         }
         saveDir = await getExternalStorageDirectory() ??
@@ -31,7 +37,13 @@ class VideoDownloader {
       } else if (Platform.isIOS) {
         final perm = await Permission.photosAddOnly.request();
         if (!perm.isGranted) {
-          EasyLoading.showError('Photo permission denied');
+          if (perm.isPermanentlyDenied) {
+            EasyLoading.showError(
+                'Please enable photo access in Settings');
+            await openAppSettings();
+          } else {
+            EasyLoading.showError('Photo permission denied');
+          }
           return null;
         }
         saveDir = await getApplicationDocumentsDirectory();
