@@ -8,6 +8,8 @@ import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+enum _MergeResult { success, pluginMissing, failure }
+
 /// Utility class to download YouTube videos and keep them locally.
 class VideoDownloader {
   /// Returns the directory where downloaded videos are stored locally.
@@ -70,18 +72,18 @@ class VideoDownloader {
 
   /// Merge [videoPath] and [audioPath] into [outputPath] using ffmpeg.
   /// Returns `true` if the merge succeeded, otherwise `false`.
-  static Future<bool> _mergeWithFFmpeg(
+  static Future<_MergeResult> _mergeWithFFmpeg(
       String videoPath, String audioPath, String outputPath) async {
     try {
       final cmd = "-y -i '$videoPath' -i '$audioPath' -c copy '$outputPath'";
       await FFmpegKit.execute(cmd);
-      return true;
+      return _MergeResult.success;
     } on MissingPluginException catch (e) {
       debugPrint('FFmpeg plugin missing: $e');
-      return false;
+      return _MergeResult.pluginMissing;
     } catch (e) {
       debugPrint('ffmpeg merge failed: $e');
-      return false;
+      return _MergeResult.failure;
     }
   }
 
@@ -186,12 +188,18 @@ class VideoDownloader {
         );
 
         // Merge using ffmpeg
-        final merged =
+        final mergeResult =
             await _mergeWithFFmpeg(videoTemp, audioTemp, outputPath);
-        await File(videoTemp).delete();
-        await File(audioTemp).delete();
-        if (!merged) {
-          return null;
+        if (mergeResult == _MergeResult.pluginMissing) {
+          debugPrint('ffmpeg plugin missing, saving video without audio');
+          await File(videoTemp).rename(outputPath);
+          await File(audioTemp).delete();
+        } else {
+          await File(videoTemp).delete();
+          await File(audioTemp).delete();
+          if (mergeResult != _MergeResult.success) {
+            return null;
+          }
         }
       } else {
         final streamInfo = manifest.muxed.withHighestBitrate();
