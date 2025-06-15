@@ -46,6 +46,7 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       showAppSnackBar(context, 'Video not available', isError: true);
       return;
     }
+    showAppSnackBar(context, 'Downloading video...');
     setState(() => _downloadProgress = 0);
     final path = await VideoDownloader.download(
       id,

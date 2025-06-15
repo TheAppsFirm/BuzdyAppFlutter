@@ -46,12 +46,14 @@ class VideoDownloader {
     try {
       debugPrint('VideoDownloader: starting download for $videoId');
 
+
       Directory saveDir = await _getSavedDir();
+      bool permissionGranted = true;
 
       if (Platform.isAndroid) {
-        // Request the scoped videos permission on newer Android first
+        // Request scoped videos permission first then storage if needed
         var status = await Permission.videos.request();
-        debugPrint('Video permission status: $status');
+        debugPrint('Videos permission status: $status');
         if (!status.isGranted) {
           status = await Permission.storage.request();
           debugPrint('Storage permission status: $status');
@@ -61,26 +63,29 @@ class VideoDownloader {
             await openAppSettings();
           }
           debugPrint('Storage permission denied');
-          return null;
+          permissionGranted = false;
         }
-
-        debugPrint('Using directory: ${saveDir.path}');
       } else if (Platform.isIOS) {
         var status = await Permission.photosAddOnly.request();
+        debugPrint('photosAddOnly status: $status');
         if (!status.isGranted) {
           status = await Permission.photos.request();
+          debugPrint('photos status: $status');
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
             await openAppSettings();
           }
           debugPrint('Photo permission denied');
-          return null;
+          permissionGranted = false;
         }
-
-        debugPrint('Using directory: ${saveDir.path}');
       }
 
+      if (!permissionGranted) {
+        return null;
+      }
+
+      debugPrint('Using directory: ${saveDir.path}');
       final yt = YoutubeExplode();
       final manifest = await yt.videos.streamsClient.getManifest(videoId);
       if (manifest.muxed.isEmpty) {

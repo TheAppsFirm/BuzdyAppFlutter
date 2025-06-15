@@ -38,6 +38,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   double? _downloadProgress;
 
   Future<void> _downloadVideo() async {
+    showAppSnackBar(context, 'Downloading video...');
     setState(() => _downloadProgress = 0);
     final path = await VideoDownloader.download(
       widget.videoId,
