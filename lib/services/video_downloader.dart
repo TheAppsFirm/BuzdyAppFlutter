@@ -20,12 +20,12 @@ class VideoDownloader {
       Directory saveDir = tempDir;
 
       if (Platform.isAndroid) {
-        // Request the common storage permission first for broad compatibility
-        var status = await Permission.storage.request();
-        debugPrint('Storage permission status: $status');
+        // Request the scoped videos permission on newer Android first
+        var status = await Permission.videos.request();
+        debugPrint('Video permission status: $status');
         if (!status.isGranted) {
-          status = await Permission.videos.request();
-          debugPrint('Video permission status: $status');
+          status = await Permission.storage.request();
+          debugPrint('Storage permission status: $status');
         }
         if (!status.isGranted) {
           if (status.isPermanentlyDenied) {
