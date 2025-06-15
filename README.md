@@ -37,6 +37,7 @@ dependencies:
   path_provider: ^2.1.2
   youtube_explode_dart: ^2.0.2
   image_gallery_saver_plus: ^4.0.1
+  ffmpeg_kit_flutter_min_gpl: ^4.5.1
 ```
 
 On Android include these permissions in
@@ -58,3 +59,9 @@ await VideoDownloader.debugAvailableStreams('YOUR_VIDEO_ID');
 
 This prints audio-only and video-only stream information to help diagnose
 issues.
+
+### Download separate streams
+
+The helper also exposes `VideoDownloader.downloadStreams` which downloads the
+highest quality video-only and audio-only streams to the app documents
+directory. Use this if you need to merge the tracks manually with ffmpeg.

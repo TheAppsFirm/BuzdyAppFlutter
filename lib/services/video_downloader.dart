@@ -190,5 +190,69 @@ class VideoDownloader {
       onProgress: (p) => progressNotifier.value = p,
     );
   }
+
+  /// Downloads the highest quality video-only and audio-only streams for the
+  /// given [videoUrl] and saves them as separate files in the app documents
+  /// directory. The returned map contains the local paths with keys `videoPath`
+  /// and `audioPath`. This does **not** merge the streams. Use ffmpeg if you
+  /// need a single file.
+  static Future<Map<String, String>?> downloadStreams(
+    String videoUrl, {
+    void Function(double videoProgress)? onVideoProgress,
+    void Function(double audioProgress)? onAudioProgress,
+  }) async {
+    final yt = YoutubeExplode();
+    try {
+      debugPrint('Starting separate stream download for $videoUrl');
+
+      // Resolve the video ID and fetch stream information
+      final video = await yt.videos.get(videoUrl);
+      final manifest = await yt.videos.streamsClient.getManifest(video.id);
+
+      final videoInfo = manifest.videoOnly.withHighestBitrate();
+      final audioInfo = manifest.audioOnly.withHighestBitrate();
+
+      final dir = await getApplicationDocumentsDirectory();
+      final videoPath = '${dir.path}/${video.id}.mp4';
+      final audioPath = '${dir.path}/${video.id}.m4a';
+
+      // --- Download video stream ---
+      final vStream = yt.videos.streamsClient.get(videoInfo);
+      final vFile = File(videoPath).openWrite();
+      var vCount = 0;
+      final vTotal = videoInfo.size.totalBytes;
+      await for (final data in vStream) {
+        vCount += data.length;
+        vFile.add(data);
+        final progress = vCount / vTotal;
+        onVideoProgress?.call(progress);
+        debugPrint('Video ${(progress * 100).toStringAsFixed(0)}%');
+      }
+      await vFile.flush();
+      await vFile.close();
+
+      // --- Download audio stream ---
+      final aStream = yt.videos.streamsClient.get(audioInfo);
+      final aFile = File(audioPath).openWrite();
+      var aCount = 0;
+      final aTotal = audioInfo.size.totalBytes;
+      await for (final data in aStream) {
+        aCount += data.length;
+        aFile.add(data);
+        final progress = aCount / aTotal;
+        onAudioProgress?.call(progress);
+        debugPrint('Audio ${(progress * 100).toStringAsFixed(0)}%');
+      }
+      await aFile.flush();
+      await aFile.close();
+
+      return {'videoPath': videoPath, 'audioPath': audioPath};
+    } catch (e) {
+      debugPrint('downloadStreams error: $e');
+      return null;
+    } finally {
+      yt.close();
+    }
+  }
 }
 
