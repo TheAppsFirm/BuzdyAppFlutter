@@ -3,6 +3,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:buzdy/services/video_downloader.dart';
+import 'package:buzdy/core/utils.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoId;
@@ -36,9 +37,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   Future<void> _downloadVideo() async {
+    showAppSnackBar(context, 'Downloading video...');
     final path = await VideoDownloader.download(widget.videoId);
     if (path != null) {
-      EasyLoading.showSuccess('Video saved');
+      showAppSnackBar(context, 'Video saved to gallery');
     }
   }
 

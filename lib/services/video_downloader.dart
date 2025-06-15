@@ -70,7 +70,7 @@ class VideoDownloader {
         return null;
       }
 
-      EasyLoading.showSuccess('Saved to ${saveDir.path}');
+      EasyLoading.showSuccess('Video saved to gallery');
       return filePath;
     } catch (e) {
       EasyLoading.showError('Download failed: $e');

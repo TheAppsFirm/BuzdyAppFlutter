@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:buzdy/core/utils.dart';
 import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:buzdy/services/video_downloader.dart';
@@ -44,7 +45,11 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
       EasyLoading.showError('Video not available');
       return;
     }
-    await VideoDownloader.download(id);
+    showAppSnackBar(context, 'Downloading video...');
+    final path = await VideoDownloader.download(id);
+    if (path != null) {
+      showAppSnackBar(context, 'Video saved to gallery');
+    }
   }
 
   @override
