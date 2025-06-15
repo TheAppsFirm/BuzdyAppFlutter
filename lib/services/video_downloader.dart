@@ -6,6 +6,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 /// Utility class to download YouTube videos and keep them locally.
 class VideoDownloader {
@@ -64,6 +65,23 @@ class VideoDownloader {
       debugPrint('Error listing streams for $videoId: $e');
     } finally {
       yt.close();
+    }
+  }
+
+  /// Merge [videoPath] and [audioPath] into [outputPath] using ffmpeg.
+  /// Returns `true` if the merge succeeded, otherwise `false`.
+  static Future<bool> _mergeWithFFmpeg(
+      String videoPath, String audioPath, String outputPath) async {
+    try {
+      final cmd = "-y -i '$videoPath' -i '$audioPath' -c copy '$outputPath'";
+      await FFmpegKit.execute(cmd);
+      return true;
+    } on MissingPluginException catch (e) {
+      debugPrint('FFmpeg plugin missing: $e');
+      return false;
+    } catch (e) {
+      debugPrint('ffmpeg merge failed: $e');
+      return false;
     }
   }
 
@@ -168,11 +186,13 @@ class VideoDownloader {
         );
 
         // Merge using ffmpeg
-        final cmd =
-            "-y -i '$videoTemp' -i '$audioTemp' -c copy '$outputPath'";
-        await FFmpegKit.execute(cmd);
+        final merged =
+            await _mergeWithFFmpeg(videoTemp, audioTemp, outputPath);
         await File(videoTemp).delete();
         await File(audioTemp).delete();
+        if (!merged) {
+          return null;
+        }
       } else {
         final streamInfo = manifest.muxed.withHighestBitrate();
         final total = streamInfo.size.totalBytes;
@@ -201,6 +221,8 @@ class VideoDownloader {
         debugPrint('Failed to save to gallery');
         return null;
       }
+
+      onProgress?.call(1.0);
 
       final savedPath = result['filePath'] ?? result['file_path'];
       debugPrint('File saved to gallery path: $savedPath');
