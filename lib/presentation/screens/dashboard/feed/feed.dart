@@ -126,8 +126,6 @@ class _FeedScreenState extends State<FeedScreen> {
                 ),
 
                 ListView.builder(
-                  // controller: _videosScrollController,
-                  physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: provider.youtubeVideos.length + 1,
                   itemBuilder: (context, index) {
