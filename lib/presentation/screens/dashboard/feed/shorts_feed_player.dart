@@ -47,12 +47,14 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     }
     showAppSnackBar(context, 'Downloading video...');
     _progress.value = 0;
-    final localPath = await VideoDownloader.download(
+    final result = await VideoDownloader.download(
       id,
       onProgress: (p) => _progress.value = p,
     );
-    if (localPath != null) {
-      final ok = await VideoDownloader.saveToGallery(localPath);
+    if (result.permissionDenied) {
+      showAppSnackBar(context, 'Storage permission denied', isError: true);
+    } else if (result.path != null) {
+      final ok = await VideoDownloader.saveToGallery(result.path!);
       if (ok) {
         showAppSnackBar(context, 'Video saved to gallery');
       } else {

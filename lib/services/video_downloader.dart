@@ -10,6 +10,17 @@ import 'package:flutter/services.dart';
 
 enum _MergeResult { success, pluginMissing, failure }
 
+/// Result of a download request.
+class DownloadResult {
+  /// Path to the saved video if the download succeeded.
+  final String? path;
+
+  /// Whether the download failed due to missing permissions.
+  final bool permissionDenied;
+
+  const DownloadResult({this.path, this.permissionDenied = false});
+}
+
 /// Utility class to download YouTube videos and keep them locally.
 class VideoDownloader {
   /// Returns the directory where downloaded videos are stored locally.
@@ -94,7 +105,7 @@ class VideoDownloader {
   }
 
   /// success. Progress updates are reported through [onProgress].
-  static Future<String?> download(
+  static Future<DownloadResult> download(
     String videoId, {
     void Function(double progress)? onProgress,
   }) async {
@@ -141,7 +152,7 @@ class VideoDownloader {
 
       if (!permissionGranted) {
         debugPrint('Required permission not granted, aborting download');
-        return null;
+        return const DownloadResult(permissionDenied: true);
       }
 
       debugPrint('Using directory: ${saveDir.path}');
@@ -152,7 +163,7 @@ class VideoDownloader {
       } catch (e) {
         debugPrint('Failed to fetch stream manifest: $e');
         yt.close();
-        return null;
+        return const DownloadResult();
       }
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final outputPath = '${saveDir.path}/$videoId-$timestamp.mp4';
@@ -174,7 +185,7 @@ class VideoDownloader {
           audioInfo = manifest.audioOnly.withHighestBitrate();
         } catch (_) {
           debugPrint('No streams found with highest bitrate');
-          return null;
+          return const DownloadResult();
         }
 
         final videoTemp = '${saveDir.path}/$videoId-$timestamp-v.mp4';
@@ -220,7 +231,7 @@ class VideoDownloader {
           await File(videoTemp).delete();
           await File(audioTemp).delete();
           if (mergeResult != _MergeResult.success) {
-            return null;
+            return const DownloadResult();
           }
         }
       } else {
@@ -229,7 +240,7 @@ class VideoDownloader {
           streamInfo = manifest.muxed.withHighestBitrate();
         } catch (_) {
           debugPrint('No muxed stream available');
-          return null;
+          return const DownloadResult();
         }
         final total = streamInfo.size.totalBytes;
         final stream = yt.videos.streamsClient.get(streamInfo);
@@ -252,10 +263,10 @@ class VideoDownloader {
       onProgress?.call(1.0);
       debugPrint('File saved locally at $outputPath');
 
-      return outputPath;
+      return DownloadResult(path: outputPath);
     } catch (e) {
       debugPrint('VideoDownloader error: $e');
-      return null;
+      return const DownloadResult();
     } finally {
       debugPrint('VideoDownloader finished');
     }
@@ -264,7 +275,7 @@ class VideoDownloader {
   /// Downloads a video and updates [progressNotifier] with the download
   /// progress (0.0 to 1.0). Returns the saved file path on success or `null`
   /// if the download failed or permissions were denied.
-  static Future<String?> downloadWithNotifier(
+  static Future<DownloadResult> downloadWithNotifier(
     String videoId,
     ValueNotifier<double> progressNotifier,
   ) async {
