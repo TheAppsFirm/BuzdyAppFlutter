@@ -1,6 +1,18 @@
-# buzdy
+# Buzdy
 
-A new Flutter project.
+Sample Flutter app that lets you browse YouTube videos in a WebView and save
+them locally. Videos can be merged with `ffmpeg_kit_flutter` when no combined
+stream is available. Downloads are stored inside the app directory and may be
+added to the device gallery on demand.
+
+## Features
+
+- Built-in WebView to browse YouTube
+- Download the highest quality muxed stream when available
+- Automatically merge separate video and audio streams with ffmpeg if needed
+- Track download progress with a progress bar
+- Manage saved videos from the **Saved Videos** screen
+- Save or delete videos and play them within the app
 
 ## Getting Started
 
@@ -67,8 +79,14 @@ video-only and audio-only streams, merges them with `ffmpeg_kit`, and saves the
 resulting `.mp4` in the app's storage directory.
 
 Open the **Saved Videos** screen from the feed to view your downloads. Each
-video can then be saved to the device gallery on demand.
+video can then be saved to the device gallery on demand. Use the delete button
+to remove unwanted videos.
 
 You can also call `VideoDownloader.downloadStreams` to retrieve the raw
 video-only and audio-only files in the app documents directory without merging.
 This can be useful when you need custom ffmpeg processing.
+
+### Viewing saved videos
+
+Tap the video library icon in the Feed screen to open the list of downloads.
+From here you can play the video, save it to the gallery or delete it.
