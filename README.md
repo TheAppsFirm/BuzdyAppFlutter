@@ -52,6 +52,19 @@ dependencies:
   ffmpeg_kit_flutter: ^6.0.3
 ```
 
+Add the ffmpeg-kit Maven repository in `android/build.gradle` so Gradle can
+resolve native binaries:
+
+```gradle
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://artifacts.arthenica.com/release' }
+    }
+}
+```
+
 On Android include these permissions in
 `android/app/src/main/AndroidManifest.xml`:
 
