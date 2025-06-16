@@ -1,7 +1,7 @@
 # Buzdy
 
 Sample Flutter app that lets you browse YouTube videos in a WebView and save
-them locally. Videos can be merged with `ffmpeg_kit_flutter` when no combined
+them locally. Videos can be merged with `ffmpeg_kit_flutter_new` when no combined
 stream is available. Downloads are stored inside the app directory and may be
 added to the device gallery on demand.
 
@@ -49,7 +49,7 @@ dependencies:
   path_provider: ^2.1.2
   youtube_explode_dart: ^2.0.2
   image_gallery_saver_plus: ^4.0.1
-  ffmpeg_kit_flutter: ^6.0.3
+  ffmpeg_kit_flutter_new: ^1.6.1
 ```
 
 Add the ffmpeg-kit Maven repository in `android/build.gradle` so Gradle can

@@ -32,8 +32,7 @@ flutter_ios_podfile_setup
     use_frameworks!
     use_modular_headers!
 
-    pod 'ffmpeg-kit-ios-https', '6.0.3'
-    pod 'ffmpeg-kit-ios-min-gpl', '6.0.3'
+    pod 'ffmpeg-kit-ios-full', :podspec => 'https://raw.githubusercontent.com/luthviar/ffmpeg-kit-ios-full/main/ffmpeg-kit-ios-full.podspec'
 
     flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
