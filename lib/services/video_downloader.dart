@@ -175,7 +175,7 @@ class VideoDownloader {
         // Download separate video and audio streams then merge them
         if (manifest.videoOnly.isEmpty || manifest.audioOnly.isEmpty) {
           debugPrint('No separate video/audio streams available');
-          return null;
+          return const DownloadResult();
         }
 
         StreamInfo? videoInfo;
