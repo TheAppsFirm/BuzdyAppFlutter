@@ -1,4 +1,5 @@
-# Uncomment this line to define a global platform for your project
+# Use the public CocoaPods spec repo and set the minimum deployment target
+source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '14.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
