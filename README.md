@@ -103,6 +103,7 @@ This can be useful when you need custom ffmpeg processing.
 ### Viewing saved videos
 
 Tap the video library icon in the Feed screen to open the list of downloads.
-From here you can play the video, save it to the gallery or delete it. Tap the
-checklist icon to select multiple videos and save them all to the gallery or
-delete them in one action.
+Each entry shows a thumbnail preview, filename and actions to save or delete.
+Selecting a video opens a vertical swipe player so you can browse your saved
+clips just like the main feed. Use the checklist icon to select multiple videos
+and save them all to the gallery or delete them in one action.

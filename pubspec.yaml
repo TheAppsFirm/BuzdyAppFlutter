@@ -66,6 +66,7 @@ dependencies:
   image_gallery_saver_plus: ^4.0.1
   ffmpeg_kit_flutter_new: ^1.6.1
   video_player: ^2.8.2
+  video_thumbnail: ^0.5.3
   
   
 

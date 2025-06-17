@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:buzdy/services/video_downloader.dart';
 
 class LocalVideosScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
   List<FileSystemEntity> _videos = [];
   bool _selectMode = false;
   final Set<FileSystemEntity> _selected = {};
+  final Map<String, Uint8List?> _thumbnails = {};
 
   @override
   void initState() {
@@ -24,10 +27,19 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
 
   Future<void> _loadVideos() async {
     final vids = await VideoDownloader.listSavedVideos();
-    setState(() {
-      _videos = vids;
-      _selected.removeWhere((f) => !_videos.contains(f));
-    });
+    _videos = vids;
+    _selected.removeWhere((f) => !_videos.contains(f));
+    _thumbnails.clear();
+    for (final v in _videos) {
+      final thumb = await VideoThumbnail.thumbnailData(
+        video: v.path,
+        imageFormat: ImageFormat.JPEG,
+        maxHeight: 120,
+        quality: 50,
+      );
+      _thumbnails[v.path] = thumb;
+    }
+    setState(() {});
   }
 
   Future<void> _deleteVideo(File file) async {
@@ -54,8 +66,11 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
   }
 
   void _openPlayer(File file) {
+    final index = _videos.indexWhere((v) => v.path == file.path);
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => _LocalVideoPlayer(file: file)),
+      MaterialPageRoute(
+        builder: (_) => LocalVideoFeed(files: _videos.map((e) => File(e.path)).toList(), initialIndex: index),
+      ),
     );
   }
 
@@ -221,13 +236,16 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
                 final name = file.path.split('/').last;
                 final size = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
                 final checked = _selected.contains(_videos[index]);
+                final thumb = _thumbnails[file.path];
                 return ListTile(
                   leading: _selectMode
                       ? Checkbox(
                           value: checked,
                           onChanged: (_) => _toggleSelection(_videos[index]),
                         )
-                      : null,
+                      : (thumb != null
+                          ? Image.memory(thumb, width: 64, height: 64, fit: BoxFit.cover)
+                          : const SizedBox(width: 64, height: 64)),
                   title: Text(name),
                   subtitle: Text('$size MB'),
                   trailing: _selectMode
@@ -259,44 +277,83 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
   }
 }
 
-class _LocalVideoPlayer extends StatefulWidget {
-  final File file;
-  const _LocalVideoPlayer({required this.file});
+class LocalVideoFeed extends StatefulWidget {
+  final List<File> files;
+  final int initialIndex;
+  const LocalVideoFeed({super.key, required this.files, this.initialIndex = 0});
 
   @override
-  State<_LocalVideoPlayer> createState() => _LocalVideoPlayerState();
+  State<LocalVideoFeed> createState() => _LocalVideoFeedState();
 }
 
-class _LocalVideoPlayerState extends State<_LocalVideoPlayer> {
-  late VideoPlayerController _controller;
+class _LocalVideoFeedState extends State<LocalVideoFeed> {
+  late PageController _pageController;
+  final Map<int, VideoPlayerController> _controllers = {};
+  int _current = 0;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.file(widget.file)
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-      });
+    _current = widget.initialIndex;
+    _pageController = PageController(initialPage: _current);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    for (var c in _controllers.values) {
+      c.dispose();
+    }
+    _pageController.dispose();
     super.dispose();
+  }
+
+  Future<VideoPlayerController> _getController(int index) async {
+    if (_controllers[index] != null) return _controllers[index]!;
+    final controller = VideoPlayerController.file(widget.files[index]);
+    await controller.initialize();
+    controller.setLooping(true);
+    if (index == _current) controller.play();
+    _controllers[index] = controller;
+    return controller;
+  }
+
+  void _onPageChanged(int index) {
+    setState(() => _current = index);
+    for (final entry in _controllers.entries) {
+      if (entry.key == index) {
+        entry.value.play();
+      } else {
+        entry.value.pause();
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: _controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              )
-            : const CircularProgressIndicator(),
+      backgroundColor: Colors.black,
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.files.length,
+        scrollDirection: Axis.vertical,
+        onPageChanged: _onPageChanged,
+        itemBuilder: (context, index) {
+          return FutureBuilder<VideoPlayerController>(
+            future: _getController(index),
+            builder: (context, snap) {
+              if (!snap.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final controller = snap.data!;
+              return Center(
+                child: AspectRatio(
+                  aspectRatio: controller.value.aspectRatio,
+                  child: VideoPlayer(controller),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
