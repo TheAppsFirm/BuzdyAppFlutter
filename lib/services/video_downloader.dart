@@ -106,11 +106,22 @@ class VideoDownloader {
 
   /// success. Progress updates are reported through [onProgress].
   static Future<DownloadResult> download(
-    String videoId, {
+    String idOrUrl, {
     void Function(double progress)? onProgress,
   }) async {
     try {
-      debugPrint('VideoDownloader: starting download for $videoId');
+      debugPrint('VideoDownloader: starting download for $idOrUrl');
+
+      final yt = YoutubeExplode();
+      late Video video;
+      try {
+        video = await yt.videos.get(idOrUrl);
+      } catch (e) {
+        debugPrint('Failed to fetch video info: $e');
+        yt.close();
+        return const DownloadResult();
+      }
+      final videoId = video.id.value;
 
 
       Directory saveDir = await _getSavedDir();
@@ -156,7 +167,6 @@ class VideoDownloader {
       }
 
       debugPrint('Using directory: ${saveDir.path}');
-      final yt = YoutubeExplode();
       StreamManifest manifest;
       try {
         manifest = await yt.videos.streamsClient.getManifest(videoId);
@@ -276,13 +286,13 @@ class VideoDownloader {
   /// progress (0.0 to 1.0). Returns the saved file path on success or `null`
   /// if the download failed or permissions were denied.
   static Future<DownloadResult> downloadWithNotifier(
-    String videoId,
+    String idOrUrl,
     ValueNotifier<double> progressNotifier,
   ) async {
     // Reset progress
     progressNotifier.value = 0.0;
     return download(
-      videoId,
+      idOrUrl,
       onProgress: (p) => progressNotifier.value = p,
     );
   }

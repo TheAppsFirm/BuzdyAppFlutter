@@ -219,6 +219,7 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
               itemBuilder: (context, index) {
                 final file = File(_videos[index].path);
                 final name = file.path.split('/').last;
+                final size = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
                 final checked = _selected.contains(_videos[index]);
                 return ListTile(
                   leading: _selectMode
@@ -228,6 +229,7 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
                         )
                       : null,
                   title: Text(name),
+                  subtitle: Text('$size MB'),
                   trailing: _selectMode
                       ? null
                       : Wrap(
