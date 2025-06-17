@@ -13,6 +13,7 @@ added to the device gallery on demand.
 - Track download progress with a progress bar
 - Manage saved videos from the **Saved Videos** screen
 - Save or delete videos and play them within the app
+- Select multiple saved videos to save or delete them all at once
 
 ## Getting Started
 
@@ -102,4 +103,6 @@ This can be useful when you need custom ffmpeg processing.
 ### Viewing saved videos
 
 Tap the video library icon in the Feed screen to open the list of downloads.
-From here you can play the video, save it to the gallery or delete it.
+From here you can play the video, save it to the gallery or delete it. Tap the
+checklist icon to select multiple videos and save them all to the gallery or
+delete them in one action.

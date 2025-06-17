@@ -13,6 +13,8 @@ class LocalVideosScreen extends StatefulWidget {
 
 class _LocalVideosScreenState extends State<LocalVideosScreen> {
   List<FileSystemEntity> _videos = [];
+  bool _selectMode = false;
+  final Set<FileSystemEntity> _selected = {};
 
   @override
   void initState() {
@@ -24,6 +26,7 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
     final vids = await VideoDownloader.listSavedVideos();
     setState(() {
       _videos = vids;
+      _selected.removeWhere((f) => !_videos.contains(f));
     });
   }
 
@@ -56,10 +59,78 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
     );
   }
 
+  void _toggleSelectMode() {
+    setState(() {
+      _selectMode = !_selectMode;
+      if (!_selectMode) _selected.clear();
+    });
+  }
+
+  void _toggleSelection(FileSystemEntity file) {
+    setState(() {
+      if (_selected.contains(file)) {
+        _selected.remove(file);
+      } else {
+        _selected.add(file);
+      }
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      _selected.addAll(_videos);
+    });
+  }
+
+  Future<void> _deleteSelected() async {
+    for (final f in _selected.toList()) {
+      await _deleteVideo(File(f.path));
+    }
+    _toggleSelectMode();
+  }
+
+  Future<void> _saveSelected() async {
+    for (final f in _selected) {
+      await _saveToGallery(File(f.path));
+    }
+    _toggleSelectMode();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Saved Videos')),
+      appBar: AppBar(
+        title: const Text('Saved Videos'),
+        leading: _selectMode
+            ? IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: _toggleSelectMode,
+              )
+            : null,
+        actions: _selectMode
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.select_all),
+                  onPressed: _selectAll,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.save_alt),
+                  onPressed:
+                      _selected.isEmpty ? null : () => _saveSelected(),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed:
+                      _selected.isEmpty ? null : () => _deleteSelected(),
+                ),
+              ]
+            : [
+                IconButton(
+                  icon: const Icon(Icons.checklist),
+                  onPressed: _toggleSelectMode,
+                ),
+              ],
+      ),
       body: _videos.isEmpty
           ? const Center(child: Text('No saved videos'))
           : ListView.builder(
@@ -67,25 +138,37 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
               itemBuilder: (context, index) {
                 final file = File(_videos[index].path);
                 final name = file.path.split('/').last;
+                final checked = _selected.contains(_videos[index]);
                 return ListTile(
+                  leading: _selectMode
+                      ? Checkbox(
+                          value: checked,
+                          onChanged: (_) => _toggleSelection(_videos[index]),
+                        )
+                      : null,
                   title: Text(name),
-                  trailing: Wrap(
-                    spacing: 4,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.save_alt),
-                        onPressed: () => _saveToGallery(file),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.play_arrow),
-                        onPressed: () => _openPlayer(file),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteVideo(file),
-                      ),
-                    ],
-                  ),
+                  trailing: _selectMode
+                      ? null
+                      : Wrap(
+                          spacing: 4,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.save_alt),
+                              onPressed: () => _saveToGallery(file),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.play_arrow),
+                              onPressed: () => _openPlayer(file),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => _deleteVideo(file),
+                            ),
+                          ],
+                        ),
+                  onTap: _selectMode
+                      ? () => _toggleSelection(_videos[index])
+                      : () => _openPlayer(file),
                 );
               },
             ),
