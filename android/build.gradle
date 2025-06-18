@@ -2,8 +2,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // Repository hosting ffmpeg-kit artifacts
-        maven { url 'https://artifacts.arthenica.com/release' }
     }
 }
 

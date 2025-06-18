@@ -1,4 +1,4 @@
-# Buzdy
+# buzdy
 
 A comprehensive Flutter application that combines YouTube video downloading capabilities with cryptocurrency tracking, business directory features, and product discovery. Buzdy serves as an all-in-one platform for media consumption, financial market monitoring, and business exploration.
 
@@ -8,6 +8,7 @@ A comprehensive Flutter application that combines YouTube video downloading capa
 - **Multi-tab Navigation**: Crypto tracking, Business directory, Products catalog, and YouTube feed
 - **User Authentication**: Complete registration and login system with profile management
 - **Responsive Design**: Optimized for both mobile and tablet devices
+
 
 ### 🎥 YouTube Integration
 - **Built-in WebView** to browse YouTube seamlessly
@@ -51,6 +52,9 @@ A comprehensive Flutter application that combines YouTube video downloading capa
 - **HTTP Client**: Custom implementation with comprehensive logging
 - **Response Mapping**: Robust data model mapping with error handling
 
+
+Run this whenever `pubspec.yaml` changes to avoid package resolution errors.
+=======
 ### Media & Storage
 - **Video Processing**: YouTube video extraction and processing
 - **FFmpeg Integration**: Video/audio merging capabilities

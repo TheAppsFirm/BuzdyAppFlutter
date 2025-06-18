@@ -1,7 +1,6 @@
 import 'package:buzdy/presentation/screens/dashboard/feed/model/youtubeModel.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/videoplayer.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/shorts_feed_player.dart';
-import 'package:buzdy/presentation/screens/dashboard/feed/local_videos_screen.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/presentation/widgets/appBar.dart';
 import 'package:flutter/material.dart';
@@ -56,20 +55,8 @@ class _FeedScreenState extends State<FeedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: appBarrWitAction(
-          title: "Feed",
-          leadingWidget: Container(),
-          centerTitle: true,
-          actionwidget: IconButton(
-            icon: const Icon(Icons.video_library),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const LocalVideosScreen(),
-                ),
-              );
-            },
-          )),
+      appBar: appBarrWitoutAction(
+          title: "Feed", leadingWidget: Container(), centerTitle: true),
       body: Consumer<UserViewModel>(
         builder: (context, provider, child) {
           return SingleChildScrollView(
@@ -126,8 +113,9 @@ class _FeedScreenState extends State<FeedScreen> {
                 ),
 
                 ListView.builder(
+                  // controller: _videosScrollController,
+                  physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: provider.youtubeVideos.length + 1,
                   itemBuilder: (context, index) {
                     if (index == provider.youtubeVideos.length) {
