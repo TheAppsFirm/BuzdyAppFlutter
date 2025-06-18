@@ -158,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   });
                 }
 
-                // Get.offAll(DashBorad(index: 0));
+                // Get.offAll(DashBoard(index: 0));
               }, text: "Log in"),
               UIHelper.verticalSpaceSm10,
               Row(

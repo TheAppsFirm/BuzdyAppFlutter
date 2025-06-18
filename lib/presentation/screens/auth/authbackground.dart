@@ -59,7 +59,7 @@ class _AuthBackgroundState extends State<AuthBackground> {
                         widget.skip
                             ? InkWell(
                                 onTap: () {
-                                  Get.offAll(DashBorad(index: 0));
+                                  Get.offAll(DashBoard(index: 0));
                                 },
                                 child: kText(
                                   text: "Skip",

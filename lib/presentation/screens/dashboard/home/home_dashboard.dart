@@ -259,6 +259,21 @@ class HomeDashboardScreen extends StatelessWidget {
               StatCard(title: 'Products', count: vm.productList.length),
             ],
           ),
+          const SizedBox(height: 12),
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Search... ',
+              filled: true,
+              fillColor: colors.onPrimary.withOpacity(0.1),
+              prefixIcon: const Icon(Icons.search),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            onChanged: vm.searchCoins,
+          ),
         ],
       ),
     );

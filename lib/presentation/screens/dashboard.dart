@@ -10,15 +10,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:provider/provider.dart';
 
-class DashBorad extends StatefulWidget {
+class DashBoard extends StatefulWidget {
   final int index;
-  const DashBorad({Key? key, required this.index}) : super(key: key);
-  
+  const DashBoard({Key? key, required this.index}) : super(key: key);
+
   @override
-  _DashBoradState createState() => _DashBoradState();
+  _DashBoardState createState() => _DashBoardState();
 }
 
-class _DashBoradState extends State<DashBorad> {
+class _DashBoardState extends State<DashBoard> {
   int _selectedIndex = 0;
   late PageController _pageController;
 
