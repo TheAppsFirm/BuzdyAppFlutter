@@ -25,6 +25,9 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
   void initState() {
     super.initState();
     final userViewModel = Provider.of<UserViewModel>(context, listen: false);
+    if (userViewModel.coins.isEmpty) {
+      userViewModel.fetchCoins(limit: 25);
+    }
     _scrollController.addListener(() {
       // Trigger pagination only if the user has scrolled to the bottom
       if (_scrollController.position.pixels ==
@@ -112,11 +115,12 @@ class _CryptoListView extends StatelessWidget {
                   // Trigger a refresh to fetch the latest coins.
                   await userViewModel.fetchCoins(limit: 10, isRefresh: true);
                 },
-                child: ListView.builder(
-                  controller: scrollController,
-                  // Only add a bottom loader if the coins list is not empty.
-                  itemCount: userViewModel.coins.length +
-                      (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
+              child: ListView.builder(
+                controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                // Only add a bottom loader if the coins list is not empty.
+                itemCount: userViewModel.coins.length +
+                    (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (index == userViewModel.coins.length) {
                       return const Padding(

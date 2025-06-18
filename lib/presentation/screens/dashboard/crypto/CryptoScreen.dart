@@ -25,6 +25,10 @@ class _CryptoScreenState extends State<CryptoScreen> {
   void initState() {
     super.initState();
     final userViewModel = Provider.of<UserViewModel>(context, listen: false);
+    if (userViewModel.coins.isEmpty) {
+      // Ensure initial data is loaded when the screen first opens
+      userViewModel.fetchCoins(limit: 25);
+    }
     _scrollController.addListener(() {
       // Trigger pagination only if the user has scrolled to the bottom
       if (_scrollController.position.pixels ==
@@ -114,6 +118,7 @@ class _CryptoListView extends StatelessWidget {
               },
               child: ListView.builder(
                 controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
                 // Only add a bottom loader if the coins list is not empty.
                 itemCount: userViewModel.coins.length +
                     (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
@@ -126,8 +131,14 @@ class _CryptoListView extends StatelessWidget {
                   }
                   final coin = userViewModel.coins[index];
                   return InkWell(
-                    onTap: () {
-                      Get.to(CoinDetailScreen(coin: coin));
+                    onTap: () async {
+                      userViewModel.easyLoadingStart();
+                      final detail = await userViewModel
+                          .fetchCoinDetail(coin.code ?? coin.symbol);
+                      userViewModel.easyLoadingStop();
+                      if (detail != null) {
+                        Get.to(CoinDetailScreen(coin: detail));
+                      }
                     },
                     child: Card(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
