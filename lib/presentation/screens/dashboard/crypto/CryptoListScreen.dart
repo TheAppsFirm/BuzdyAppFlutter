@@ -107,6 +107,21 @@ class _CryptoListView extends StatelessWidget {
             const Expanded(
               child: Center(child: CircularProgressIndicator()),
             )
+          else if (!userViewModel.isFetching && userViewModel.coins.isEmpty)
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await userViewModel.fetchCoins(limit: 10, isRefresh: true);
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: const [
+                    SizedBox(height: 200),
+                    Center(child: Text('No coins available')),
+                  ],
+                ),
+              ),
+            )
           else
             // Coin List with Pull-to-Refresh
             Expanded(
@@ -115,12 +130,12 @@ class _CryptoListView extends StatelessWidget {
                   // Trigger a refresh to fetch the latest coins.
                   await userViewModel.fetchCoins(limit: 10, isRefresh: true);
                 },
-              child: ListView.builder(
-                controller: scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                // Only add a bottom loader if the coins list is not empty.
-                itemCount: userViewModel.coins.length +
-                    (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
+                child: ListView.builder(
+                  controller: scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  // Only add a bottom loader if the coins list is not empty.
+                  itemCount: userViewModel.coins.length +
+                      (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (index == userViewModel.coins.length) {
                       return const Padding(

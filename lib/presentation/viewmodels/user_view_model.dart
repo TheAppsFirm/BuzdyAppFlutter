@@ -629,7 +629,7 @@ Future getAllProductsWithFilters({
   List<CoinModel> get coins => _filteredCoins;
   bool get isFetching => _isFetching;
 
-  Future<void> fetchCoins({int limit = 2, bool isRefresh = false}) async {
+  Future<void> fetchCoins({int limit = 25, bool isRefresh = false}) async {
     if (_isFetching || !_hasMore) return;
     _isFetching = true;
     notifyListeners();
@@ -771,24 +771,39 @@ Future getAllProductsWithFilters({
 
     _logRequest('POST', url.toString(), payload: body);
 
-    final response = await http.post(url,
+    try {
+      final response = await http.post(
+        url,
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey
+          'x-api-key': apiKey,
         },
-        body: body);
+        body: body,
+      );
 
-    _logResponse(url.toString(), jsonDecode(response.body), statusCode: response.statusCode);
+      _logResponse(
+        url.toString(),
+        jsonDecode(response.body),
+        statusCode: response.statusCode,
+      );
 
-    if (response.statusCode == 200) {
-      return CoinModel.fromJson(jsonDecode(response.body));
-    } else {
-      UIHelper.showMySnak(
+      if (response.statusCode == 200) {
+        return CoinModel.fromJson(jsonDecode(response.body));
+      } else {
+        UIHelper.showMySnak(
           title: "ERROR",
           message: "Failed to load coin details: ${response.statusCode}",
-          isError: true);
-      return null;
+          isError: true,
+        );
+      }
+    } catch (e) {
+      UIHelper.showMySnak(
+        title: "ERROR",
+        message: "Failed to load coin details: $e",
+        isError: true,
+      );
     }
+    return null;
   }
 
   void searchCoins(String query) {

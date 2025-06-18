@@ -108,6 +108,21 @@ class _CryptoListView extends StatelessWidget {
             const Expanded(
               child: Center(child: CircularProgressIndicator()),
             )
+          else if (!userViewModel.isFetching && userViewModel.coins.isEmpty)
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await userViewModel.fetchCoins(limit: 10, isRefresh: true);
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: const [
+                    SizedBox(height: 200),
+                    Center(child: Text('No coins available')),
+                  ],
+                ),
+              ),
+            )
           else
           // Coin List with Pull-to-Refresh
           Expanded(
