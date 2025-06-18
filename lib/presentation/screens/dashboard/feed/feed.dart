@@ -63,11 +63,7 @@ class _FeedScreenState extends State<FeedScreen> {
           actionwidget: IconButton(
             icon: const Icon(Icons.video_library),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const LocalVideosScreen(),
-                ),
-              );
+              Navigator.of(context).pushNamed('/localVideos');
             },
           )),
       body: Consumer<UserViewModel>(

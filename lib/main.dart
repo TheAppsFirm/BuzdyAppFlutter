@@ -1,4 +1,5 @@
 import 'package:buzdy/presentation/screens/splash/splash.dart';
+import 'package:buzdy/presentation/screens/dashboard/feed/local_videos_screen.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -47,6 +48,9 @@ class MyApp extends StatelessWidget {
         darkTheme: darkTheme,
         themeMode: ThemeMode.system,
         home: SplashScreen(),
+        routes: {
+          '/localVideos': (_) => const LocalVideosScreen(),
+        },
         builder: EasyLoading.init(),
       ),
     );
