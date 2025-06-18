@@ -173,14 +173,8 @@ class _LocalVideosScreenState extends State<LocalVideosScreen> {
     }
 
     if (result.path != null) {
-      final ok = await VideoDownloader.saveToGallery(result.path!);
-      if (ok) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Video saved to gallery')));
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Failed to save'), backgroundColor: Colors.red));
-      }
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Video downloaded')));
       await _loadVideos();
     } else {
       ScaffoldMessenger.of(context)

@@ -46,12 +46,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     if (result.permissionDenied) {
       showAppSnackBar(context, 'Storage permission denied', isError: true);
     } else if (result.path != null) {
-      final ok = await VideoDownloader.saveToGallery(result.path!);
-      if (ok) {
-        showAppSnackBar(context, 'Video saved to gallery');
-      } else {
-        showAppSnackBar(context, 'Failed to save to gallery', isError: true);
-      }
+      showAppSnackBar(context, 'Video saved locally');
     } else {
       showAppSnackBar(context, 'Download failed', isError: true);
     }
