@@ -11,6 +11,17 @@ import '../feed/feed.dart';
 class HomeDashboardScreen extends StatelessWidget {
   const HomeDashboardScreen({super.key});
 
+  Future<void> _refreshDashboard(UserViewModel vm) async {
+    vm.resetFilters();
+    await Future.wait([
+      vm.getAllBanks(pageNumber: 1),
+      vm.getAllMarchants(pageNumber: 1),
+      vm.getAllProducts(pageNumber: 1),
+      vm.fetchCoins(limit: 25, isRefresh: true),
+      vm.fetchYoutubeVideos(isRefresh: true),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<UserViewModel>(context);
@@ -23,62 +34,25 @@ class HomeDashboardScreen extends StatelessWidget {
     final time = DateFormat.Hm().format(now);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(userName, date, time, viewModel),
-            const SizedBox(height: 20),
-            _buildSearchBar(),
-            const SizedBox(height: 20),
-            _buildFeatureGrid(context, viewModel),
-            const SizedBox(height: 20),
-            _buildQuickActions(),
-            const SizedBox(height: 20),
-            _buildNewsSection(),
-            const SizedBox(height: 20),
-            _buildAnalyticsSection(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(String userName, String date, String time, UserViewModel vm) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Welcome, $userName', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        Text('$date - $time', style: const TextStyle(color: Colors.grey)),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildStatCard('Videos', vm.youtubeVideos.length),
-            _buildStatCard('Coins', vm.coins.length),
-            _buildStatCard('Products', vm.productList.length),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(String title, int count) {
-    return Expanded(
-      child: Card(
-        elevation: 1,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
+      body: RefreshIndicator(
+        onRefresh: () => _refreshDashboard(viewModel),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(count.toString(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(title, style: const TextStyle(fontSize: 12)),
+              _buildHeader(context, userName, date, time, viewModel),
+              const SizedBox(height: 20),
+              _buildSearchBar(context),
+              const SizedBox(height: 20),
+              _buildFeatureGrid(context, viewModel),
+              const SizedBox(height: 20),
+              _buildQuickActions(context),
+              const SizedBox(height: 20),
+              _buildNewsSection(context),
+              const SizedBox(height: 20),
+              _buildAnalyticsSection(context),
             ],
           ),
         ),
@@ -86,7 +60,67 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildHeader(BuildContext context, String userName, String date, String time, UserViewModel vm) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [colors.primary, colors.primaryContainer],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Welcome, $userName',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: colors.onPrimary)),
+          const SizedBox(height: 4),
+          Text('$date · $time',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: colors.onPrimary.withOpacity(0.8))),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildStatCard(context, 'Videos', vm.youtubeVideos.length),
+              const SizedBox(width: 8),
+              _buildStatCard(context, 'Coins', vm.coins.length),
+              const SizedBox(width: 8),
+              _buildStatCard(context, 'Products', vm.productList.length),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(BuildContext context, String title, int count) {
+    return Expanded(
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              Text(
+                count.toString(),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(title, style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
     return TextField(
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search),
@@ -97,50 +131,50 @@ class HomeDashboardScreen extends StatelessWidget {
   }
 
   Widget _buildFeatureGrid(BuildContext context, UserViewModel vm) {
-    return GridView.count(
-      crossAxisCount: 2,
+    final features = [
+      {'title': 'YouTube', 'builder': _youtubePreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FeedScreen()))},
+      {'title': 'Crypto', 'builder': _cryptoPreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CryptoScreen()))},
+      {'title': 'Business', 'builder': _businessPreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeScreen()))},
+      {'title': 'Products', 'builder': _productPreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProductsScreen()))},
+    ];
+
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      childAspectRatio: 1.1,
-      children: [
-        _featureCard(
-          title: 'YouTube',
-          child: _youtubePreview(vm),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FeedScreen())),
-        ),
-        _featureCard(
-          title: 'Crypto',
-          child: _cryptoPreview(vm),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CryptoScreen())),
-        ),
-        _featureCard(
-          title: 'Business',
-          child: _businessPreview(vm),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeScreen())),
-        ),
-        _featureCard(
-          title: 'Products',
-          child: _productPreview(vm),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProductsScreen())),
-        ),
-      ],
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1.1,
+      ),
+      itemCount: features.length,
+      itemBuilder: (context, index) {
+        final feature = features[index];
+        return _featureCard(
+          context: context,
+          title: feature['title'] as String,
+          child: feature['builder'] as Widget,
+          onTap: feature['onTap'] as VoidCallback,
+        );
+      },
     );
   }
 
-  Widget _featureCard({required String title, required Widget child, required VoidCallback onTap}) {
-    return GestureDetector(
+  Widget _featureCard({required BuildContext context, required String title, required Widget child, required VoidCallback onTap}) {
+    return InkWell(
       onTap: onTap,
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      borderRadius: BorderRadius.circular(16),
+      child: Ink(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               Expanded(child: child),
             ],
@@ -203,7 +237,7 @@ class HomeDashboardScreen extends StatelessWidget {
           );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -214,7 +248,7 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNewsSection() {
+  Widget _buildNewsSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: const [
@@ -225,7 +259,7 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAnalyticsSection() {
+  Widget _buildAnalyticsSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: const [
