@@ -44,15 +44,8 @@ class HomeDashboardScreen extends StatelessWidget {
             children: [
               _buildHeader(context, userName, date, time, viewModel),
               const SizedBox(height: 20),
-              _buildSearchBar(context),
-              const SizedBox(height: 20),
               _buildFeatureGrid(context, viewModel),
               const SizedBox(height: 20),
-              _buildQuickActions(context),
-              const SizedBox(height: 20),
-              _buildNewsSection(context),
-              const SizedBox(height: 20),
-              _buildAnalyticsSection(context),
             ],
           ),
         ),
@@ -120,22 +113,37 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
-    return TextField(
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.search),
-        hintText: 'Search...',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
 
   Widget _buildFeatureGrid(BuildContext context, UserViewModel vm) {
     final features = [
-      {'title': 'YouTube', 'builder': _youtubePreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FeedScreen()))},
-      {'title': 'Crypto', 'builder': _cryptoPreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CryptoScreen()))},
-      {'title': 'Business', 'builder': _businessPreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeScreen()))},
-      {'title': 'Products', 'builder': _productPreview(vm), 'onTap': () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProductsScreen()))},
+      {
+        'title': 'YouTube',
+        'icon': Icons.ondemand_video,
+        'builder': _youtubePreview(vm),
+        'onTap': () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const FeedScreen())),
+      },
+      {
+        'title': 'Crypto',
+        'icon': Icons.currency_bitcoin,
+        'builder': _cryptoPreview(vm),
+        'onTap': () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const CryptoScreen())),
+      },
+      {
+        'title': 'Business',
+        'icon': Icons.business,
+        'builder': _businessPreview(vm),
+        'onTap': () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const HomeScreen())),
+      },
+      {
+        'title': 'Products',
+        'icon': Icons.shopping_bag,
+        'builder': _productPreview(vm),
+        'onTap': () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const ProductsScreen())),
+      },
     ];
 
     return GridView.builder(
@@ -153,6 +161,7 @@ class HomeDashboardScreen extends StatelessWidget {
         return _featureCard(
           context: context,
           title: feature['title'] as String,
+          icon: feature['icon'] as IconData,
           child: feature['builder'] as Widget,
           onTap: feature['onTap'] as VoidCallback,
         );
@@ -160,21 +169,45 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _featureCard({required BuildContext context, required String title, required Widget child, required VoidCallback onTap}) {
+  Widget _featureCard({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Widget child,
+    required VoidCallback onTap,
+  }) {
+    final colors = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Ink(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant,
+          gradient: LinearGradient(
+            colors: [colors.surfaceVariant, colors.surface],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
+              Row(
+                children: [
+                  Icon(icon, color: colors.primary),
+                  const SizedBox(width: 4),
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
+                ],
+              ),
               const SizedBox(height: 8),
               Expanded(child: child),
             ],
@@ -237,36 +270,5 @@ class HomeDashboardScreen extends StatelessWidget {
           );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        FloatingActionButton.small(onPressed: () {}, child: const Icon(Icons.mic)),
-        FloatingActionButton.small(onPressed: () {}, child: const Icon(Icons.qr_code_scanner)),
-        FloatingActionButton.small(onPressed: () {}, child: const Icon(Icons.settings)),
-      ],
-    );
-  }
 
-  Widget _buildNewsSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text('News & Updates', style: TextStyle(fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
-        Text('No news available.'),
-      ],
-    );
-  }
-
-  Widget _buildAnalyticsSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text('Analytics & Insights', style: TextStyle(fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
-        Text('Usage statistics will appear here.'),
-      ],
-    );
-  }
 }
