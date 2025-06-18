@@ -189,6 +189,12 @@ class HomeDashboardScreen extends StatelessWidget {
     final now = DateTime.now();
     final date = DateFormat.yMMMMd().format(now);
     final time = DateFormat.Hm().format(now);
+    final hour = now.hour;
+    final greeting = hour < 12
+        ? 'Good morning'
+        : hour < 17
+            ? 'Good afternoon'
+            : 'Good evening';
 
     return Scaffold(
       body: SafeArea(
@@ -201,7 +207,7 @@ class HomeDashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                _buildHeader(context, userName, date, time, viewModel),
+                _buildHeader(context, greeting, userName, date, time, viewModel),
               const SizedBox(height: 20),
               _buildFeatureGrid(context, viewModel),
               const SizedBox(height: 20),
@@ -212,7 +218,7 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, String userName, String date, String time, UserViewModel vm) {
+  Widget _buildHeader(BuildContext context, String greeting, String userName, String date, String time, UserViewModel vm) {
     final colors = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
@@ -230,7 +236,7 @@ class HomeDashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, $userName',
+            Text('$greeting, $userName',
               style: Theme.of(context)
                   .textTheme
                   .titleLarge
@@ -242,12 +248,12 @@ class HomeDashboardScreen extends StatelessWidget {
                   .bodyMedium
                   ?.copyWith(color: colors.onPrimary.withOpacity(0.8))),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               StatCard(title: 'Videos', count: vm.youtubeVideos.length),
-              const SizedBox(width: 8),
               StatCard(title: 'Coins', count: vm.coins.length),
-              const SizedBox(width: 8),
               StatCard(title: 'Products', count: vm.productList.length),
             ],
           ),
@@ -307,15 +313,15 @@ class HomeDashboardScreen extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+        final crossAxisCount = (constraints.maxWidth / 200).floor().clamp(2, 4);
         final aspectRatio = constraints.maxWidth > 600 ? 1.3 : 1.1;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
             childAspectRatio: aspectRatio,
           ),
           itemCount: features.length,
