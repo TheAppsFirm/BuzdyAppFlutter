@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:buzdy/core/utils.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:buzdy/services/video_downloader.dart';
@@ -18,12 +18,11 @@ class ShortsFeedPlayer extends StatefulWidget {
 class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
   late PageController _pageController;
   late List<YoutubePlayerController> _controllers;
-  final ValueNotifier<double?> _progress = ValueNotifier(null);
 
   Future<void> _shareVideo(int index) async {
     final id = widget.items[index].videoId;
     if (id == null || id.isEmpty) {
-      showAppSnackBar(context, 'Unable to share this video', isError: true);
+      EasyLoading.showError('Unable to share this video');
       return;
     }
 
@@ -35,35 +34,17 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
         subject: 'Check out this video',
       );
     } catch (e) {
-      showAppSnackBar(context, 'Sharing not available', isError: true);
+      EasyLoading.showError('Sharing not available');
     }
   }
 
   Future<void> _downloadVideo(int index) async {
     final id = widget.items[index].videoId;
     if (id == null || id.isEmpty) {
-      showAppSnackBar(context, 'Video not available', isError: true);
+      EasyLoading.showError('Video not available');
       return;
     }
-    showAppSnackBar(context, 'Downloading video...');
-    _progress.value = 0;
-    final result = await VideoDownloader.download(
-      id,
-      onProgress: (p) => _progress.value = p,
-    );
-    if (result.permissionDenied) {
-      showAppSnackBar(context, 'Storage permission denied', isError: true);
-    } else if (result.path != null) {
-      final ok = await VideoDownloader.saveToGallery(result.path!);
-      if (ok) {
-        showAppSnackBar(context, 'Video saved to gallery');
-      } else {
-        showAppSnackBar(context, 'Failed to save to gallery', isError: true);
-      }
-    } else {
-      showAppSnackBar(context, 'Download failed', isError: true);
-    }
-    _progress.value = null;
+    await VideoDownloader.download(id);
   }
 
   @override
@@ -118,44 +99,32 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
           final title = widget.items[index].snippet?.title ?? '';
           return Stack(
             children: [
-              ValueListenableBuilder<double?>(
-                valueListenable: _progress,
-                builder: (context, value, child) {
-                  return value == null
-                      ? const SizedBox.shrink()
-                      : Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          child: LinearProgressIndicator(value: value),
-                        );
-                },
-              ),
               Positioned.fill(child: player),
               Positioned(
                 bottom: 20,
                 left: 20,
-                child: Text(
-                  title,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-              Positioned(
-                bottom: 60,
                 right: 20,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconButton(
-                      color: Colors.white,
-                      icon: const Icon(Icons.share),
-                      onPressed: () => _shareVideo(index),
+                    Text(
+                      title,
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    const SizedBox(height: 20),
-                    IconButton(
-                      color: Colors.white,
-                      icon: const Icon(Icons.download),
-                      onPressed: () => _downloadVideo(index),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.share),
+                          onPressed: () => _shareVideo(index),
+                        ),
+                        IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.download),
+                          onPressed: () => _downloadVideo(index),
+                        ),
+                      ],
                     ),
                   ],
                 ),
