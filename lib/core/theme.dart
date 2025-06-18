@@ -3,12 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 
-final ColorScheme _lightColorScheme =
-    ColorScheme.fromSeed(seedColor: kAppButtonColor);
-final ColorScheme _darkColorScheme =
-    ColorScheme.fromSeed(
-  seedColor: kAppButtonColor,
-  brightness: Brightness.dark,
+const ColorScheme _lightColorScheme = ColorScheme.light(
+  primary: kPurpleColor,
+  onPrimary: kWhiteColor,
+  secondary: kBrownColor,
+  onSecondary: kWhiteColor,
+  background: kWhiteColor,
+  onBackground: kMainBlackColor,
+  surface: kWhiteColor,
+  onSurface: kMainBlackColor,
+);
+
+const ColorScheme _darkColorScheme = ColorScheme.dark(
+  primary: kPurpleColor,
+  onPrimary: kWhiteColor,
+  secondary: kBrownColor,
+  onSecondary: kWhiteColor,
 );
 
 ThemeData lightTheme = ThemeData(
