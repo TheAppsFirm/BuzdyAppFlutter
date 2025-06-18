@@ -100,6 +100,11 @@ class _CryptoListView extends StatelessWidget {
             },
           ),
           UIHelper.verticalSpaceSm20,
+          if (userViewModel.isFetching && userViewModel.coins.isEmpty)
+            const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else
           // Coin List with Pull-to-Refresh
           Expanded(
             child: RefreshIndicator(

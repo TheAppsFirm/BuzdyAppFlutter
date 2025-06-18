@@ -100,27 +100,32 @@ class _CryptoListView extends StatelessWidget {
             },
           ),
           UIHelper.verticalSpaceSm20,
-          // Coin List with Pull-to-Refresh
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                // Trigger a refresh to fetch the latest coins.
-                await userViewModel.fetchCoins(limit: 10, isRefresh: true);
-              },
-              child: ListView.builder(
-                controller: scrollController,
-                // Only add a bottom loader if the coins list is not empty.
-                itemCount: userViewModel.coins.length +
-                    (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == userViewModel.coins.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  final coin = userViewModel.coins[index];
-                  return InkWell(
+          if (userViewModel.isFetching && userViewModel.coins.isEmpty)
+            const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else
+            // Coin List with Pull-to-Refresh
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  // Trigger a refresh to fetch the latest coins.
+                  await userViewModel.fetchCoins(limit: 10, isRefresh: true);
+                },
+                child: ListView.builder(
+                  controller: scrollController,
+                  // Only add a bottom loader if the coins list is not empty.
+                  itemCount: userViewModel.coins.length +
+                      (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == userViewModel.coins.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final coin = userViewModel.coins[index];
+                    return InkWell(
                     onTap: () async {
                       userViewModel.easyLoadingStart();
                       final detail = await userViewModel
