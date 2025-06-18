@@ -368,6 +368,7 @@ class _PlayerControls extends StatefulWidget {
 }
 
 class _PlayerControlsState extends State<_PlayerControls> {
+  bool _visible = true;
   @override
   void initState() {
     super.initState();
@@ -391,33 +392,68 @@ class _PlayerControlsState extends State<_PlayerControls> {
     if (dur.inMilliseconds > 0) {
       progress = pos.inMilliseconds / dur.inMilliseconds;
     }
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Positioned(
-          bottom: 40,
-          left: 0,
-          right: 0,
-          child: Slider(
-            value: progress.clamp(0.0, 1.0),
-            onChanged: (v) {
-              final target =
-                  Duration(milliseconds: (dur.inMilliseconds * v).toInt());
-              c.seekTo(target);
-            },
-          ),
+    String format(Duration d) => d.toString().split('.').first.padLeft(8, '0');
+
+    return GestureDetector(
+      onTap: () => setState(() => _visible = !_visible),
+      child: AnimatedOpacity(
+        opacity: _visible ? 1 : 0,
+        duration: const Duration(milliseconds: 300),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              iconSize: 64,
+              icon: Icon(
+                c.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                c.value.isPlaying ? c.pause() : c.play();
+              },
+            ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.replay_10, color: Colors.white),
+                  onPressed: () {
+                    final target =
+                        c.value.position - const Duration(seconds: 10);
+                    c.seekTo(target < Duration.zero ? Duration.zero : target);
+                  },
+                ),
+                Text(
+                  format(pos),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                Expanded(
+                  child: Slider(
+                    value: progress.clamp(0.0, 1.0),
+                    onChanged: (v) {
+                      final target = Duration(
+                          milliseconds: (dur.inMilliseconds * v).toInt());
+                      c.seekTo(target);
+                    },
+                  ),
+                ),
+                Text(
+                  format(dur),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.forward_10, color: Colors.white),
+                  onPressed: () {
+                    final target =
+                        c.value.position + const Duration(seconds: 10);
+                    c.seekTo(target > dur ? dur : target);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
-        IconButton(
-          iconSize: 64,
-          icon: Icon(
-            c.value.isPlaying ? Icons.pause : Icons.play_arrow,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            c.value.isPlaying ? c.pause() : c.play();
-          },
-        ),
-      ],
+      ),
     );
   }
 }

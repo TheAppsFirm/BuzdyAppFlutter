@@ -103,25 +103,127 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
-          Positioned(
-            right: 16,
-            bottom: 40,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.share, color: Colors.white),
-                  onPressed: _shareVideo,
-                ),
-                const SizedBox(height: 20),
-                IconButton(
-                  icon: const Icon(Icons.download, color: Colors.white),
-                  onPressed: _downloadVideo,
-                ),
-              ],
-            ),
+          _YouTubeControls(
+            controller: _controller,
+            onShare: _shareVideo,
+            onDownload: _downloadVideo,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _YouTubeControls extends StatefulWidget {
+  final YoutubePlayerController controller;
+  final VoidCallback onShare;
+  final VoidCallback onDownload;
+
+  const _YouTubeControls({
+    required this.controller,
+    required this.onShare,
+    required this.onDownload,
+  });
+
+  @override
+  State<_YouTubeControls> createState() => _YouTubeControlsState();
+}
+
+class _YouTubeControlsState extends State<_YouTubeControls> {
+  bool _visible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onUpdate);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onUpdate);
+    super.dispose();
+  }
+
+  void _onUpdate() => setState(() {});
+
+  String _fmt(Duration d) => d.toString().split('.').first.padLeft(8, '0');
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.controller;
+    final pos = c.value.position;
+    final dur = c.metadata.duration;
+    double progress = 0;
+    if (dur.inMilliseconds > 0) {
+      progress = pos.inMilliseconds / dur.inMilliseconds;
+    }
+    return GestureDetector(
+      onTap: () => setState(() => _visible = !_visible),
+      child: AnimatedOpacity(
+        opacity: _visible ? 1 : 0,
+        duration: const Duration(milliseconds: 300),
+        child: Stack(
+          children: [
+            Positioned(
+              right: 16,
+              bottom: 40,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    onPressed: widget.onShare,
+                  ),
+                  const SizedBox(height: 20),
+                  IconButton(
+                    icon: const Icon(Icons.download, color: Colors.white),
+                    onPressed: widget.onDownload,
+                  ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    iconSize: 64,
+                    icon: Icon(
+                      c.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      c.value.isPlaying ? c.pause() : c.play();
+                    },
+                  ),
+                  Row(
+                    children: [
+                      const SizedBox(width: 8),
+                      Text(_fmt(pos),
+                          style: const TextStyle(color: Colors.white)),
+                      Expanded(
+                        child: Slider(
+                          value: progress.clamp(0.0, 1.0),
+                          onChanged: (v) {
+                            final target = Duration(
+                                milliseconds:
+                                    (dur.inMilliseconds * v).toInt());
+                            c.seekTo(target);
+                          },
+                        ),
+                      ),
+                      Text(_fmt(dur),
+                          style: const TextStyle(color: Colors.white)),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
