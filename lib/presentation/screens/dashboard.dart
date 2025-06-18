@@ -2,6 +2,7 @@ import 'package:buzdy/presentation/screens/dashboard/crypto/CryptoScreen.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/feed.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/bank.dart';
 import 'package:buzdy/presentation/screens/dashboard/products/products.dart';
+import 'package:buzdy/presentation/screens/dashboard/home/home_dashboard.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/core/colors.dart';
 import 'package:buzdy/core/text_styles.dart';
@@ -21,8 +22,9 @@ class _DashBoradState extends State<DashBorad> {
   int _selectedIndex = 0;
   late PageController _pageController;
 
-  // Show only four tabs in the bottom navigation bar.
+  // Main pages for the bottom navigation bar.
   final List<Widget> _pages = const [
+    HomeDashboardScreen(),
     CryptoScreen(),
     HomeScreen(),
     ProductsScreen(),
@@ -74,6 +76,11 @@ class _DashBoradState extends State<DashBorad> {
             unselectedItemColor: const Color(0xff51443A),
             onTap: _onItemTapped,
             items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: iconShow(image: 'images/home.png'),
+                label: 'Home'.tr,
+                activeIcon: activeIcon(image: 'images/home.png'),
+              ),
               BottomNavigationBarItem(
                 icon: iconShow(image: 'images/currency-exchange.png'),
                 label: 'Crypto'.tr,
