@@ -84,7 +84,7 @@ class FeatureCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Expanded(child: child),
+              Flexible(child: child),
             ],
           ),
         ),
@@ -149,7 +149,12 @@ class BusinessPreview extends StatelessWidget {
         ? const Center(child: Text('No data'))
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: merchants.map((e) => Text(e.name ?? '-')).toList(),
+            children: merchants
+                .map((e) => Text(
+                      e.name ?? '-',
+                      overflow: TextOverflow.ellipsis,
+                    ))
+                .toList(),
           );
   }
 }
@@ -165,7 +170,12 @@ class ProductPreview extends StatelessWidget {
         ? const Center(child: Text('No products'))
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: products.map((e) => Text(e.name ?? '-')).toList(),
+            children: products
+                .map((e) => Text(
+                      e.name ?? '-',
+                      overflow: TextOverflow.ellipsis,
+                    ))
+                .toList(),
           );
   }
 }
@@ -287,23 +297,29 @@ class HomeDashboardScreen extends StatelessWidget {
       },
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: 1.1,
-      ),
-      itemCount: features.length,
-      itemBuilder: (context, index) {
-        final feature = features[index];
-        return FeatureCard(
-          title: feature['title'] as String,
-          icon: feature['icon'] as IconData,
-          child: feature['builder'] as Widget,
-          onTap: feature['onTap'] as VoidCallback,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+        final aspectRatio = constraints.maxWidth > 600 ? 1.3 : 1.1;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: aspectRatio,
+          ),
+          itemCount: features.length,
+          itemBuilder: (context, index) {
+            final feature = features[index];
+            return FeatureCard(
+              title: feature['title'] as String,
+              icon: feature['icon'] as IconData,
+              child: feature['builder'] as Widget,
+              onTap: feature['onTap'] as VoidCallback,
+            );
+          },
         );
       },
     );

@@ -58,22 +58,23 @@ class _DashBoradState extends State<DashBorad> {
     return Consumer<UserViewModel>(
       builder: (context, viewmodel, child) {
         return Scaffold(
-          backgroundColor: whiteColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: PageView(
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(),
             children: _pages,
           ),
           bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: appButtonColor,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             type: BottomNavigationBarType.fixed,
             elevation: 8.0,
             showUnselectedLabels: true,
             unselectedLabelStyle: textStyleExoBold(fontSize: 12),
             selectedLabelStyle: textStyleExoBold(fontSize: 12),
             currentIndex: _selectedIndex,
-            selectedItemColor: Colors.black,
-            unselectedItemColor: const Color(0xff51443A),
+            selectedItemColor: Theme.of(context).colorScheme.onPrimary,
+            unselectedItemColor:
+                Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
             onTap: _onItemTapped,
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
