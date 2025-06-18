@@ -109,11 +109,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: whiteColor,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: appBarrWitoutAction(
         title: "Products",
         centerTitle: true,
-        backgroundColor: whiteColor,
+        backgroundColor: Theme.of(context).colorScheme.background,
         leadingWidget: Container(),
       ),
       body: Consumer<UserViewModel>(

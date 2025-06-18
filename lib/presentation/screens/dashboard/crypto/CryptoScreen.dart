@@ -43,7 +43,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
     return DefaultTabController(
       length: 2, // Two tabs
       child: Scaffold(
-        backgroundColor: whiteColor,
+        backgroundColor: Theme.of(context).colorScheme.background,
         appBar: AppBar(
           title: const Text("Crypto"),
           centerTitle: true,

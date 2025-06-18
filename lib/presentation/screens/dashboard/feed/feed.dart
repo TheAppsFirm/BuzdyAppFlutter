@@ -55,7 +55,7 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: appBarrWitAction(
           title: "Feed",
           leadingWidget: Container(),

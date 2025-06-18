@@ -29,7 +29,7 @@ ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   colorScheme: _lightColorScheme,
   cupertinoOverrideTheme: const CupertinoThemeData(primaryColor: kAppButtonColor),
-  scaffoldBackgroundColor: kWhiteColor,
+  scaffoldBackgroundColor: _lightColorScheme.background,
   textTheme: GoogleFonts.poppinsTextTheme(),
   appBarTheme: AppBarTheme(
     backgroundColor: _lightColorScheme.primary,
@@ -47,6 +47,12 @@ ThemeData lightTheme = ThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   ),
+  cardTheme: CardTheme(
+    color: kGlassLight,
+    elevation: 0,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    margin: EdgeInsets.zero,
+  ),
   inputDecorationTheme: InputDecorationTheme(
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
   ),
@@ -62,7 +68,7 @@ ThemeData lightTheme = ThemeData(
 ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   colorScheme: _darkColorScheme,
-  scaffoldBackgroundColor: Colors.grey[900],
+  scaffoldBackgroundColor: _darkColorScheme.background,
   textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
   appBarTheme: AppBarTheme(
     backgroundColor: _darkColorScheme.primary,
@@ -74,6 +80,12 @@ ThemeData darkTheme = ThemeData(
       foregroundColor: _darkColorScheme.onPrimary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
+  ),
+  cardTheme: CardTheme(
+    color: kGlassDark,
+    elevation: 0,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    margin: EdgeInsets.zero,
   ),
   inputDecorationTheme: InputDecorationTheme(
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

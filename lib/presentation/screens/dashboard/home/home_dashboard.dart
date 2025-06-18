@@ -7,6 +7,7 @@ import '../crypto/CryptoScreen.dart';
 import '../banks/bank.dart';
 import '../products/products.dart';
 import '../feed/feed.dart';
+import '../../../widgets/glass_container.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
@@ -55,38 +56,22 @@ class FeatureCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [colors.surfaceVariant, colors.surface],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            )
+      child: GlassContainer(
+        borderRadius: BorderRadius.circular(16),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: colors.primary),
+                const SizedBox(width: 4),
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Flexible(child: child),
           ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, color: colors.primary),
-                  const SizedBox(width: 4),
-                  Text(title, style: Theme.of(context).textTheme.titleMedium),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Flexible(child: child),
-            ],
-          ),
         ),
       ),
     );
@@ -206,15 +191,17 @@ class HomeDashboardScreen extends StatelessWidget {
     final time = DateFormat.Hm().format(now);
 
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () => _refreshDashboard(viewModel),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context, userName, date, time, viewModel),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => _refreshDashboard(viewModel),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                _buildHeader(context, userName, date, time, viewModel),
               const SizedBox(height: 20),
               _buildFeatureGrid(context, viewModel),
               const SizedBox(height: 20),
@@ -230,15 +217,20 @@ class HomeDashboardScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [colors.primary, colors.primaryContainer],
+          colors: [
+            colors.primary.withOpacity(0.7),
+            colors.primaryContainer.withOpacity(0.5),
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Welcome, $userName',
+      child: GlassContainer(
+        padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Welcome, $userName',
               style: Theme.of(context)
                   .textTheme
                   .titleLarge
@@ -275,6 +267,7 @@ class HomeDashboardScreen extends StatelessWidget {
             onChanged: vm.searchCoins,
           ),
         ],
+      ),
       ),
     );
   }
