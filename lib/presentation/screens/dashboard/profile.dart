@@ -1,4 +1,3 @@
-import 'package:buzdy/presentation/screens/auth/login/login.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/presentation/widgets/CustomButton.dart';
 import 'package:buzdy/presentation/widgets/custom_text_field.dart';
@@ -62,10 +61,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> deleteToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', "");
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,16 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         centerTitle: true,
         elevation: 1,
-        actions: [
-          if (!showDummyProfile)
-            IconButton(
-              onPressed: () {
-                deleteToken();
-                Get.offAll(const LoginScreen());
-              },
-              icon: const Icon(Icons.logout, color: Colors.blue),
-            ),
-        ],
+        actions: [],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -149,14 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         UIHelper.verticalSpaceLarge,
-        Center(
-          child: CustomButton(
-            () {
-              Get.offAll(const LoginScreen());
-            },
-            text: "Login",
-          ),
-        ),
+        // Login functionality is currently disabled.
       ],
     );
   }

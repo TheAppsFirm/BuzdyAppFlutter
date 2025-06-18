@@ -110,6 +110,13 @@ final Map<String, List<String>> cityMap = {
   void initState() {
     super.initState();
 
+    final viewModel = Provider.of<UserViewModel>(context, listen: false);
+    viewModel.setLoading(true);
+    Future.wait([
+      viewModel.getAllBanks(pageNumber: 1),
+      viewModel.getAllMarchants(pageNumber: 1),
+    ]).whenComplete(() => viewModel.setLoading(false));
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 100) {
@@ -162,6 +169,10 @@ final Map<String, List<String>> cityMap = {
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Consumer<UserViewModel>(builder: (context, pr, c) {
+          if (pr.isLoading && pr.bankList.isEmpty && pr.merchantList.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           List<Bank> filteredBanks = pr.bankList
               .where((bank) => bank.name.toLowerCase().contains(_searchController.text.toLowerCase()))
               .toList();

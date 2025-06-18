@@ -47,27 +47,49 @@ class Item {
   final String? kind;
   final String? etag;
   final String? id;
+  final String? videoId;
   final Snippet? snippet;
 
   Item({
     this.kind,
     this.etag,
     this.id,
+    this.videoId,
     this.snippet,
   });
 
-  factory Item.fromJson(Map<String, dynamic> json) => Item(
-        kind: json["kind"] ?? "",
-        etag: json["etag"] ?? "",
-        id: json["id"] ?? "",
-        snippet:
-            json["snippet"] != null ? Snippet.fromJson(json["snippet"]) : null,
-      );
+  factory Item.fromJson(Map<String, dynamic> json) {
+    final dynamic idField = json['id'];
+
+    String? parsedId;
+    String? parsedVideoId;
+
+    if (idField is Map) {
+      parsedVideoId = idField['videoId'] as String?;
+      parsedId = idField['playlistId'] as String? ?? parsedVideoId ?? '';
+    } else if (idField is String) {
+      parsedId = idField;
+      parsedVideoId = idField;
+    } else {
+      parsedId = '';
+      parsedVideoId = '';
+    }
+
+    return Item(
+      kind: json['kind'] ?? '',
+      etag: json['etag'] ?? '',
+      id: parsedId,
+      videoId: parsedVideoId,
+      snippet:
+          json['snippet'] != null ? Snippet.fromJson(json['snippet']) : null,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "kind": kind,
         "etag": etag,
         "id": id,
+        "videoId": videoId,
         "snippet": snippet?.toJson(),
       };
 }

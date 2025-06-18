@@ -7,12 +7,14 @@ class BubbleDetailsDialog extends StatelessWidget {
   final Bubble bubble;
   final String selectedTimeframe;
   final Map<String, ui.Image> imageCache;
+  final VoidCallback onViewDetail;
 
   const BubbleDetailsDialog({
     Key? key,
     required this.bubble,
     required this.selectedTimeframe,
     required this.imageCache,
+    required this.onViewDetail,
   }) : super(key: key);
 
   String formatPrice(double price) {

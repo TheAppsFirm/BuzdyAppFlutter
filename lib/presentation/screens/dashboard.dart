@@ -2,7 +2,6 @@ import 'package:buzdy/presentation/screens/dashboard/crypto/CryptoScreen.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/feed.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/bank.dart';
 import 'package:buzdy/presentation/screens/dashboard/products/products.dart';
-import 'package:buzdy/presentation/screens/dashboard/profile.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/core/colors.dart';
 import 'package:buzdy/core/text_styles.dart';
@@ -20,25 +19,36 @@ class DashBorad extends StatefulWidget {
 
 class _DashBoradState extends State<DashBorad> {
   int _selectedIndex = 0;
+  late PageController _pageController;
 
+  // Show only four tabs in the bottom navigation bar.
   final List<Widget> _pages = const [
     CryptoScreen(),
     HomeScreen(),
-    ProductsScreen(), 
+    ProductsScreen(),
     FeedScreen(),
-    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    _pageController.animateToPage(index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut);
   }
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.index;
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -47,9 +57,9 @@ class _DashBoradState extends State<DashBorad> {
       builder: (context, viewmodel, child) {
         return Scaffold(
           backgroundColor: whiteColor,
-          // Preserve the state for each page using IndexedStack.
-          body: IndexedStack(
-            index: _selectedIndex,
+          body: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
             children: _pages,
           ),
           bottomNavigationBar: BottomNavigationBar(
@@ -83,11 +93,6 @@ class _DashBoradState extends State<DashBorad> {
                 icon: iconShow(image: 'images/youtube.png'),
                 label: 'Feed'.tr,
                 activeIcon: activeIcon(image: 'images/youtube.png'),
-              ),
-              BottomNavigationBarItem(
-                icon: iconShow(image: 'images/user.png'),
-                label: 'Profile'.tr,
-                activeIcon: activeIcon(image: 'images/user.png'),
               ),
             ],
           ),

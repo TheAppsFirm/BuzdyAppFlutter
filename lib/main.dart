@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:get/get_navigation/src/routes/transitions_type.dart';
+import 'core/theme.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   configLoading();
   runApp(const MyApp());
 }
@@ -21,7 +23,7 @@ void configLoading() {
     ..boxShadow = []
     ..indicatorColor = Colors.transparent
     ..radius = 0
-    ..textColor = Colors.transparent
+    ..textColor = Colors.white
     ..dismissOnTap = false
     ..indicatorWidget = Lottie.asset("images/buzdysplash.json", width: 150, height: 150);
 }
@@ -41,10 +43,9 @@ class MyApp extends StatelessWidget {
         transitionDuration: Duration(seconds: 1),
         defaultTransition: Transition.fadeIn,
         title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.system,
         home: SplashScreen(),
         builder: EasyLoading.init(),
       ),
