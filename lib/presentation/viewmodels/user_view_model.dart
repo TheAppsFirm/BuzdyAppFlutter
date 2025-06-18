@@ -643,28 +643,59 @@ Future getAllProductsWithFilters({
 
     final url = Uri.parse('https://api.livecoinwatch.com/coins/list');
     const apiKey = '6170a07c-9d50-4fc1-89bc-3a9e7030751c';
-    final body = jsonEncode({"currency": "USD", "sort": "rank", "order": "ascending", "offset": _offset, "limit": limit, "meta": true});
+    final body = jsonEncode({
+      "currency": "USD",
+      "sort": "rank",
+      "order": "ascending",
+      "offset": _offset,
+      "limit": limit,
+      "meta": true
+    });
 
     _logRequest('POST', url.toString(), payload: body);
 
-    final response = await http.post(url, headers: {'Content-Type': 'application/json', 'x-api-key': apiKey}, body: body);
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+        },
+        body: body,
+      );
 
-    _logResponse(url.toString(), jsonDecode(response.body), statusCode: response.statusCode);
+      _logResponse(
+        url.toString(),
+        jsonDecode(response.body),
+        statusCode: response.statusCode,
+      );
 
-    if (response.statusCode == 200) {
-      List<CoinModel> newCoins = coinModelFromJson(response.body);
-      if (newCoins.isNotEmpty) {
-        _coins.addAll(newCoins);
-        _filteredCoins = List.from(_coins);
-        _offset += limit;
+      if (response.statusCode == 200) {
+        List<CoinModel> newCoins = coinModelFromJson(response.body);
+        if (newCoins.isNotEmpty) {
+          _coins.addAll(newCoins);
+          _filteredCoins = List.from(_coins);
+          _offset += limit;
+        } else {
+          _hasMore = false;
+        }
       } else {
-        _hasMore = false;
+        UIHelper.showMySnak(
+          title: "ERROR",
+          message: "Failed to load coins: ${response.statusCode}",
+          isError: true,
+        );
       }
-    } else {
-      UIHelper.showMySnak(title: "ERROR", message: "Failed to load coins: ${response.statusCode}", isError: true);
+    } catch (e) {
+      UIHelper.showMySnak(
+        title: "ERROR",
+        message: "Failed to load coins: $e",
+        isError: true,
+      );
+    } finally {
+      _isFetching = false;
+      notifyListeners();
     }
-    _isFetching = false;
-    notifyListeners();
   }
 
   Future<InvestmentRanking?> checkCoinSecurity({required String securityToken}) async {
