@@ -25,19 +25,11 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
   void initState() {
     super.initState();
     final userViewModel = Provider.of<UserViewModel>(context, listen: false);
-    if (userViewModel.coins.isEmpty) {
-      userViewModel.fetchCoins(limit: 25);
+    if (userViewModel.filteredBubbleCoins.isEmpty) {
+      userViewModel.fetchBubbleCoins();
     }
     _scrollController.addListener(() {
-      // Trigger pagination only if the user has scrolled to the bottom
-      if (_scrollController.position.pixels ==
-              _scrollController.position.maxScrollExtent &&
-          !_isLoadingMore) {
-        setState(() => _isLoadingMore = true);
-        userViewModel.fetchCoins(limit: 25).then((_) {
-          setState(() => _isLoadingMore = false);
-        });
-      }
+      // Placeholder for potential pagination logic
     });
   }
 
@@ -99,19 +91,19 @@ class _CryptoListView extends StatelessWidget {
             hint: "Search coins...",
             controller: searchController,
             onChanged: (query) {
-              userViewModel.searchCoins(query);
+              userViewModel.searchBubbleCoins(query);
             },
           ),
           UIHelper.verticalSpaceSm20,
-          if (userViewModel.isFetching && userViewModel.coins.isEmpty)
+          if (userViewModel.isFetchingCoins && userViewModel.filteredBubbleCoins.isEmpty)
             const Expanded(
               child: Center(child: CircularProgressIndicator()),
             )
-          else if (!userViewModel.isFetching && userViewModel.coins.isEmpty)
+          else if (!userViewModel.isFetchingCoins && userViewModel.filteredBubbleCoins.isEmpty)
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  await userViewModel.fetchCoins(limit: 10, isRefresh: true);
+                  await userViewModel.fetchBubbleCoins(isRefresh: true);
                 },
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -128,22 +120,25 @@ class _CryptoListView extends StatelessWidget {
               child: RefreshIndicator(
                 onRefresh: () async {
                   // Trigger a refresh to fetch the latest coins.
-                  await userViewModel.fetchCoins(limit: 10, isRefresh: true);
+                  await userViewModel.fetchBubbleCoins(isRefresh: true);
                 },
                 child: ListView.builder(
                   controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   // Only add a bottom loader if the coins list is not empty.
-                  itemCount: userViewModel.coins.length +
-                      (userViewModel.coins.isNotEmpty && userViewModel.isFetching ? 1 : 0),
+                  itemCount: userViewModel.filteredBubbleCoins.length +
+                      (userViewModel.filteredBubbleCoins.isNotEmpty &&
+                              userViewModel.isFetchingCoins
+                          ? 1
+                          : 0),
                   itemBuilder: (context, index) {
-                    if (index == userViewModel.coins.length) {
+                    if (index == userViewModel.filteredBubbleCoins.length) {
                       return const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Center(child: CircularProgressIndicator()),
                       );
                     }
-                    final coin = userViewModel.coins[index];
+                    final coin = userViewModel.filteredBubbleCoins[index];
                     return InkWell(
                     onTap: () async {
                       userViewModel.easyLoadingStart();
@@ -198,9 +193,7 @@ class _CryptoListView extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        coin.rank != null
-                                            ? 'Rank: ${coin.rank}'
-                                            : 'Rank: N/A',
+                                        'Rank: ${coin.rank}',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,
@@ -214,21 +207,14 @@ class _CryptoListView extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        coin.code != null &&
-                                                coin.code!.trim().isNotEmpty
-                                            ? coin.code!
-                                            : (coin.symbol.trim().isNotEmpty
-                                                ? coin.symbol
-                                                : "N/A"),
+                                        coin.symbol.isNotEmpty ? coin.symbol : 'N/A',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.grey,
                                         ),
                                       ),
                                       Text(
-                                        coin.rate != null
-                                            ? '\$${coin.rate!.toStringAsFixed(2)}'
-                                            : 'N/A',
+                                        '\$${coin.price.toStringAsFixed(2)}',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
@@ -243,20 +229,10 @@ class _CryptoListView extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       // 24h Change Text
-                                      coin.delta != null
-                                          ? _buildDeltaText(coin.delta!.day)
-                                          : const Text(
-                                              '24h: N/A',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
+                                      _buildDeltaText(coin.performance['day'] ?? 0),
                                       // Market Cap
                                       Text(
-                                        coin.cap != null
-                                            ? 'MCap: \$${_formatNumber(coin.cap!)}'
-                                            : 'MCap: N/A',
+                                        'MCap: \$${_formatNumber(coin.marketcap.toDouble())}',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,
@@ -286,8 +262,8 @@ class _CryptoListView extends StatelessWidget {
     final isPositive = dayDelta >= 0;
     final color = isPositive ? Colors.green : Colors.red;
     final arrow = isPositive ? '↑' : '↓';
-    // Assuming delta.day is a percentage value (e.g. 0.05 for 5%)
-    final percentChange = (dayDelta.abs() * 100).toStringAsFixed(2);
+    // The bubble API already returns percentage values
+    final percentChange = dayDelta.abs().toStringAsFixed(2);
     return Text(
       '24h: $arrow$percentChange%',
       style: TextStyle(

@@ -40,13 +40,17 @@ class UserViewModel extends BaseViewModel {
 
   UserModelData? userModel;
   List<BubbleCoinModel> bubbleCoins = [];
+  List<BubbleCoinModel> _filteredBubbleCoins = [];
+  bool isFetchingCoins = false;
+
+  List<BubbleCoinModel> get filteredBubbleCoins =>
+      _filteredBubbleCoins.isEmpty ? bubbleCoins : _filteredBubbleCoins;
 
   UserViewModel() {
     resetFilters();
     getAllBanks(pageNumber: bankcurrentPage);
     getAllMarchants(pageNumber: merchantcurrentPage);
     getAllProducts(pageNumber: productcurrentPage); // Initial fetch
-    fetchCoins(limit: 25);
     fetchBubbleCoins();
   }
 
@@ -806,11 +810,11 @@ Future getAllProductsWithFilters({
     return null;
   }
 
-  void searchCoins(String query) {
+  void searchBubbleCoins(String query) {
     if (query.isEmpty) {
-      _filteredCoins = List.from(_coins);
+      _filteredBubbleCoins = List.from(bubbleCoins);
     } else {
-      _filteredCoins = _coins
+      _filteredBubbleCoins = bubbleCoins
           .where((coin) =>
               coin.name.toLowerCase().contains(query.toLowerCase()) ||
               coin.symbol.toLowerCase().contains(query.toLowerCase()))
@@ -900,7 +904,10 @@ Future getAllProductsWithFilters({
     setLoading(false);
   }
 
-  Future<List<BubbleCoinModel>> fetchBubbleCoins() async {
+  Future<void> fetchBubbleCoins({bool isRefresh = false}) async {
+    if (isFetchingCoins) return;
+    isFetchingCoins = true;
+    notifyListeners();
     try {
       final url = Uri.parse('https://cryptobubbles.net/backend/data/bubbles1000.usd.json');
       _logRequest('GET', url.toString());
@@ -912,14 +919,19 @@ Future getAllProductsWithFilters({
       if (response.statusCode == 200) {
         List<dynamic> jsonData = jsonDecode(response.body);
         bubbleCoins = jsonData.map((data) => BubbleCoinModel.fromJson(data)).toList();
-        notifyListeners();
-        return bubbleCoins;
+        _filteredBubbleCoins = List.from(bubbleCoins);
       } else {
-        throw Exception('Failed to load bubble coins: ${response.statusCode}');
+        UIHelper.showMySnak(
+          title: "Error",
+          message: "Failed to load bubble coins: ${response.statusCode}",
+          isError: true,
+        );
       }
     } catch (e) {
       UIHelper.showMySnak(title: "Error", message: "Failed to load data: $e", isError: true);
-      return [];
+    } finally {
+      isFetchingCoins = false;
+      notifyListeners();
     }
   }
 
