@@ -391,19 +391,28 @@ class _PlayerControlsState extends State<_PlayerControls> {
     if (dur.inMilliseconds > 0) {
       progress = pos.inMilliseconds / dur.inMilliseconds;
     }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Stack(
+      alignment: Alignment.center,
       children: [
-        Slider(
-          value: progress.clamp(0.0, 1.0),
-          onChanged: (v) {
-            final target = Duration(milliseconds: (dur.inMilliseconds * v).toInt());
-            c.seekTo(target);
-          },
+        Positioned(
+          bottom: 40,
+          left: 0,
+          right: 0,
+          child: Slider(
+            value: progress.clamp(0.0, 1.0),
+            onChanged: (v) {
+              final target =
+                  Duration(milliseconds: (dur.inMilliseconds * v).toInt());
+              c.seekTo(target);
+            },
+          ),
         ),
         IconButton(
-          icon: Icon(c.value.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.white),
+          iconSize: 64,
+          icon: Icon(
+            c.value.isPlaying ? Icons.pause : Icons.play_arrow,
+            color: Colors.white,
+          ),
           onPressed: () {
             c.value.isPlaying ? c.pause() : c.play();
           },
