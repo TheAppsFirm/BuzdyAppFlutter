@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:buzdy/mainresponse/loginresponcedata.dart';
-import 'package:buzdy/presentation/dashboard/dashboard_screen.dart';
+import 'package:buzdy/presentation/screens/dashboard.dart';
 import 'package:buzdy/presentation/screens/dashboard/products/model/productModel.dart';
 import 'package:buzdy/repository/auth_api/auth_http_api_repository.dart';
 import 'package:buzdy/response/api_response.dart';
@@ -98,7 +98,7 @@ class UserViewModel extends BaseViewModel {
         userModel = UserModelData.fromJson(ress.data);
         await savetoken(token: ress.data['token'].toString());
         await saveUserId(userId: ress.data['id'].toString());
-        Get.offAll(() => DashboardScreen());
+        Get.offAll(() => const DashBoard(index: 0));
         setMessage("Login successful");
       } else {
         setError(ress?.message);
@@ -130,7 +130,7 @@ class UserViewModel extends BaseViewModel {
         userModel = UserModelData.fromJson(ress.data);
         await savetoken(token: ress.data['token'].toString());
         await saveUserId(userId: ress.data['id'].toString());
-        Get.offAll(() => DashboardScreen());
+        Get.offAll(() => const DashBoard(index: 0));
         setMessage("Signup successful");
       } else {
         setError(ress?.message);
