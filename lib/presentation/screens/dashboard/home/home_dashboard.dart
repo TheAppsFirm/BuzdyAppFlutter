@@ -14,7 +14,10 @@ class HomeDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<UserViewModel>(context);
-    final userName = viewModel.userModel?.name ?? 'Buzdy';
+    final user = viewModel.userModel;
+    final userName = user != null
+        ? '${user.firstname} ${user.lastname}'.trim()
+        : 'Buzdy';
     final now = DateTime.now();
     final date = DateFormat.yMMMMd().format(now);
     final time = DateFormat.Hm().format(now);
