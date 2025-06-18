@@ -339,16 +339,76 @@ class _LocalVideoFeedState extends State<LocalVideoFeed> {
                 return const Center(child: CircularProgressIndicator());
               }
               final controller = snap.data!;
-              return Center(
-                child: AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: VideoPlayer(controller),
-                ),
+              return Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  Center(
+                    child: AspectRatio(
+                      aspectRatio: controller.value.aspectRatio,
+                      child: VideoPlayer(controller),
+                    ),
+                  ),
+                  _PlayerControls(controller: controller),
+                ],
               );
             },
           );
         },
       ),
+    );
+  }
+}
+
+class _PlayerControls extends StatefulWidget {
+  final VideoPlayerController controller;
+  const _PlayerControls({required this.controller});
+
+  @override
+  State<_PlayerControls> createState() => _PlayerControlsState();
+}
+
+class _PlayerControlsState extends State<_PlayerControls> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onUpdate);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onUpdate);
+    super.dispose();
+  }
+
+  void _onUpdate() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.controller;
+    final pos = c.value.position;
+    final dur = c.value.duration;
+    double progress = 0;
+    if (dur.inMilliseconds > 0) {
+      progress = pos.inMilliseconds / dur.inMilliseconds;
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Slider(
+          value: progress.clamp(0.0, 1.0),
+          onChanged: (v) {
+            final target = Duration(milliseconds: (dur.inMilliseconds * v).toInt());
+            c.seekTo(target);
+          },
+        ),
+        IconButton(
+          icon: Icon(c.value.isPlaying ? Icons.pause : Icons.play_arrow,
+              color: Colors.white),
+          onPressed: () {
+            c.value.isPlaying ? c.pause() : c.play();
+          },
+        ),
+      ],
     );
   }
 }

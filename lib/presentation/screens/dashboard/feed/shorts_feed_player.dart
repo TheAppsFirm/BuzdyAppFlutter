@@ -54,7 +54,12 @@ class _ShortsFeedPlayerState extends State<ShortsFeedPlayer> {
     if (result.permissionDenied) {
       showAppSnackBar(context, 'Storage permission denied', isError: true);
     } else if (result.path != null) {
-      showAppSnackBar(context, 'Video saved locally');
+      final ok = await VideoDownloader.saveToGallery(result.path!);
+      if (ok) {
+        showAppSnackBar(context, 'Video saved to gallery');
+      } else {
+        showAppSnackBar(context, 'Failed to save to gallery', isError: true);
+      }
     } else {
       showAppSnackBar(context, 'Download failed', isError: true);
     }
