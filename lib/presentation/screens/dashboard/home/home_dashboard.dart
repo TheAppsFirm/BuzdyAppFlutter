@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -102,6 +103,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   late final SearchViewModel _searchVm;
   late final AnalyticsViewModel _analyticsVm;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -147,6 +149,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       _searchVm.clear();
     }
     await _analyticsVm.load();
+  }
+
+  void _onSearchChanged(String text, UserViewModel vm) {
+    vm.searchCoins(text);
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    if (text.isEmpty) {
+      _searchVm.clear();
+    } else {
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        _searchVm.search(text);
+      });
+    }
   }
 
   @override
@@ -299,8 +313,8 @@ class GreetingSection extends StatelessWidget {
             TextField(
               controller: searchController,
               textInputAction: TextInputAction.search,
-              onSubmitted: searchVm.search,
-              onChanged: userVm.searchCoins,
+              onSubmitted: (v) => _onSearchChanged(v, userVm),
+              onChanged: (v) => _onSearchChanged(v, userVm),
               decoration: InputDecoration(
                 hintText: 'Search... ',
                 filled: true,
@@ -309,6 +323,7 @@ class GreetingSection extends StatelessWidget {
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.arrow_forward),
                   onPressed: () {
+                    _onSearchChanged(searchController.text, userVm);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => SearchScreen(
@@ -560,8 +575,8 @@ class BusinessList extends StatelessWidget {
               final item = items[index];
               return SizedBox(
                 width: 120,
-                child: Card(
-                  clipBehavior: Clip.hardEdge,
+                child: GlassContainer(
+                  borderRadius: BorderRadius.circular(12),
                   child: InkWell(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -571,7 +586,10 @@ class BusinessList extends StatelessWidget {
                       children: [
                         Expanded(
                           child: item.image != null
-                              ? Image.network(item.image!, fit: BoxFit.cover)
+                              ? ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                  child: Image.network(item.image!, fit: BoxFit.cover),
+                                )
                               : const Icon(Icons.business, size: 50),
                         ),
                         Padding(
@@ -580,6 +598,7 @@ class BusinessList extends StatelessWidget {
                             item.name,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],
@@ -620,8 +639,8 @@ class ProductList extends StatelessWidget {
               final imageUrl = item.image;
               return SizedBox(
                 width: 120,
-                child: Card(
-                  clipBehavior: Clip.hardEdge,
+                child: GlassContainer(
+                  borderRadius: BorderRadius.circular(12),
                   child: InkWell(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
@@ -632,7 +651,10 @@ class ProductList extends StatelessWidget {
                       children: [
                         Expanded(
                           child: imageUrl != null
-                              ? Image.network(imageUrl, fit: BoxFit.cover)
+                              ? ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                  child: Image.network(imageUrl, fit: BoxFit.cover),
+                                )
                               : const Icon(Icons.shopping_bag, size: 50),
                         ),
                         Padding(
@@ -641,6 +663,7 @@ class ProductList extends StatelessWidget {
                             item.name,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],

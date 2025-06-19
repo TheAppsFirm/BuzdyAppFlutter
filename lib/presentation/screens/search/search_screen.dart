@@ -73,15 +73,20 @@ class _SearchScreenState extends State<SearchScreen>
                 ],
               ),
             ),
-            body: vm.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
+            body: Column(
+              children: [
+                if (vm.isLoading) const LinearProgressIndicator(),
+                Expanded(
+                  child: TabBarView(
                     controller: _controller,
                     children: [
                       _buildVideos(vm.videoResults),
                       _buildNews(vm.newsResults),
                     ],
                   ),
+                ),
+              ],
+            ),
           );
         },
       ),
