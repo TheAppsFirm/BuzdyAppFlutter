@@ -160,7 +160,7 @@ final Map<String, List<String>> cityMap = {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: whiteColor,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: appBarrWitoutAction(
         title: "Merchants & Banks",
         centerTitle: true,

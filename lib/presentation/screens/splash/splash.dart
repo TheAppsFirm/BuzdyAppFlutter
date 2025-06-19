@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkAuthStatus() async {
     // Always navigate directly to the dashboard.  Authentication
     // is temporarily disabled so we skip any token checks.
-    Get.offAll(() => const DashBorad(index: 0));
+    Get.offAll(() => const DashBoard(index: 0));
   }
 
   @override

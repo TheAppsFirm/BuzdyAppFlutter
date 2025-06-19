@@ -3,20 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 
-final ColorScheme _lightColorScheme =
-    ColorScheme.fromSeed(seedColor: kAppButtonColor);
-final ColorScheme _darkColorScheme =
-    ColorScheme.fromSeed(
-  seedColor: kAppButtonColor,
-  brightness: Brightness.dark,
+const ColorScheme _lightColorScheme = ColorScheme.light(
+  primary: kWhiteColor,
+  onPrimary: kMainBlackColor,
+  secondary: kAppButtonColor,
+  onSecondary: kWhiteColor,
+  background: kWhiteColor,
+  onBackground: kMainBlackColor,
+  surface: kWhiteColor,
+  onSurface: kMainBlackColor,
+);
+
+const ColorScheme _darkColorScheme = ColorScheme.dark(
+  primary: kMainBlackColor,
+  onPrimary: kWhiteColor,
+  secondary: kAppButtonColor,
+  onSecondary: kWhiteColor,
+  background: kMainBlackColor,
+  onBackground: kWhiteColor,
+  surface: Color(0xFF1C1C1E),
+  onSurface: kWhiteColor,
 );
 
 ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   colorScheme: _lightColorScheme,
   cupertinoOverrideTheme: const CupertinoThemeData(primaryColor: kAppButtonColor),
-  scaffoldBackgroundColor: kWhiteColor,
-  textTheme: GoogleFonts.poppinsTextTheme(),
+  scaffoldBackgroundColor: _lightColorScheme.background,
+  textTheme: GoogleFonts.poppinsTextTheme()
+      .apply(bodyColor: kMainBlackColor, displayColor: kMainBlackColor),
+  iconTheme: const IconThemeData(color: kIconGrey),
   appBarTheme: AppBarTheme(
     backgroundColor: _lightColorScheme.primary,
     foregroundColor: _lightColorScheme.onPrimary,
@@ -33,6 +49,12 @@ ThemeData lightTheme = ThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   ),
+  cardTheme: CardTheme(
+    color: kGlassLight,
+    elevation: 0,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    margin: EdgeInsets.zero,
+  ),
   inputDecorationTheme: InputDecorationTheme(
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
   ),
@@ -48,8 +70,9 @@ ThemeData lightTheme = ThemeData(
 ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   colorScheme: _darkColorScheme,
-  scaffoldBackgroundColor: Colors.grey[900],
+  scaffoldBackgroundColor: _darkColorScheme.background,
   textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+  iconTheme: const IconThemeData(color: kWhiteColor),
   appBarTheme: AppBarTheme(
     backgroundColor: _darkColorScheme.primary,
     foregroundColor: _darkColorScheme.onPrimary,
@@ -60,6 +83,12 @@ ThemeData darkTheme = ThemeData(
       foregroundColor: _darkColorScheme.onPrimary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
+  ),
+  cardTheme: CardTheme(
+    color: kGlassDark,
+    elevation: 0,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    margin: EdgeInsets.zero,
   ),
   inputDecorationTheme: InputDecorationTheme(
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

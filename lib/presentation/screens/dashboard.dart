@@ -2,27 +2,29 @@ import 'package:buzdy/presentation/screens/dashboard/crypto/CryptoScreen.dart';
 import 'package:buzdy/presentation/screens/dashboard/feed/feed.dart';
 import 'package:buzdy/presentation/screens/dashboard/banks/bank.dart';
 import 'package:buzdy/presentation/screens/dashboard/products/products.dart';
+import 'package:buzdy/presentation/screens/dashboard/home/home_dashboard.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
-import 'package:buzdy/core/colors.dart';
+import 'package:buzdy/core/constants.dart';
 import 'package:buzdy/core/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:provider/provider.dart';
 
-class DashBorad extends StatefulWidget {
+class DashBoard extends StatefulWidget {
   final int index;
-  const DashBorad({Key? key, required this.index}) : super(key: key);
-  
+  const DashBoard({Key? key, required this.index}) : super(key: key);
+
   @override
-  _DashBoradState createState() => _DashBoradState();
+  _DashBoardState createState() => _DashBoardState();
 }
 
-class _DashBoradState extends State<DashBorad> {
+class _DashBoardState extends State<DashBoard> {
   int _selectedIndex = 0;
   late PageController _pageController;
 
-  // Show only four tabs in the bottom navigation bar.
+  // Main pages for the bottom navigation bar.
   final List<Widget> _pages = const [
+    HomeDashboardScreen(),
     CryptoScreen(),
     HomeScreen(),
     ProductsScreen(),
@@ -56,43 +58,51 @@ class _DashBoradState extends State<DashBorad> {
     return Consumer<UserViewModel>(
       builder: (context, viewmodel, child) {
         return Scaffold(
-          backgroundColor: whiteColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: PageView(
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(),
             children: _pages,
           ),
           bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: appButtonColor,
+            // Use a constant white background to keep tabs clean
+            backgroundColor: kWhiteColor,
             type: BottomNavigationBarType.fixed,
             elevation: 8.0,
             showUnselectedLabels: true,
-            unselectedLabelStyle: textStyleExoBold(fontSize: 12),
-            selectedLabelStyle: textStyleExoBold(fontSize: 12),
+            unselectedLabelStyle:
+                textStyleExoBold(fontSize: 12, color: kIconGrey),
+            selectedLabelStyle:
+                textStyleExoBold(fontSize: 12, color: kMainBlackColor),
             currentIndex: _selectedIndex,
-            selectedItemColor: Colors.black,
-            unselectedItemColor: const Color(0xff51443A),
+            selectedItemColor: kMainBlackColor,
+            unselectedItemColor: kIconGrey,
             onTap: _onItemTapped,
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: iconShow(image: 'images/currency-exchange.png'),
+                icon: const Icon(Icons.home_outlined),
+                activeIcon: const Icon(Icons.home),
+                label: 'Home'.tr,
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.currency_bitcoin_outlined),
+                activeIcon: const Icon(Icons.currency_bitcoin),
                 label: 'Crypto'.tr,
-                activeIcon: activeIcon(image: 'images/currency-exchange.png'),
               ),
               BottomNavigationBarItem(
-                icon: iconShow(image: "images/home.png"),
+                icon: const Icon(Icons.business_center_outlined),
+                activeIcon: const Icon(Icons.business_center),
                 label: 'Business'.tr,
-                activeIcon: activeIcon(image: 'images/home.png'),
               ),
               BottomNavigationBarItem(
-                icon: iconShow(image: 'images/cubes.png'),
+                icon: const Icon(Icons.shopping_bag_outlined),
+                activeIcon: const Icon(Icons.shopping_bag),
                 label: 'Products'.tr,
-                activeIcon: activeIcon(image: 'images/cubes.png'),
               ),
               BottomNavigationBarItem(
-                icon: iconShow(image: 'images/youtube.png'),
+                icon: const Icon(Icons.video_library_outlined),
+                activeIcon: const Icon(Icons.video_library),
                 label: 'Feed'.tr,
-                activeIcon: activeIcon(image: 'images/youtube.png'),
               ),
             ],
           ),
@@ -101,14 +111,4 @@ class _DashBoradState extends State<DashBorad> {
     );
   }
 
-  Image iconShow({required String image}) {
-    return Image.asset(image, height: 23, width: 23);
-  }
-
-  Widget activeIcon({required String image}) {
-    return Container(
-      padding: const EdgeInsets.all(4.0),
-      child: Image.asset(image, height: 23, width: 23),
-    );
-  }
 }

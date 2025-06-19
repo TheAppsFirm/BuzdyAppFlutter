@@ -4,6 +4,7 @@ import 'package:buzdy/presentation/screens/dashboard/feed/shorts_feed_player.dar
 import 'package:buzdy/presentation/screens/dashboard/feed/local_videos_screen.dart';
 import 'package:buzdy/presentation/viewmodels/user_view_model.dart';
 import 'package:buzdy/presentation/widgets/appBar.dart';
+import 'package:buzdy/core/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
@@ -55,13 +56,14 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: appBarrWitAction(
           title: "Feed",
           leadingWidget: Container(),
           centerTitle: true,
           actionwidget: IconButton(
             icon: const Icon(Icons.video_library),
+            color: kMainBlackColor,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
