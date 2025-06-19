@@ -374,6 +374,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
+}
+
 // --- New dashboard section widgets ---
 
 class GreetingSection extends StatelessWidget {
@@ -775,6 +777,3 @@ class TrendingNews extends StatelessWidget {
   }
 }
 
-
-
-}
