@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/search_service.dart';
-import '../screens/search/models/google_result.dart';
 import '../screens/search/models/news_article.dart';
 import '../screens/dashboard/feed/model/youtubeModel.dart';
 
@@ -9,9 +8,16 @@ class SearchViewModel extends ChangeNotifier {
   String lastQuery = '';
 
   bool isLoading = false;
-  List<GoogleResult> webResults = [];
   List<Item> videoResults = [];
   List<NewsArticle> newsResults = [];
+
+  void clear() {
+    lastQuery = '';
+    videoResults = [];
+    newsResults = [];
+    isLoading = false;
+    notifyListeners();
+  }
 
   Future<void> search(String query) async {
     if (query.isEmpty) return;
@@ -20,13 +26,11 @@ class SearchViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final results = await Future.wait([
-        _service.searchGoogle(query),
         _service.searchYouTube(query),
         _service.searchNews(query),
       ]);
-      webResults = results[0] as List<GoogleResult>;
-      videoResults = results[1] as List<Item>;
-      newsResults = results[2] as List<NewsArticle>;
+      videoResults = results[0] as List<Item>;
+      newsResults = results[1] as List<NewsArticle>;
     } catch (e) {
       debugPrint('Search error: $e');
     }

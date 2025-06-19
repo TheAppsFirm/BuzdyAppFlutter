@@ -218,7 +218,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _searchVm = SearchViewModel()..search('latest crypto');
+    _searchVm = SearchViewModel();
     _analyticsVm = AnalyticsViewModel()..load();
     _showHint();
   }
@@ -256,7 +256,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       vm.fetchCoins(limit: 25, isRefresh: true),
     ]);
     if (_searchController.text.isEmpty) {
-      await _searchVm.search('latest crypto');
+      _searchVm.clear();
     }
     await _analyticsVm.load();
   }
@@ -516,6 +516,10 @@ class QuickResultsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (searchVm.lastQuery.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     if (searchVm.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(8.0),
