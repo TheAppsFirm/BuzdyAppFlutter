@@ -5,15 +5,12 @@ import 'package:provider/provider.dart';
 
 import '../../../viewmodels/user_view_model.dart';
 import '../crypto/CryptoScreen.dart';
-import '../banks/bank.dart';
-import '../products/products.dart';
 import '../../dashboard.dart';
 import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
 import '../../../viewmodels/search_view_model.dart';
 import '../../../viewmodels/analytics_view_model.dart';
-import '../../../widgets/line_chart.dart';
 import '../../../widgets/analytics_widgets.dart';
 import '../crypto/model.dart/coinModel.dart';
 import '../banks/model/merchnatModel.dart';
