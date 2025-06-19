@@ -205,6 +205,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     userVm: viewModel,
                     searchVm: _searchVm,
                     analyticsVm: _analyticsVm,
+                    onSearchChanged: (v) => _onSearchChanged(v, viewModel),
                   ),
                   const SizedBox(height: 20),
                   MarketTrendSection(vm: _analyticsVm),
@@ -240,6 +241,7 @@ class GreetingSection extends StatelessWidget {
   final UserViewModel userVm;
   final SearchViewModel searchVm;
   final AnalyticsViewModel analyticsVm;
+  final void Function(String) onSearchChanged;
 
   const GreetingSection({
     super.key,
@@ -251,6 +253,7 @@ class GreetingSection extends StatelessWidget {
     required this.userVm,
     required this.searchVm,
     required this.analyticsVm,
+    required this.onSearchChanged,
   });
 
   @override
@@ -313,8 +316,8 @@ class GreetingSection extends StatelessWidget {
             TextField(
               controller: searchController,
               textInputAction: TextInputAction.search,
-              onSubmitted: (v) => _onSearchChanged(v, userVm),
-              onChanged: (v) => _onSearchChanged(v, userVm),
+              onSubmitted: (v) => onSearchChanged(v),
+              onChanged: (v) => onSearchChanged(v),
               decoration: InputDecoration(
                 hintText: 'Search... ',
                 filled: true,
@@ -323,7 +326,7 @@ class GreetingSection extends StatelessWidget {
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.arrow_forward),
                   onPressed: () {
-                    _onSearchChanged(searchController.text, userVm);
+                    onSearchChanged(searchController.text);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => SearchScreen(
