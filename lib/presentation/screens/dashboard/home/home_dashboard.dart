@@ -7,7 +7,11 @@ import '../crypto/CryptoScreen.dart';
 import '../banks/bank.dart';
 import '../products/products.dart';
 import '../feed/feed.dart';
+import '../feed/videoplayer.dart';
+import '../feed/model/youtubeModel.dart';
 import '../../search/search_screen.dart';
+import '../../search/article_webview.dart';
+import '../../search/models/news_article.dart';
 import '../../../viewmodels/search_view_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../widgets/glass_container.dart';
@@ -277,21 +281,31 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                _buildHeader(
-                  context,
-                  greeting,
-                  userName,
-                  date,
-                  time,
-                  viewModel,
-                ),
-                const SizedBox(height: 20),
-                _buildFeatureGrid(context, viewModel),
-                const SizedBox(height: 20),
-              ],
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  GreetingSection(
+                    greeting: greeting,
+                    userName: userName,
+                    date: date,
+                    time: time,
+                    searchController: _searchController,
+                    userVm: viewModel,
+                    searchVm: _searchVm,
+                  ),
+                  const SizedBox(height: 20),
+                  CryptoPriceSection(coins: viewModel.coins),
+                  const SizedBox(height: 20),
+                  const AiInsightBox(),
+                  const SizedBox(height: 20),
+                  RecommendedVideos(videos: viewModel.youtubeVideos),
+                  const SizedBox(height: 20),
+                  TrendingNews(news: _searchVm.newsResults),
+                  const SizedBox(height: 20),
+                  _buildFeatureGrid(context, viewModel),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
@@ -299,183 +313,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     ));
   }
 
-  Widget _buildHeader(BuildContext context, String greeting, String userName, String date, String time, UserViewModel vm) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            kAppButtonColor.withOpacity(0.7),
-            kAppButtonColor.withOpacity(0.4),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: GlassContainer(
-        padding: const EdgeInsets.all(16),
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('$greeting, $userName',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(color: colors.onPrimary)),
-          const SizedBox(height: 4),
-          Text('$date · $time',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: colors.onPrimary.withOpacity(0.8))),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              StatCard(title: 'Videos', count: vm.youtubeVideos.length),
-              StatCard(title: 'Coins', count: vm.coins.length),
-              StatCard(title: 'Products', count: vm.productList.length),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Builder(builder: (context) {
-            final searchVm = Provider.of<SearchViewModel>(context);
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search... ',
-                    filled: true,
-                    fillColor: colors.onPrimary.withOpacity(0.1),
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.public),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => SearchScreen(initialQuery: _searchController.text)),
-                        );
-                      },
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  controller: _searchController,
-                  textInputAction: TextInputAction.search,
-                  onChanged: (q) {
-                    vm.searchCoins(q);
-                  },
-                  onSubmitted: searchVm.search,
-                ),
-                _buildQuickResults(searchVm, vm),
-              ],
-            );
-          }),
-        ],
-      ),
-      ),
-    );
-  }
-
-  Widget _buildQuickResults(SearchViewModel svm, UserViewModel userVm) {
-    if (svm.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final coins = userVm.coins.take(3).toList();
-    final videos = svm.videoResults.take(3).toList();
-    final news = svm.newsResults.take(3).toList();
-
-    if (videos.isEmpty && news.isEmpty && coins.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (coins.isNotEmpty)
-          _section(
-            'Crypto',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: coins
-                  .map((e) => Text('${e.symbol}: \$${e.rate?.toStringAsFixed(2) ?? '-'}'))
-                  .toList(),
-            ),
-          ),
-        if (videos.isNotEmpty)
-          _section(
-            'Videos',
-            Column(
-              children: videos
-                  .map(
-                    (v) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        children: [
-                          if (v.snippet?.thumbnails?.thumbnailsDefault?.url != null)
-                            Image.network(
-                              v.snippet!.thumbnails!.thumbnailsDefault!.url!,
-                              width: 60,
-                              height: 40,
-                              fit: BoxFit.cover,
-                            ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                              child: Text(
-                            v.snippet?.title ?? '',
-                            overflow: TextOverflow.ellipsis,
-                          )),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        if (news.isNotEmpty)
-          _section(
-            'News',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: news
-                  .map((n) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Text(n.title, overflow: TextOverflow.ellipsis),
-                      ))
-                  .toList(),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _section(String title, Widget child) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              child,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildFeatureGrid(BuildContext context, UserViewModel vm) {
     final features = [
@@ -536,6 +373,407 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       },
     );
   }
+
+// --- New dashboard section widgets ---
+
+class GreetingSection extends StatelessWidget {
+  final String greeting;
+  final String userName;
+  final String date;
+  final String time;
+  final TextEditingController searchController;
+  final UserViewModel userVm;
+  final SearchViewModel searchVm;
+
+  const GreetingSection({
+    super.key,
+    required this.greeting,
+    required this.userName,
+    required this.date,
+    required this.time,
+    required this.searchController,
+    required this.userVm,
+    required this.searchVm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            kAppButtonColor.withOpacity(0.7),
+            kAppButtonColor.withOpacity(0.4),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$greeting, $userName',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: colors.onPrimary),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$date · $time',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: colors.onPrimary.withOpacity(0.8)),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                StatCard(title: 'Videos', count: userVm.youtubeVideos.length),
+                StatCard(title: 'Coins', count: userVm.coins.length),
+                StatCard(title: 'Products', count: userVm.productList.length),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: searchController,
+              textInputAction: TextInputAction.search,
+              onSubmitted: searchVm.search,
+              onChanged: userVm.searchCoins,
+              decoration: InputDecoration(
+                hintText: 'Search... ',
+                filled: true,
+                fillColor: colors.onPrimary.withOpacity(0.1),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.public),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => SearchScreen(
+                          initialQuery: searchController.text,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            QuickResultsSection(searchVm: searchVm, userVm: userVm),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class QuickResultsSection extends StatelessWidget {
+  final SearchViewModel searchVm;
+  final UserViewModel userVm;
+
+  const QuickResultsSection({
+    super.key,
+    required this.searchVm,
+    required this.userVm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (searchVm.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final coins = userVm.coins.take(3).toList();
+    final videos = searchVm.videoResults.take(3).toList();
+    final news = searchVm.newsResults.take(3).toList();
+
+    if (videos.isEmpty && news.isEmpty && coins.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (coins.isNotEmpty)
+          _section(
+            'Crypto',
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: coins
+                  .map((e) => Text(
+                        '${e.symbol}: \$${e.rate?.toStringAsFixed(2) ?? '-'}',
+                      ))
+                  .toList(),
+            ),
+          ),
+        if (videos.isNotEmpty)
+          _section(
+            'Videos',
+            Column(
+              children: videos
+                  .map(
+                    (v) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        children: [
+                          if (v.snippet?.thumbnails?.thumbnailsDefault?.url !=
+                              null)
+                            Image.network(
+                              v.snippet!.thumbnails!.thumbnailsDefault!.url!,
+                              width: 60,
+                              height: 40,
+                              fit: BoxFit.cover,
+                            ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              v.snippet?.title ?? '',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        if (news.isNotEmpty)
+          _section(
+            'News',
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: news
+                  .map((n) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(n.title,
+                            overflow: TextOverflow.ellipsis),
+                      ))
+                  .toList(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _section(String title, Widget child) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CryptoPriceSection extends StatelessWidget {
+  final List<CoinModel> coins;
+
+  const CryptoPriceSection({super.key, required this.coins});
+
+  CoinModel? _find(String code) {
+    for (final c in coins) {
+      if ((c.code ?? '').toUpperCase() == code.toUpperCase()) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final btc = _find('BTC');
+    final eth = _find('ETH');
+
+    Widget row(String label, CoinModel? coin) {
+      final price = coin?.rate != null
+          ? '\$${coin!.rate!.toStringAsFixed(2)}'
+          : 'N/A';
+      final change = coin?.delta?.day ?? 0;
+      final color = change >= 0 ? Colors.green : Colors.red;
+      final icon = change >= 0 ? Icons.trending_up : Icons.trending_down;
+      return Row(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 4),
+          Text('$label: $price ',
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text('(${change.toStringAsFixed(2)}%)', style: TextStyle(color: color)),
+        ],
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Crypto Prices',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            row('BTC', btc),
+            const SizedBox(height: 4),
+            row('ETH', eth),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AiInsightBox extends StatelessWidget {
+  const AiInsightBox({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('AI Insight',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 4),
+            Text('BTC showing upward momentum today.'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RecommendedVideos extends StatelessWidget {
+  final List<Item> videos;
+
+  const RecommendedVideos({super.key, required this.videos});
+
+  @override
+  Widget build(BuildContext context) {
+    if (videos.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Recommended Videos',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: videos.length,
+          itemBuilder: (context, index) {
+            final item = videos[index];
+            final thumb = item.snippet?.thumbnails?.thumbnailsDefault?.url;
+            final id = item.videoId ?? item.id ?? '';
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              child: ListTile(
+                leading: thumb != null
+                    ? Image.network(thumb, width: 80, fit: BoxFit.cover)
+                    : null,
+                title: Text(item.snippet?.title ?? ''),
+                subtitle: Text(item.snippet?.channelTitle ?? ''),
+                trailing: IconButton(
+                  icon: const Icon(Icons.play_arrow),
+                  onPressed: id.isEmpty
+                      ? null
+                      : () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => VideoPlayerScreen(
+                                videoId: id,
+                                videoTitle: item.snippet?.title,
+                              ),
+                            ),
+                          );
+                        },
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class TrendingNews extends StatelessWidget {
+  final List<NewsArticle> news;
+
+  const TrendingNews({super.key, required this.news});
+
+  @override
+  Widget build(BuildContext context) {
+    if (news.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Trending Crypto News',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: news.length,
+          itemBuilder: (context, index) {
+            final item = news[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              child: ListTile(
+                leading: item.imageUrl != null
+                    ? Image.network(item.imageUrl!,
+                        width: 80, fit: BoxFit.cover)
+                    : null,
+                title: Text(item.title),
+                subtitle: Text(item.source ?? ''),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ArticleWebView(url: item.url),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
 
 
 
