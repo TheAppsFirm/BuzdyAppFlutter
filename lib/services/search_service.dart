@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:location/location.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:location/location.dart' as loc;
+import 'package:geocoding/geocoding.dart' show placemarkFromCoordinates;
 import '../presentation/screens/search/models/google_result.dart';
 import '../presentation/screens/search/models/news_article.dart';
 import '../presentation/screens/search/models/law_info.dart';
@@ -52,17 +52,17 @@ class SearchService {
   Future<LawInfo?> fetchLawInfo() async {
     String code = 'US';
     try {
-      final location = Location();
+      final loc.Location location = loc.Location();
       bool serviceEnabled = await location.serviceEnabled();
       if (!serviceEnabled) {
         serviceEnabled = await location.requestService();
       }
       var permission = await location.hasPermission();
-      if (permission == PermissionStatus.denied) {
+      if (permission == loc.PermissionStatus.denied) {
         permission = await location.requestPermission();
       }
-      if (permission == PermissionStatus.granted ||
-          permission == PermissionStatus.grantedLimited) {
+      if (permission == loc.PermissionStatus.granted ||
+          permission == loc.PermissionStatus.grantedLimited) {
         final data = await location.getLocation();
         if (data.latitude != null && data.longitude != null) {
           final marks = await placemarkFromCoordinates(
