@@ -15,23 +15,24 @@ class SearchViewModel extends ChangeNotifier {
   bool lawLoading = true;
 
   SearchViewModel() {
-    _initLaw();
+    loadLaw();
   }
 
-  Future<void> _initLaw() async {
+  Future<void> loadLaw() async {
+    lawLoading = true;
+    notifyListeners();
     lawInfo = await _service.fetchLawInfo();
     lawLoading = false;
     notifyListeners();
   }
 
-  void clear() {
+  Future<void> clear() async {
     lastQuery = '';
     videoResults = [];
     newsResults = [];
     lawInfo = null;
-    lawLoading = true;
     isLoading = false;
-    notifyListeners();
+    await loadLaw();
   }
 
   Future<void> search(String query) async {

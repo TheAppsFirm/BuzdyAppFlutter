@@ -145,7 +145,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       vm.fetchCoins(limit: 25, isRefresh: true),
     ]);
     if (_searchController.text.isEmpty) {
-      _searchVm.clear();
+      await _searchVm.clear();
     }
     await _analyticsVm.load();
   }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:location/location.dart';
+import 'package:geocoding/geocoding.dart';
 import '../presentation/screens/search/models/google_result.dart';
 import '../presentation/screens/search/models/news_article.dart';
 import '../presentation/screens/search/models/law_info.dart';
@@ -48,18 +50,43 @@ class SearchService {
   }
 
   Future<LawInfo?> fetchLawInfo() async {
+    String code = 'US';
     try {
-      final geoRes = await http.get(Uri.parse('https://ipapi.co/json/'));
-      String code = 'US';
-      if (geoRes.statusCode == 200) {
-        final geo = jsonDecode(geoRes.body);
-        code = geo['country_code'] ?? 'US';
+      final location = Location();
+      bool serviceEnabled = await location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await location.requestService();
       }
-      final map = _lawData[code] ?? _lawData['US']!;
-      return map;
-    } catch (_) {
-      return _lawData['US'];
+      var permission = await location.hasPermission();
+      if (permission == PermissionStatus.denied) {
+        permission = await location.requestPermission();
+      }
+      if (permission == PermissionStatus.granted ||
+          permission == PermissionStatus.grantedLimited) {
+        final data = await location.getLocation();
+        if (data.latitude != null && data.longitude != null) {
+          final marks = await placemarkFromCoordinates(
+            data.latitude!,
+            data.longitude!,
+          );
+          if (marks.isNotEmpty) {
+            code = marks.first.isoCountryCode ?? code;
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (code == 'US') {
+      try {
+        final geoRes = await http.get(Uri.parse('https://ipapi.co/json/'));
+        if (geoRes.statusCode == 200) {
+          final geo = jsonDecode(geoRes.body);
+          code = geo['country_code'] ?? 'US';
+        }
+      } catch (_) {}
     }
+
+    return _lawData[code] ?? _lawData['US'];
   }
 
   static final Map<String, LawInfo> _lawData = {
