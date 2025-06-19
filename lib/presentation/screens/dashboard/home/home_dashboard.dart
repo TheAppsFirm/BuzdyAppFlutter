@@ -151,6 +151,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   void _onSearchChanged(String text, UserViewModel vm) {
+    setState(() {});
     vm.searchCoins(text);
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     if (text.isEmpty) {
@@ -221,6 +222,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   BusinessList(merchants: viewModel.merchantList),
                   const SizedBox(height: 20),
                   ProductList(products: viewModel.productList),
+                  const SizedBox(height: 20),
+                  QuickResultsSection(userVm: viewModel),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -327,18 +330,31 @@ class GreetingSection extends StatelessWidget {
                 filled: true,
                 fillColor: colors.onPrimary.withOpacity(0.1),
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    onSearchChanged(searchController.text);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => SearchScreen(
-                          initialQuery: searchController.text,
-                        ),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (searchController.text.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          searchController.clear();
+                          onSearchChanged('');
+                        },
                       ),
-                    );
-                  },
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward),
+                      onPressed: () {
+                        onSearchChanged(searchController.text);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => SearchScreen(
+                              initialQuery: searchController.text,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
@@ -348,7 +364,6 @@ class GreetingSection extends StatelessWidget {
                 ),
               ),
             ),
-            QuickResultsSection(userVm: userVm),
           ],
         ),
       ),
@@ -514,6 +529,7 @@ class CryptoPriceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final btc = _find('BTC');
     final eth = _find('ETH');
+    final analytics = Provider.of<AnalyticsViewModel>(context);
 
     Widget row(String label, CoinModel? coin) {
       final price = coin?.rate != null
@@ -545,6 +561,15 @@ class CryptoPriceSection extends StatelessWidget {
             row('BTC', btc),
             const SizedBox(height: 4),
             row('ETH', eth),
+            if (analytics.lastUpdated != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Last updated: '
+                  '${DateTime.now().difference(analytics.lastUpdated!).inMinutes} mins ago',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
           ],
         ),
       ),
@@ -614,7 +639,21 @@ class BusinessList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Businesses', style: TextStyle(fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Businesses',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const DashBoard(index: 2)),
+                );
+              },
+              child: const Text('View All'),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 140,
@@ -650,8 +689,6 @@ class BusinessList extends StatelessWidget {
                           padding: const EdgeInsets.all(4),
                           child: Text(
                             item.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -681,7 +718,21 @@ class ProductList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Products', style: TextStyle(fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Products',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const DashBoard(index: 3)),
+                );
+              },
+              child: const Text('View All'),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 140,
@@ -717,8 +768,6 @@ class ProductList extends StatelessWidget {
                           padding: const EdgeInsets.all(4),
                           child: Text(
                             item.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),
                         ),

@@ -143,6 +143,15 @@ class AiInsightsSection extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Text("• $e"),
                 )),
+            if (vm.lastUpdated != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Last updated: '
+                  '${DateTime.now().difference(vm.lastUpdated!).inMinutes} mins ago',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
           ],
         ),
       ),

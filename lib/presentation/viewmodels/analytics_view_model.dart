@@ -10,6 +10,7 @@ class AnalyticsViewModel extends ChangeNotifier {
   int? totalCoins;
   int? exchanges;
   int? fearGreed;
+  DateTime? lastUpdated;
   List<double> trend = [];
   final List<String> aiInsights = [
     'Altcoins gaining momentum',
@@ -30,6 +31,8 @@ class AnalyticsViewModel extends ChangeNotifier {
     }
     trend = await _service.fetchBitcoinTrend(7);
     fearGreed = await _service.fetchFearGreed();
+
+    lastUpdated = DateTime.now();
 
     isLoading = false;
     notifyListeners();
