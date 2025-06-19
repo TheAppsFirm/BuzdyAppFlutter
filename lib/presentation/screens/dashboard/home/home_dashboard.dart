@@ -8,6 +8,7 @@ import '../banks/bank.dart';
 import '../products/products.dart';
 import '../feed/feed.dart';
 import '../../../widgets/glass_container.dart';
+import '../../../core/constants.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
@@ -232,8 +233,8 @@ class HomeDashboardScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            colors.primary.withOpacity(0.7),
-            colors.primaryContainer.withOpacity(0.5),
+            kAppButtonColor.withOpacity(0.7),
+            kAppButtonColor.withOpacity(0.4),
           ],
         ),
         borderRadius: BorderRadius.circular(16),

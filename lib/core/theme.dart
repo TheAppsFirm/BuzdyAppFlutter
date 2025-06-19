@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 
 const ColorScheme _lightColorScheme = ColorScheme.light(
-  primary: kMainBlackColor,
-  onPrimary: kWhiteColor,
+  primary: kWhiteColor,
+  onPrimary: kMainBlackColor,
   secondary: kAppButtonColor,
   onSecondary: kWhiteColor,
   background: kWhiteColor,
@@ -30,7 +30,9 @@ ThemeData lightTheme = ThemeData(
   colorScheme: _lightColorScheme,
   cupertinoOverrideTheme: const CupertinoThemeData(primaryColor: kAppButtonColor),
   scaffoldBackgroundColor: _lightColorScheme.background,
-  textTheme: GoogleFonts.poppinsTextTheme(),
+  textTheme: GoogleFonts.poppinsTextTheme()
+      .apply(bodyColor: kMainBlackColor, displayColor: kMainBlackColor),
+  iconTheme: const IconThemeData(color: kIconGrey),
   appBarTheme: AppBarTheme(
     backgroundColor: _lightColorScheme.primary,
     foregroundColor: _lightColorScheme.onPrimary,
@@ -70,6 +72,7 @@ ThemeData darkTheme = ThemeData(
   colorScheme: _darkColorScheme,
   scaffoldBackgroundColor: _darkColorScheme.background,
   textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+  iconTheme: const IconThemeData(color: kWhiteColor),
   appBarTheme: AppBarTheme(
     backgroundColor: _darkColorScheme.primary,
     foregroundColor: _darkColorScheme.onPrimary,
