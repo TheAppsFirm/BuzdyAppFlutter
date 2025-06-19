@@ -283,7 +283,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           ),
           const SizedBox(height: 12),
           ChangeNotifierProvider(
-            create: (_) => SearchViewModel(),
+            create: (_) => SearchViewModel()..search('latest crypto'),
             child: Builder(builder: (context) {
               final searchVm = Provider.of<SearchViewModel>(context);
               return Column(
