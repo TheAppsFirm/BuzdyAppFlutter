@@ -133,22 +133,26 @@ class _SearchScreenState extends State<SearchScreen>
       return const Center(child: Text('No news'));
     }
     return ListView.builder(
+      padding: const EdgeInsets.all(8),
       itemCount: news.length,
       itemBuilder: (context, index) {
         final item = news[index];
-        return ListTile(
-          leading: item.imageUrl != null
-              ? Image.network(item.imageUrl!, width: 80, fit: BoxFit.cover)
-              : null,
-          title: Text(item.title),
-          subtitle: Text(item.source ?? ''),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ArticleWebView(url: item.url),
-              ),
-            );
-          },
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: item.imageUrl != null
+                ? Image.network(item.imageUrl!, width: 80, fit: BoxFit.cover)
+                : null,
+            title: Text(item.title),
+            subtitle: Text(item.source ?? ''),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ArticleWebView(url: item.url),
+                ),
+              );
+            },
+          ),
         );
       },
     );

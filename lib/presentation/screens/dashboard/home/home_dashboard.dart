@@ -43,7 +43,7 @@ class StatCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
+      )
     );
   }
 }
@@ -84,7 +84,7 @@ class FeatureCard extends StatelessWidget {
             Flexible(child: child),
           ],
         ),
-      ),
+      )
     );
   }
 }
