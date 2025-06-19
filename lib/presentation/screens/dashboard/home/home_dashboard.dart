@@ -6,9 +6,6 @@ import '../../../viewmodels/user_view_model.dart';
 import '../crypto/CryptoScreen.dart';
 import '../banks/bank.dart';
 import '../products/products.dart';
-import '../feed/feed.dart';
-import '../feed/videoplayer.dart';
-import '../feed/model/youtubeModel.dart';
 import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
@@ -17,6 +14,8 @@ import '../../../viewmodels/analytics_view_model.dart';
 import '../../../widgets/line_chart.dart';
 import '../../../widgets/analytics_widgets.dart';
 import '../crypto/model.dart/coinModel.dart';
+import '../banks/model/merchnatModel.dart';
+import '../products/model/productModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../widgets/glass_container.dart';
 import 'package:buzdy/core/constants.dart';
@@ -90,118 +89,7 @@ class FeatureCard extends StatelessWidget {
   }
 }
 
-class YoutubePreview extends StatelessWidget {
-  final UserViewModel vm;
-  const YoutubePreview({super.key, required this.vm});
-
-  @override
-  Widget build(BuildContext context) {
-    final videos = vm.youtubeVideos.take(3).toList();
-    return videos.isEmpty
-        ? const Center(child: Text('No videos'))
-        : Column(
-            children: videos
-                .map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      children: [
-                        if (e.snippet?.thumbnails?.thumbnailsDefault?.url != null)
-                          Image.network(
-                            e.snippet!.thumbnails!.thumbnailsDefault!.url!,
-                            width: 60,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            e.snippet?.title ?? '',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
-          );
-  }
-}
-
-class CryptoPreview extends StatelessWidget {
-  final UserViewModel vm;
-  const CryptoPreview({super.key, required this.vm});
-
-  @override
-  Widget build(BuildContext context) {
-    final coins = vm.coins.take(3).toList();
-    return coins.isEmpty
-        ? const Center(child: Text('No coins'))
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: coins
-                .map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Text(
-                      '${e.symbol}: \$${e.rate?.toStringAsFixed(2) ?? '-'}',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                )
-                .toList(),
-          );
-  }
-}
-
-class BusinessPreview extends StatelessWidget {
-  final UserViewModel vm;
-  const BusinessPreview({super.key, required this.vm});
-
-  @override
-  Widget build(BuildContext context) {
-    final merchants = vm.merchantList.take(3).toList();
-    return merchants.isEmpty
-        ? const Center(child: Text('No data'))
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: merchants
-                .map((e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text(
-                        e.name ?? '-',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ))
-                .toList(),
-          );
-  }
-}
-
-class ProductPreview extends StatelessWidget {
-  final UserViewModel vm;
-  const ProductPreview({super.key, required this.vm});
-
-  @override
-  Widget build(BuildContext context) {
-    final products = vm.productList.take(3).toList();
-    return products.isEmpty
-        ? const Center(child: Text('No products'))
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: products
-                .map((e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text(
-                        e.name ?? '-',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ))
-                .toList(),
-          );
-  }
-}
+// Removed old preview widgets
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -305,17 +193,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     analyticsVm: _analyticsVm,
                   ),
                   const SizedBox(height: 20),
-                  MarketCapCard(vm: _analyticsVm),
-                  const SizedBox(height: 20),
-                  FearGreedGauge(vm: _analyticsVm),
-                  const SizedBox(height: 20),
                   MarketTrendSection(vm: _analyticsVm),
                   const SizedBox(height: 20),
                   CryptoPriceSection(coins: viewModel.coins),
                   const SizedBox(height: 20),
                   AiInsightsSection(vm: _analyticsVm),
                   const SizedBox(height: 20),
-                  _buildFeatureGrid(context, viewModel),
+                  BusinessList(merchants: viewModel.merchantList),
+                  const SizedBox(height: 20),
+                  ProductList(products: viewModel.productList),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -326,66 +212,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-
-  Widget _buildFeatureGrid(BuildContext context, UserViewModel vm) {
-    final features = [
-      {
-        'title': 'YouTube',
-        'icon': Icons.ondemand_video,
-        'builder': YoutubePreview(vm: vm),
-        'onTap': () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const FeedScreen())),
-      },
-      {
-        'title': 'Crypto',
-        'icon': Icons.currency_bitcoin,
-        'builder': CryptoPreview(vm: vm),
-        'onTap': () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const CryptoScreen())),
-      },
-      {
-        'title': 'Business',
-        'icon': Icons.business,
-        'builder': BusinessPreview(vm: vm),
-        'onTap': () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const HomeScreen())),
-      },
-      {
-        'title': 'Products',
-        'icon': Icons.shopping_bag,
-        'builder': ProductPreview(vm: vm),
-        'onTap': () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const ProductsScreen())),
-      },
-    ];
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = (constraints.maxWidth / 200).floor().clamp(2, 4);
-        final aspectRatio = constraints.maxWidth > 600 ? 1.3 : 1.1;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: aspectRatio,
-          ),
-          itemCount: features.length,
-          itemBuilder: (context, index) {
-            final feature = features[index];
-            return FeatureCard(
-              title: feature['title'] as String,
-              icon: feature['icon'] as IconData,
-              child: feature['builder'] as Widget,
-              onTap: feature['onTap'] as VoidCallback,
-            );
-          },
-        );
-      },
-    );
-  }
 
 }
 
@@ -465,6 +291,10 @@ class GreetingSection extends StatelessWidget {
                         : '-'),
               ],
             ),
+            const SizedBox(height: 12),
+            MarketCapCard(vm: analyticsVm),
+            const SizedBox(height: 12),
+            FearGreedGauge(vm: analyticsVm),
             const SizedBox(height: 12),
             TextField(
               controller: searchController,
@@ -702,6 +532,126 @@ class CryptoPriceSection extends StatelessWidget {
         MaterialPageRoute(builder: (_) => const CryptoScreen()),
       ),
       child: card,
+    );
+  }
+}
+
+class BusinessList extends StatelessWidget {
+  final List<MerchantModelData> merchants;
+  const BusinessList({super.key, required this.merchants});
+
+  @override
+  Widget build(BuildContext context) {
+    if (merchants.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final items = merchants.take(10).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Businesses', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 140,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return SizedBox(
+                width: 120,
+                child: Card(
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: item.image != null
+                              ? Image.network(item.image!, fit: BoxFit.cover)
+                              : const Icon(Icons.business, size: 50),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Text(
+                            item.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ProductList extends StatelessWidget {
+  final List<Product> products;
+  const ProductList({super.key, required this.products});
+
+  @override
+  Widget build(BuildContext context) {
+    if (products.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final items = products.take(10).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Products', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 140,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              final imageUrl = item.image;
+              return SizedBox(
+                width: 120,
+                child: Card(
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const ProductsScreen()),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: imageUrl != null
+                              ? Image.network(imageUrl, fit: BoxFit.cover)
+                              : const Icon(Icons.shopping_bag, size: 50),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Text(
+                            item.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
