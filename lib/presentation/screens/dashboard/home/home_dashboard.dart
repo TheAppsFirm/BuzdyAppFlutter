@@ -7,6 +7,7 @@ import '../../../viewmodels/user_view_model.dart';
 import '../crypto/CryptoScreen.dart';
 import '../banks/bank.dart';
 import '../products/products.dart';
+import '../dashboard.dart';
 import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
@@ -438,11 +439,9 @@ class QuickResultsSection extends StatelessWidget {
                   .toList(),
             ),
             onTap: () {
-              final query =
-                  searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
-              Navigator.of(context).push(
+              Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (_) => SearchScreen(initialQuery: query),
+                  builder: (_) => const DashBoard(index: 4),
                 ),
               );
             },
@@ -629,9 +628,13 @@ class BusinessList extends StatelessWidget {
                 child: GlassContainer(
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
-                    ),
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (_) => const DashBoard(index: 2),
+                        ),
+                      );
+                    },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -693,10 +696,12 @@ class ProductList extends StatelessWidget {
                 child: GlassContainer(
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const ProductsScreen()),
-                    ),
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                            builder: (_) => const DashBoard(index: 3)),
+                      );
+                    },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
