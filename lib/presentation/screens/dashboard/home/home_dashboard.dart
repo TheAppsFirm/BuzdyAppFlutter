@@ -8,7 +8,7 @@ import '../banks/bank.dart';
 import '../products/products.dart';
 import '../feed/feed.dart';
 import '../../search/search_screen.dart';
-import '../../viewmodels/search_view_model.dart';
+import '../../../viewmodels/search_view_model.dart';
 import '../../../widgets/glass_container.dart';
 import 'package:buzdy/core/constants.dart';
 
