@@ -9,7 +9,9 @@ import 'article_webview.dart';
 
 class SearchScreen extends StatefulWidget {
   final String initialQuery;
-  const SearchScreen({super.key, this.initialQuery = ''});
+  /// [query] is kept for backward compatibility if callers use `query:`
+  const SearchScreen({super.key, String? initialQuery, String? query})
+      : initialQuery = initialQuery ?? query ?? '';
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
