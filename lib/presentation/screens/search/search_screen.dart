@@ -72,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen>
                 tabs: const [
                   Tab(text: 'Videos'),
                   Tab(text: 'News'),
-                  Tab(text: 'Law & Policy'),
+                  Tab(text: 'Social'),
                 ],
               ),
             ),
