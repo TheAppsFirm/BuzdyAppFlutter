@@ -6,7 +6,8 @@ import 'models/google_result.dart';
 import 'models/news_article.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final String initialQuery;
+  const SearchScreen({super.key, this.initialQuery = ''});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -16,11 +17,24 @@ class _SearchScreenState extends State<SearchScreen>
     with SingleTickerProviderStateMixin {
   late TabController _controller;
   final TextEditingController _searchController = TextEditingController();
+  late SearchViewModel _viewModel;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _controller = TabController(length: 3, vsync: this);
+    _viewModel = SearchViewModel();
+    _searchController.text = widget.initialQuery;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized && widget.initialQuery.isNotEmpty) {
+      _viewModel.search(widget.initialQuery);
+      _initialized = true;
+    }
   }
 
   @override
@@ -32,8 +46,8 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => SearchViewModel(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: Consumer<SearchViewModel>(
         builder: (context, vm, child) {
           return Scaffold(
@@ -50,9 +64,9 @@ class _SearchScreenState extends State<SearchScreen>
               bottom: TabBar(
                 controller: _controller,
                 tabs: const [
-                  Tab(text: 'Web'),
                   Tab(text: 'Videos'),
                   Tab(text: 'News'),
+                  Tab(text: 'Social'),
                 ],
               ),
             ),
@@ -61,9 +75,9 @@ class _SearchScreenState extends State<SearchScreen>
                 : TabBarView(
                     controller: _controller,
                     children: [
-                      _buildWeb(vm.webResults),
                       _buildVideos(vm.videoResults),
                       _buildNews(vm.newsResults),
+                      _buildWeb(vm.webResults),
                     ],
                   ),
           );

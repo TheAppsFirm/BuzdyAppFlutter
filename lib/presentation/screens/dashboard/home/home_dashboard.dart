@@ -8,6 +8,7 @@ import '../banks/bank.dart';
 import '../products/products.dart';
 import '../feed/feed.dart';
 import '../../search/search_screen.dart';
+import '../../viewmodels/search_view_model.dart';
 import '../../../widgets/glass_container.dart';
 import 'package:buzdy/core/constants.dart';
 
@@ -167,8 +168,21 @@ class ProductPreview extends StatelessWidget {
   }
 }
 
-class HomeDashboardScreen extends StatelessWidget {
+class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
+
+  @override
+  State<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
+}
+
+class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _refreshDashboard(UserViewModel vm) async {
     vm.resetFilters();
@@ -268,27 +282,45 @@ class HomeDashboardScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search... ',
-              filled: true,
-              fillColor: colors.onPrimary.withOpacity(0.1),
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.public),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SearchScreen()),
-                  );
-                },
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onChanged: vm.searchCoins,
+          ChangeNotifierProvider(
+            create: (_) => SearchViewModel(),
+            child: Builder(builder: (context) {
+              final searchVm = Provider.of<SearchViewModel>(context);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search... ',
+                      filled: true,
+                      fillColor: colors.onPrimary.withOpacity(0.1),
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.public),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => SearchScreen(initialQuery: _searchController.text)),
+                          );
+                        },
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    controller: _searchController,
+                    textInputAction: TextInputAction.search,
+                    onChanged: (q) {
+                      vm.searchCoins(q);
+                    },
+                    onSubmitted: searchVm.search,
+                  ),
+                  _buildQuickResults(searchVm, vm),
+                ],
+              );
+            }),
           ),
         ],
       ),
@@ -296,6 +328,58 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildQuickResults(SearchViewModel svm, UserViewModel userVm) {
+    if (svm.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final coins = userVm.coins;
+    final videos = svm.videoResults.take(3).toList();
+    final news = svm.newsResults.take(3).toList();
+
+    if (videos.isEmpty && news.isEmpty && coins.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (coins.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              '${coins.first.symbol}: \$${coins.first.rate?.toStringAsFixed(2) ?? '-'}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        if (videos.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Videos'),
+                ...videos.map((v) => Text(v.snippet?.title ?? '')),
+              ],
+            ),
+          ),
+        if (news.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('News'),
+                ...news.map((n) => Text(n.title)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
 
   Widget _buildFeatureGrid(BuildContext context, UserViewModel vm) {
     final features = [
