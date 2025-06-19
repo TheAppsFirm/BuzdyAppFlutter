@@ -29,21 +29,20 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Text(
-                value,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(title, style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(title, style: Theme.of(context).textTheme.bodySmall),
+          ],
         ),
-      )
+      ),
     );
   }
 }
