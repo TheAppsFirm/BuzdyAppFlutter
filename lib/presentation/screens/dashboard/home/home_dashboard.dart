@@ -584,6 +584,17 @@ class LawPolicySection extends StatelessWidget {
             Text('Legal: ${info.legalStatus}'),
             Text('Taxation: ${info.taxation}'),
             Text('Restrictions: ${info.restrictions}'),
+            if (info.link != null)
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ArticleWebView(url: info.link!),
+                    ),
+                  );
+                },
+                child: const Text('Read more'),
+              ),
           ],
         ),
       ),

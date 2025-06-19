@@ -68,18 +68,22 @@ class SearchService {
       legalStatus: 'Legal',
       taxation: 'Capital gains tax applies',
       restrictions: 'No federal restrictions',
+      link: 'https://www.usa.gov/cryptocurrency',
     ),
     'IN': LawInfo(
       country: 'India',
       legalStatus: 'Legal with regulation',
       taxation: '30% tax on gains',
       restrictions: 'Regulated exchanges only',
+      link:
+          'https://en.wikipedia.org/wiki/Regulation_of_cryptocurrency_in_India',
     ),
     'GB': LawInfo(
       country: 'United Kingdom',
       legalStatus: 'Legal',
       taxation: 'Capital gains tax',
       restrictions: 'KYC/AML required',
+      link: 'https://www.gov.uk/government',
     ),
   };
 }

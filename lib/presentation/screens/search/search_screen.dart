@@ -72,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen>
                 tabs: const [
                   Tab(text: 'Videos'),
                   Tab(text: 'News'),
-                  Tab(text: 'Social'),
+                  Tab(text: 'Law & Policy'),
                 ],
               ),
             ),
@@ -166,7 +166,7 @@ class _SearchScreenState extends State<SearchScreen>
       return const Center(child: CircularProgressIndicator());
     }
     if (info == null) {
-      return const Center(child: Text('No data')); 
+      return const Center(child: Text('No data'));
     }
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -180,6 +180,17 @@ class _SearchScreenState extends State<SearchScreen>
           Text('Taxation: ${info.taxation}'),
           const SizedBox(height: 4),
           Text('Restrictions: ${info.restrictions}'),
+          if (info.link != null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ArticleWebView(url: info.link!),
+                  ),
+                );
+              },
+              child: const Text('Read more'),
+            ),
         ],
       ),
     );
