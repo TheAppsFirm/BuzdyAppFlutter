@@ -7,6 +7,7 @@ import '../crypto/CryptoScreen.dart';
 import '../banks/bank.dart';
 import '../products/products.dart';
 import '../feed/feed.dart';
+import '../../search/search_screen.dart';
 import '../../../widgets/glass_container.dart';
 import 'package:buzdy/core/constants.dart';
 
@@ -273,6 +274,14 @@ class HomeDashboardScreen extends StatelessWidget {
               filled: true,
               fillColor: colors.onPrimary.withOpacity(0.1),
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.public),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SearchScreen()),
+                  );
+                },
+              ),
               contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
