@@ -4,9 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 
 const ColorScheme _lightColorScheme = ColorScheme.light(
-  primary: kPurpleColor,
+  primary: kMainBlackColor,
   onPrimary: kWhiteColor,
-  secondary: kBrownColor,
+  secondary: kAppButtonColor,
   onSecondary: kWhiteColor,
   background: kWhiteColor,
   onBackground: kMainBlackColor,
@@ -15,13 +15,13 @@ const ColorScheme _lightColorScheme = ColorScheme.light(
 );
 
 const ColorScheme _darkColorScheme = ColorScheme.dark(
-  primary: kPurpleColor,
+  primary: kMainBlackColor,
   onPrimary: kWhiteColor,
-  secondary: kBrownColor,
+  secondary: kAppButtonColor,
   onSecondary: kWhiteColor,
-  background: Color(0xFF121212),
+  background: kMainBlackColor,
   onBackground: kWhiteColor,
-  surface: Color(0xFF1E1E1E),
+  surface: Color(0xFF1C1C1E),
   onSurface: kWhiteColor,
 );
 
