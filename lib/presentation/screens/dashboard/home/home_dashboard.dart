@@ -201,7 +201,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     time: time,
                     searchController: _searchController,
                     userVm: viewModel,
-                    analyticsVm: _analyticsVm,
                     onSearchChanged: (v) => _onSearchChanged(v, viewModel),
                   ),
                   if (_analyticsVm.isLoading)
@@ -211,13 +210,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     )
                   else ...[
                     const SizedBox(height: 20),
-                    MarketTrendSection(vm: _analyticsVm),
+                    const MarketTrendSection(),
                     const SizedBox(height: 20),
                     CryptoPriceSection(coins: viewModel.coins),
                     const SizedBox(height: 20),
-                    AiInsightsSection(vm: _analyticsVm),
+                    const AiInsightsSection(),
                     const SizedBox(height: 20),
-                    LawPolicySection(vm: _searchVm),
+                    const LawPolicySection(),
                     const SizedBox(height: 20),
                     BusinessList(merchants: viewModel.merchantList),
                     const SizedBox(height: 20),
@@ -245,7 +244,6 @@ class GreetingSection extends StatelessWidget {
   final String time;
   final TextEditingController searchController;
   final UserViewModel userVm;
-  final AnalyticsViewModel analyticsVm;
   final void Function(String) onSearchChanged;
 
   const GreetingSection({
@@ -256,7 +254,6 @@ class GreetingSection extends StatelessWidget {
     required this.time,
     required this.searchController,
     required this.userVm,
-    required this.analyticsVm,
     required this.onSearchChanged,
   });
 
@@ -299,23 +296,27 @@ class GreetingSection extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                StatCard(
-                    title: 'Total Coins',
-                    value: (analyticsVm.totalCoins ?? 0).toString()),
-                StatCard(
-                    title: 'Exchanges',
-                    value: (analyticsVm.exchanges ?? 0).toString()),
-                StatCard(
-                    title: '24h Vol',
-                    value: analyticsVm.volume24h != null
-                        ? '\$${(analyticsVm.volume24h! / 1e9).toStringAsFixed(1)}B'
-                        : '-'),
+                Consumer<AnalyticsViewModel>(
+                  builder: (context, vm, _) => StatCard(
+                      title: 'Total Coins', value: (vm.totalCoins ?? 0).toString()),
+                ),
+                Consumer<AnalyticsViewModel>(
+                  builder: (context, vm, _) => StatCard(
+                      title: 'Exchanges', value: (vm.exchanges ?? 0).toString()),
+                ),
+                Consumer<AnalyticsViewModel>(
+                  builder: (context, vm, _) => StatCard(
+                      title: '24h Vol',
+                      value: vm.volume24h != null
+                          ? '\$${(vm.volume24h! / 1e9).toStringAsFixed(1)}B'
+                          : '-'),
+                ),
               ],
             ),
             const SizedBox(height: 12),
-            MarketCapCard(vm: analyticsVm),
+            const MarketCapCard(),
             const SizedBox(height: 12),
-            FearGreedGauge(vm: analyticsVm),
+            const FearGreedGauge(),
             const SizedBox(height: 12),
             TextField(
               controller: searchController,
@@ -558,11 +559,11 @@ class CryptoPriceSection extends StatelessWidget {
 }
 
 class LawPolicySection extends StatelessWidget {
-  final SearchViewModel vm;
-  const LawPolicySection({super.key, required this.vm});
+  const LawPolicySection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<SearchViewModel>(context);
     if (vm.lawLoading) {
       return const Center(child: CircularProgressIndicator());
     }

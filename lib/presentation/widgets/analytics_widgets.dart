@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../viewmodels/analytics_view_model.dart';
 import 'line_chart.dart';
 
 class MarketTrendSection extends StatelessWidget {
-  final AnalyticsViewModel vm;
-  const MarketTrendSection({super.key, required this.vm});
+  const MarketTrendSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<AnalyticsViewModel>(context);
     if (vm.isLoading && vm.trend.isEmpty) {
       return const Card(
         child: Padding(
@@ -39,11 +40,11 @@ class MarketTrendSection extends StatelessWidget {
 }
 
 class MarketCapCard extends StatelessWidget {
-  final AnalyticsViewModel vm;
-  const MarketCapCard({super.key, required this.vm});
+  const MarketCapCard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<AnalyticsViewModel>(context);
     final cap = vm.marketCap ?? 0;
     final change = 0.0;
     if (vm.isLoading && cap == 0) {
@@ -72,11 +73,11 @@ class MarketCapCard extends StatelessWidget {
 }
 
 class FearGreedGauge extends StatelessWidget {
-  final AnalyticsViewModel vm;
-  const FearGreedGauge({super.key, required this.vm});
+  const FearGreedGauge({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<AnalyticsViewModel>(context);
     final value = vm.fearGreed ?? 0;
     if (vm.isLoading && value == 0) {
       return const Card(
@@ -111,11 +112,11 @@ class FearGreedGauge extends StatelessWidget {
 }
 
 class AiInsightsSection extends StatelessWidget {
-  final AnalyticsViewModel vm;
-  const AiInsightsSection({super.key, required this.vm});
+  const AiInsightsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<AnalyticsViewModel>(context);
     if (vm.isLoading && vm.aiInsights.isEmpty) {
       return const Card(
         child: Padding(
