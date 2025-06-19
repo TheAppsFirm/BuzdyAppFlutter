@@ -65,7 +65,8 @@ class _DashBoardState extends State<DashBoard> {
             children: _pages,
           ),
           bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            // Use a constant white background to keep tabs clean
+            backgroundColor: kWhiteColor,
             type: BottomNavigationBarType.fixed,
             elevation: 8.0,
             showUnselectedLabels: true,
