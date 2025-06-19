@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import '../../services/search_service.dart';
+import '../screens/search/models/news_article.dart';
+import '../screens/dashboard/feed/model/youtubeModel.dart';
+import '../screens/search/models/law_info.dart';
+
+class SearchViewModel extends ChangeNotifier {
+  final SearchService _service = SearchService();
+  String lastQuery = '';
+
+  bool isLoading = false;
+  List<Item> videoResults = [];
+  List<NewsArticle> newsResults = [];
+  LawInfo? lawInfo;
+  bool lawLoading = true;
+
+  SearchViewModel() {
+    _initLaw();
+  }
+
+  Future<void> _initLaw() async {
+    lawInfo = await _service.fetchLawInfo();
+    lawLoading = false;
+    notifyListeners();
+  }
+
+  void clear() {
+    lastQuery = '';
+    videoResults = [];
+    newsResults = [];
+    lawInfo = null;
+    lawLoading = true;
+    isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> search(String query) async {
+    if (query.isEmpty) return;
+    lastQuery = query;
+    isLoading = true;
+    notifyListeners();
+    try {
+      final results = await Future.wait([
+        _service.searchYouTube(query),
+        _service.searchNews(query),
+        _service.fetchLawInfo(),
+      ]);
+      videoResults = results[0] as List<Item>;
+      newsResults = results[1] as List<NewsArticle>;
+      lawInfo = results[2] as LawInfo?;
+      lawLoading = false;
+    } catch (e) {
+      debugPrint('Search error: $e');
+    }
+    isLoading = false;
+    notifyListeners();
+  }
+}
