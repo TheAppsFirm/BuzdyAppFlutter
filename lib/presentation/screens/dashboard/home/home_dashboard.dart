@@ -8,7 +8,7 @@ import '../banks/bank.dart';
 import '../products/products.dart';
 import '../feed/feed.dart';
 import '../../../widgets/glass_container.dart';
-import '../../../core/constants.dart';
+import 'package:buzdy/core/constants.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
