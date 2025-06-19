@@ -203,7 +203,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     time: time,
                     searchController: _searchController,
                     userVm: viewModel,
-                    searchVm: _searchVm,
                     analyticsVm: _analyticsVm,
                     onSearchChanged: (v) => _onSearchChanged(v, viewModel),
                   ),
@@ -239,7 +238,6 @@ class GreetingSection extends StatelessWidget {
   final String time;
   final TextEditingController searchController;
   final UserViewModel userVm;
-  final SearchViewModel searchVm;
   final AnalyticsViewModel analyticsVm;
   final void Function(String) onSearchChanged;
 
@@ -251,7 +249,6 @@ class GreetingSection extends StatelessWidget {
     required this.time,
     required this.searchController,
     required this.userVm,
-    required this.searchVm,
     required this.analyticsVm,
     required this.onSearchChanged,
   });
@@ -344,7 +341,7 @@ class GreetingSection extends StatelessWidget {
                 ),
               ),
             ),
-            QuickResultsSection(searchVm: searchVm, userVm: userVm),
+            QuickResultsSection(userVm: userVm),
           ],
         ),
       ),
@@ -353,17 +350,16 @@ class GreetingSection extends StatelessWidget {
 }
 
 class QuickResultsSection extends StatelessWidget {
-  final SearchViewModel searchVm;
   final UserViewModel userVm;
 
   const QuickResultsSection({
     super.key,
-    required this.searchVm,
     required this.userVm,
   });
 
   @override
   Widget build(BuildContext context) {
+    final searchVm = Provider.of<SearchViewModel>(context);
     if (searchVm.lastQuery.isEmpty) {
       return const SizedBox.shrink();
     }

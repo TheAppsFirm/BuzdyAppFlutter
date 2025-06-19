@@ -4,6 +4,7 @@ import '../../viewmodels/search_view_model.dart';
 import '../dashboard/feed/model/youtubeModel.dart';
 import 'models/news_article.dart';
 import 'article_webview.dart';
+import '../dashboard/feed/videoplayer.dart';
 
 class SearchScreen extends StatefulWidget {
   final String initialQuery;
@@ -113,10 +114,12 @@ class _SearchScreenState extends State<SearchScreen>
           onTap: id.isEmpty
               ? null
               : () {
-                  final url = 'https://www.youtube.com/watch?v=$id';
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => ArticleWebView(url: url),
+                      builder: (_) => VideoPlayerScreen(
+                        videoId: id,
+                        videoTitle: item.snippet?.title,
+                      ),
                     ),
                   );
                 },
