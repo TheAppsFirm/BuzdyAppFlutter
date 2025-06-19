@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/search_view_model.dart';
 import '../dashboard/feed/model/youtubeModel.dart';
 import 'models/news_article.dart';
-import 'models/google_result.dart';
+import 'models/law_info.dart';
 import 'article_webview.dart';
 import '../dashboard/feed/videoplayer.dart';
 
@@ -72,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen>
                 tabs: const [
                   Tab(text: 'Videos'),
                   Tab(text: 'News'),
-                  Tab(text: 'Web'),
+                  Tab(text: 'Law & Policy'),
                 ],
               ),
             ),
@@ -85,7 +85,7 @@ class _SearchScreenState extends State<SearchScreen>
                     children: [
                       _buildVideos(vm.videoResults),
                       _buildNews(vm.newsResults),
-                      _buildWeb(vm.webResults),
+                      _buildLaw(vm.lawInfo, vm.lawLoading),
                     ],
                   ),
                 ),
@@ -161,29 +161,27 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  Widget _buildWeb(List<GoogleResult> results) {
-    if (results.isEmpty) {
-      return const Center(child: Text('No results'));
+  Widget _buildLaw(LawInfo? info, bool loading) {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
     }
-    return ListView.builder(
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        final item = results[index];
-        return ListTile(
-          leading: item.imageUrl != null
-              ? Image.network(item.imageUrl!, width: 80, fit: BoxFit.cover)
-              : null,
-          title: Text(item.title),
-          subtitle: Text(item.snippet),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ArticleWebView(url: item.link),
-              ),
-            );
-          },
-        );
-      },
+    if (info == null) {
+      return const Center(child: Text('No data')); 
+    }
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Country: ${info.country}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text('Legal Status: ${info.legalStatus}'),
+          const SizedBox(height: 4),
+          Text('Taxation: ${info.taxation}'),
+          const SizedBox(height: 4),
+          Text('Restrictions: ${info.restrictions}'),
+        ],
+      ),
     );
   }
 }

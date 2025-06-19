@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../presentation/screens/search/models/google_result.dart';
 import '../presentation/screens/search/models/news_article.dart';
+import '../presentation/screens/search/models/law_info.dart';
 import '../presentation/screens/dashboard/feed/model/youtubeModel.dart';
 
 class SearchService {
@@ -45,4 +46,40 @@ class SearchService {
     }
     return [];
   }
+
+  Future<LawInfo?> fetchLawInfo() async {
+    try {
+      final geoRes = await http.get(Uri.parse('https://ipapi.co/json/'));
+      String code = 'US';
+      if (geoRes.statusCode == 200) {
+        final geo = jsonDecode(geoRes.body);
+        code = geo['country_code'] ?? 'US';
+      }
+      final map = _lawData[code] ?? _lawData['US']!;
+      return map;
+    } catch (_) {
+      return _lawData['US'];
+    }
+  }
+
+  static final Map<String, LawInfo> _lawData = {
+    'US': LawInfo(
+      country: 'United States',
+      legalStatus: 'Legal',
+      taxation: 'Capital gains tax applies',
+      restrictions: 'No federal restrictions',
+    ),
+    'IN': LawInfo(
+      country: 'India',
+      legalStatus: 'Legal with regulation',
+      taxation: '30% tax on gains',
+      restrictions: 'Regulated exchanges only',
+    ),
+    'GB': LawInfo(
+      country: 'United Kingdom',
+      legalStatus: 'Legal',
+      taxation: 'Capital gains tax',
+      restrictions: 'KYC/AML required',
+    ),
+  };
 }

@@ -217,6 +217,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     const SizedBox(height: 20),
                     AiInsightsSection(vm: _analyticsVm),
                     const SizedBox(height: 20),
+                    LawPolicySection(vm: _searchVm),
+                    const SizedBox(height: 20),
                     BusinessList(merchants: viewModel.merchantList),
                     const SizedBox(height: 20),
                     ProductList(products: viewModel.productList),
@@ -551,6 +553,38 @@ class CryptoPriceSection extends StatelessWidget {
         MaterialPageRoute(builder: (_) => const CryptoScreen()),
       ),
       child: card,
+    );
+  }
+}
+
+class LawPolicySection extends StatelessWidget {
+  final SearchViewModel vm;
+  const LawPolicySection({super.key, required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    if (vm.lawLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final info = vm.lawInfo;
+    if (info == null) {
+      return const SizedBox.shrink();
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Law & Policy', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('Country: ${info.country}'),
+            Text('Legal: ${info.legalStatus}'),
+            Text('Taxation: ${info.taxation}'),
+            Text('Restrictions: ${info.restrictions}'),
+          ],
+        ),
+      ),
     );
   }
 }
