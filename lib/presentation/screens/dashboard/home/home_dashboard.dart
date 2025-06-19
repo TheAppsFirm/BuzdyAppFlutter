@@ -231,7 +231,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content:
-                Text('Tap the globe icon to open full search results.'),
+                Text('Tap the arrow icon to open full search results.'),
           ),
         );
       });
@@ -477,7 +477,7 @@ class GreetingSection extends StatelessWidget {
                 fillColor: colors.onPrimary.withOpacity(0.1),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.public),
+                  icon: const Icon(Icons.arrow_forward),
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -580,9 +580,15 @@ class QuickResultsSection extends StatelessWidget {
                   )
                   .toList(),
             ),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const FeedScreen()),
-            ),
+            onTap: () {
+              final query =
+                  searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => SearchScreen(initialQuery: query),
+                ),
+              );
+            },
           ),
         if (news.isNotEmpty)
           _section(

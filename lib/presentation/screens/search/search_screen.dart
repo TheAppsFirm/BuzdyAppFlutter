@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/search_view_model.dart';
 import '../dashboard/feed/model/youtubeModel.dart';
-import '../dashboard/feed/videoplayer.dart';
 import 'models/google_result.dart';
 import 'models/news_article.dart';
 import 'article_webview.dart';
@@ -27,7 +26,7 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 2, vsync: this);
+    _controller = TabController(length: 3, vsync: this);
     _viewModel = SearchViewModel();
     _searchController.text = widget.initialQuery;
   }
@@ -67,9 +66,12 @@ class _SearchScreenState extends State<SearchScreen>
               ),
               bottom: TabBar(
                 controller: _controller,
+                labelColor: Colors.black,
+                unselectedLabelColor: Colors.grey,
                 tabs: const [
                   Tab(text: 'Videos'),
                   Tab(text: 'News'),
+                  Tab(text: 'Social'),
                 ],
               ),
             ),
@@ -80,6 +82,7 @@ class _SearchScreenState extends State<SearchScreen>
                     children: [
                       _buildVideos(vm.videoResults),
                       _buildNews(vm.newsResults),
+                      _buildWeb(vm.webResults),
                     ],
                   ),
           );
@@ -108,12 +111,10 @@ class _SearchScreenState extends State<SearchScreen>
           onTap: id.isEmpty
               ? null
               : () {
+                  final url = 'https://www.youtube.com/watch?v=$id';
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => VideoPlayerScreen(
-                        videoId: id,
-                        videoTitle: item.snippet?.title,
-                      ),
+                      builder: (_) => ArticleWebView(url: url),
                     ),
                   );
                 },
@@ -140,6 +141,32 @@ class _SearchScreenState extends State<SearchScreen>
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => ArticleWebView(url: item.url),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildWeb(List<GoogleResult> results) {
+    if (results.isEmpty) {
+      return const Center(child: Text('No results'));
+    }
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final item = results[index];
+        return ListTile(
+          leading: item.imageUrl != null
+              ? Image.network(item.imageUrl!, width: 80, fit: BoxFit.cover)
+              : null,
+          title: Text(item.title),
+          subtitle: Text(item.snippet),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ArticleWebView(url: item.link),
               ),
             );
           },
