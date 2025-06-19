@@ -7,7 +7,7 @@ import '../../../viewmodels/user_view_model.dart';
 import '../crypto/CryptoScreen.dart';
 import '../banks/bank.dart';
 import '../products/products.dart';
-import '../dashboard.dart';
+import '../../dashboard.dart';
 import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
