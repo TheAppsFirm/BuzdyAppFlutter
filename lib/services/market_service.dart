@@ -1,0 +1,34 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class MarketService {
+  Future<Map<String, dynamic>?> fetchGlobal() async {
+    final res = await http.get(Uri.parse('https://api.coingecko.com/api/v3/global'));
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      return data['data'] as Map<String, dynamic>?;
+    }
+    return null;
+  }
+
+  Future<List<double>> fetchBitcoinTrend(int days) async {
+    final uri = Uri.parse('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=$days');
+    final res = await http.get(uri);
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      final prices = data['prices'] as List<dynamic>;
+      return prices.map<double>((e) => (e[1] as num).toDouble()).toList();
+    }
+    return [];
+  }
+
+  Future<int?> fetchFearGreed() async {
+    final res = await http.get(Uri.parse('https://api.alternative.me/fng/?limit=1'));
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      final v = data['data'][0]['value'];
+      return int.tryParse(v);
+    }
+    return null;
+  }
+}

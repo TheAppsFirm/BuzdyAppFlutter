@@ -13,6 +13,9 @@ import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
 import '../../../viewmodels/search_view_model.dart';
+import '../../../viewmodels/analytics_view_model.dart';
+import '../../../widgets/line_chart.dart';
+import '../../../widgets/analytics_widgets.dart';
 import '../crypto/model.dart/coinModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../widgets/glass_container.dart';
@@ -20,8 +23,8 @@ import 'package:buzdy/core/constants.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
-  final int count;
-  const StatCard({super.key, required this.title, required this.count});
+  final String value;
+  const StatCard({super.key, required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +36,7 @@ class StatCard extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                count.toString(),
+                value,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 4),
@@ -210,11 +213,13 @@ class HomeDashboardScreen extends StatefulWidget {
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   late final SearchViewModel _searchVm;
+  late final AnalyticsViewModel _analyticsVm;
 
   @override
   void initState() {
     super.initState();
     _searchVm = SearchViewModel()..search('latest crypto');
+    _analyticsVm = AnalyticsViewModel()..load();
     _showHint();
   }
 
@@ -238,6 +243,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   void dispose() {
     _searchController.dispose();
     _searchVm.dispose();
+    _analyticsVm.dispose();
     super.dispose();
   }
 
@@ -248,11 +254,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       vm.getAllMarchants(pageNumber: 1),
       vm.getAllProducts(pageNumber: 1),
       vm.fetchCoins(limit: 25, isRefresh: true),
-      vm.fetchYoutubeVideos(isRefresh: true),
     ]);
     if (_searchController.text.isEmpty) {
       await _searchVm.search('latest crypto');
     }
+    await _analyticsVm.load();
   }
 
   @override
@@ -272,8 +278,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             ? 'Good afternoon'
             : 'Good evening';
 
-    return ChangeNotifierProvider.value(
-      value: _searchVm,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _searchVm),
+        ChangeNotifierProvider.value(value: _analyticsVm),
+      ],
       child: Scaffold(
         body: SafeArea(
           child: RefreshIndicator(
@@ -293,13 +302,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     searchController: _searchController,
                     userVm: viewModel,
                     searchVm: _searchVm,
+                    analyticsVm: _analyticsVm,
                   ),
+                  const SizedBox(height: 20),
+                  MarketCapCard(vm: _analyticsVm),
+                  const SizedBox(height: 20),
+                  FearGreedGauge(vm: _analyticsVm),
+                  const SizedBox(height: 20),
+                  MarketTrendSection(vm: _analyticsVm),
                   const SizedBox(height: 20),
                   CryptoPriceSection(coins: viewModel.coins),
                   const SizedBox(height: 20),
-                  const AiInsightBox(),
-                  const SizedBox(height: 20),
-                  RecommendedVideos(videos: viewModel.youtubeVideos),
+                  AiInsightsSection(vm: _analyticsVm),
                   const SizedBox(height: 20),
                   TrendingNews(news: _searchVm.newsResults),
                   const SizedBox(height: 20),
@@ -387,6 +401,7 @@ class GreetingSection extends StatelessWidget {
   final TextEditingController searchController;
   final UserViewModel userVm;
   final SearchViewModel searchVm;
+  final AnalyticsViewModel analyticsVm;
 
   const GreetingSection({
     super.key,
@@ -397,6 +412,7 @@ class GreetingSection extends StatelessWidget {
     required this.searchController,
     required this.userVm,
     required this.searchVm,
+    required this.analyticsVm,
   });
 
   @override
@@ -438,9 +454,17 @@ class GreetingSection extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                StatCard(title: 'Videos', count: userVm.youtubeVideos.length),
-                StatCard(title: 'Coins', count: userVm.coins.length),
-                StatCard(title: 'Products', count: userVm.productList.length),
+                StatCard(
+                    title: 'Total Coins',
+                    value: (analyticsVm.totalCoins ?? 0).toString()),
+                StatCard(
+                    title: 'Exchanges',
+                    value: (analyticsVm.exchanges ?? 0).toString()),
+                StatCard(
+                    title: '24h Vol',
+                    value: analyticsVm.volume24h != null
+                        ? '\$${(analyticsVm.volume24h! / 1e9).toStringAsFixed(1)}B'
+                        : '-'),
               ],
             ),
             const SizedBox(height: 12),
@@ -651,84 +675,7 @@ class CryptoPriceSection extends StatelessWidget {
   }
 }
 
-class AiInsightBox extends StatelessWidget {
-  const AiInsightBox({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('AI Insight',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text('BTC showing upward momentum today.'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class RecommendedVideos extends StatelessWidget {
-  final List<Item> videos;
-
-  const RecommendedVideos({super.key, required this.videos});
-
-  @override
-  Widget build(BuildContext context) {
-    if (videos.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Recommended Videos',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: videos.length,
-          itemBuilder: (context, index) {
-            final item = videos[index];
-            final thumb = item.snippet?.thumbnails?.thumbnailsDefault?.url;
-            final id = item.videoId ?? item.id ?? '';
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 4),
-              child: ListTile(
-                leading: thumb != null
-                    ? Image.network(thumb, width: 80, fit: BoxFit.cover)
-                    : null,
-                title: Text(item.snippet?.title ?? ''),
-                subtitle: Text(item.snippet?.channelTitle ?? ''),
-                trailing: IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: id.isEmpty
-                      ? null
-                      : () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => VideoPlayerScreen(
-                                videoId: id,
-                                videoTitle: item.snippet?.title,
-                              ),
-                            ),
-                          );
-                        },
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
 
 class TrendingNews extends StatelessWidget {
   final List<NewsArticle> news;
@@ -777,4 +724,5 @@ class TrendingNews extends StatelessWidget {
     );
   }
 }
+
 
