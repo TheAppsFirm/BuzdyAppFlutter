@@ -13,6 +13,7 @@ import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
 import '../../../viewmodels/search_view_model.dart';
+import '../crypto/model.dart/coinModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../widgets/glass_container.dart';
 import 'package:buzdy/core/constants.dart';
@@ -310,7 +311,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           ),
         ),
       ),
-    ));
+    );
   }
 
 
