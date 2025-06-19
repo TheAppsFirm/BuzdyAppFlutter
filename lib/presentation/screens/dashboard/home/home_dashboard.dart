@@ -155,7 +155,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     if (text.isEmpty) {
       _searchVm.clear();
     } else {
-      _debounce = Timer(const Duration(milliseconds: 500), () {
+      _debounce = Timer(const Duration(milliseconds: 300), () {
         _searchVm.search(text);
       });
     }
@@ -384,7 +384,10 @@ class QuickResultsSection extends StatelessWidget {
     final news = searchVm.newsResults.take(3).toList();
 
     if (videos.isEmpty && news.isEmpty && coins.isEmpty) {
-      return const SizedBox.shrink();
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text('No results found'),
+      );
     }
 
     return Column(
