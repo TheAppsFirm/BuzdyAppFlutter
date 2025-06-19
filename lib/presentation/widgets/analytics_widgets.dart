@@ -8,8 +8,13 @@ class MarketTrendSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (vm.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+    if (vm.isLoading && vm.trend.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Text('Loading...'),
+        ),
+      );
     }
     return Card(
       child: Padding(
@@ -39,9 +44,16 @@ class MarketCapCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (vm.isLoading) return const Center(child: CircularProgressIndicator());
     final cap = vm.marketCap ?? 0;
     final change = 0.0;
+    if (vm.isLoading && cap == 0) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Text('Loading...'),
+        ),
+      );
+    }
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -65,8 +77,15 @@ class FearGreedGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (vm.isLoading) return const Center(child: CircularProgressIndicator());
     final value = vm.fearGreed ?? 0;
+    if (vm.isLoading && value == 0) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Text('Loading...'),
+        ),
+      );
+    }
     final color = value < 50 ? Colors.red : Colors.green;
     return Card(
       child: Padding(
@@ -97,7 +116,14 @@ class AiInsightsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (vm.isLoading) return const SizedBox.shrink();
+    if (vm.isLoading && vm.aiInsights.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Text('Loading...'),
+        ),
+      );
+    }
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
