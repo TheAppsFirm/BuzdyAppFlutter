@@ -315,8 +315,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   const SizedBox(height: 20),
                   AiInsightsSection(vm: _analyticsVm),
                   const SizedBox(height: 20),
-                  TrendingNews(news: _searchVm.newsResults),
-                  const SizedBox(height: 20),
                   _buildFeatureGrid(context, viewModel),
                   const SizedBox(height: 20),
                 ],
@@ -547,6 +545,9 @@ class QuickResultsSection extends StatelessWidget {
                       ))
                   .toList(),
             ),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CryptoScreen()),
+            ),
           ),
         if (videos.isNotEmpty)
           _section(
@@ -579,6 +580,9 @@ class QuickResultsSection extends StatelessWidget {
                   )
                   .toList(),
             ),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const FeedScreen()),
+            ),
           ),
         if (news.isNotEmpty)
           _section(
@@ -593,28 +597,39 @@ class QuickResultsSection extends StatelessWidget {
                       ))
                   .toList(),
             ),
+            onTap: () {
+              final query =
+                  searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => SearchScreen(initialQuery: query),
+                ),
+              );
+            },
           ),
       ],
     );
   }
 
-  Widget _section(String title, Widget child) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              child,
-            ],
-          ),
+  Widget _section(String title, Widget child, {VoidCallback? onTap}) {
+    final card = Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            child,
+          ],
         ),
       ),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: onTap == null
+          ? card
+          : InkWell(onTap: onTap, child: card),
     );
   }
 }
@@ -656,7 +671,7 @@ class CryptoPriceSection extends StatelessWidget {
       );
     }
 
-    return Card(
+    final card = Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -671,6 +686,12 @@ class CryptoPriceSection extends StatelessWidget {
           ],
         ),
       ),
+    );
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const CryptoScreen()),
+      ),
+      child: card,
     );
   }
 }

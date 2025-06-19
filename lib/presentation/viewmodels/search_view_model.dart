@@ -6,6 +6,7 @@ import '../screens/dashboard/feed/model/youtubeModel.dart';
 
 class SearchViewModel extends ChangeNotifier {
   final SearchService _service = SearchService();
+  String lastQuery = '';
 
   bool isLoading = false;
   List<GoogleResult> webResults = [];
@@ -14,6 +15,7 @@ class SearchViewModel extends ChangeNotifier {
 
   Future<void> search(String query) async {
     if (query.isEmpty) return;
+    lastQuery = query;
     isLoading = true;
     notifyListeners();
     try {
