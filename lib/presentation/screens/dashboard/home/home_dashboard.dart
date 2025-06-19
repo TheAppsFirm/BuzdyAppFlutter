@@ -296,7 +296,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildHeader(BuildContext context, String greeting, String userName, String date, String time, UserViewModel vm) {
