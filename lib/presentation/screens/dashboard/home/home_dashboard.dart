@@ -202,8 +202,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   const SizedBox(height: 20),
                   ProductList(products: viewModel.productList),
                   const SizedBox(height: 20),
-                  QuickResultsSection(userVm: viewModel),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -347,10 +345,14 @@ class GreetingSection extends StatelessWidget {
                 ),
               ),
               ),
-            ],
-          ),
+            const SizedBox(height: 8),
+            // Quick search results appear directly below the search box so
+            // users can see matches without scrolling the whole dashboard.
+            QuickResultsSection(userVm: userVm),
+          ],
         ),
-      );
+      ),
+    );
   }
 }
 
@@ -708,10 +710,10 @@ class LawPolicySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<SearchViewModel>(context);
-    if (vm.lawLoading) {
+    final info = vm.lawInfo;
+    if (info == null && vm.lawLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    final info = vm.lawInfo;
     if (info == null) {
       return const SizedBox.shrink();
     }

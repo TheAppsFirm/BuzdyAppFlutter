@@ -21,8 +21,13 @@ class SearchViewModel extends ChangeNotifier {
   }
 
   Future<void> loadLaw() async {
-    lawLoading = true;
-    notifyListeners();
+    // Only show a loading indicator if we don't have existing info yet so the
+    // section remains visible during refreshes.
+    if (lawInfo == null) {
+      lawLoading = true;
+      notifyListeners();
+    }
+
     lawInfo = await _service.fetchLawInfo();
     lawLoading = false;
     notifyListeners();
