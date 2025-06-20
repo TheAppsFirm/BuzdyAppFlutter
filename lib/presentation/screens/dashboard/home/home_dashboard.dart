@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../../../viewmodels/user_view_model.dart';
 import '../crypto/CryptoScreen.dart';
-import '../../dashboard.dart';
 import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
@@ -339,7 +338,7 @@ class GreetingSection extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.arrow_forward),
                       onPressed: () {
-                        onSearchChanged(searchController.text, context.read<UserViewModel>());
+                        onSearchChanged(searchController.text);
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => SearchScreen(
