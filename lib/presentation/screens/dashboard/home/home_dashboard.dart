@@ -506,6 +506,28 @@ class QuickResultsSection extends StatelessWidget {
     }
   }
 
+  String _coinTitle(CoinModel coin) {
+    final name =
+        (coin.name.isNotEmpty && coin.name != 'Unknown Name') ? coin.name : '';
+    final symbol =
+        coin.symbol.isNotEmpty && coin.symbol != 'N/A' ? coin.symbol : '';
+    final code = coin.code != null && coin.code!.isNotEmpty ? coin.code! : '';
+    final displayName = name.isNotEmpty
+        ? name
+        : symbol.isNotEmpty
+            ? symbol
+            : code;
+    final displaySymbol = symbol.isNotEmpty
+        ? symbol
+        : code.isNotEmpty
+            ? code
+            : '';
+    if (displaySymbol.isEmpty) {
+      return displayName;
+    }
+    return '$displayName ($displaySymbol)';
+  }
+
   Widget _coinInfoCard(CoinModel e) {
     final day = e.delta?.day;
     final week = e.delta?.week;
@@ -543,14 +565,11 @@ class QuickResultsSection extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${e.name.isNotEmpty ? e.name : e.symbol} (${e.symbol})',
+                      _coinTitle(e),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Icon(Icons.star_border, size: 16),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.notifications_none, size: 16),
                 ],
               ),
               const SizedBox(height: 4),
