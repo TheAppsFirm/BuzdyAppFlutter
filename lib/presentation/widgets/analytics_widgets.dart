@@ -123,6 +123,8 @@ class FearGreedGauge extends StatelessWidget {
   }
 }
 
+/// Displays a list of short market takeaways generated from the
+/// current analytics data.
 class AiInsightsSection extends StatelessWidget {
   const AiInsightsSection({super.key});
 

@@ -14,6 +14,10 @@ class AnalyticsViewModel extends ChangeNotifier {
   DateTime? trendStart;
   DateTime? trendEnd;
   List<double> trend = [];
+  // AI-generated notes about current market conditions. These strings
+  // are produced using a prompt that summarizes stats such as total
+  // coins, exchanges and trading volume. See `analytics_widgets.dart`
+  // for display.
   final List<String> aiInsights = [
     'Altcoins gaining momentum',
     'ETH may break resistance',
