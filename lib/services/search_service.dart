@@ -27,7 +27,7 @@ class SearchService {
 
   Future<List<Item>> searchYouTube(String query) async {
     final uri = Uri.parse(
-        'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${Uri.encodeQueryComponent(query)}&key=$youtubeApiKey');
+        'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=25&q=${Uri.encodeQueryComponent(query)}&key=$youtubeApiKey');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
@@ -39,7 +39,7 @@ class SearchService {
 
   Future<List<NewsArticle>> searchNews(String query) async {
     final uri = Uri.parse(
-        'https://newsapi.org/v2/everything?apiKey=$newsApiKey&q=${Uri.encodeQueryComponent(query)}');
+        'https://newsapi.org/v2/everything?apiKey=$newsApiKey&pageSize=50&q=${Uri.encodeQueryComponent(query)}');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);

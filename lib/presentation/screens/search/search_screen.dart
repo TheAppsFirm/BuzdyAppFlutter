@@ -4,6 +4,7 @@ import '../../viewmodels/search_view_model.dart';
 import '../dashboard/feed/model/youtubeModel.dart';
 import 'models/news_article.dart';
 import 'models/law_info.dart';
+import 'models/google_result.dart';
 import 'article_webview.dart';
 import '../dashboard/feed/videoplayer.dart';
 
@@ -85,7 +86,7 @@ class _SearchScreenState extends State<SearchScreen>
                     children: [
                       _buildVideos(vm.videoResults),
                       _buildNews(vm.newsResults),
-                      _buildLaw(vm.lawInfo, vm.lawLoading),
+                      _buildLaw(vm.lawInfo, vm.lawLoading, vm.googleResults),
                     ],
                   ),
                 ),
@@ -161,38 +162,55 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  Widget _buildLaw(LawInfo? info, bool loading) {
+  Widget _buildLaw(
+      LawInfo? info, bool loading, List<GoogleResult> googleResults) {
     if (loading) {
       return const Center(child: CircularProgressIndicator());
     }
     if (info == null) {
       return const Center(child: Text('No data'));
     }
-    return Padding(
+    return ListView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Country: ${info.country}', style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text('Legal Status: ${info.legalStatus}'),
-          const SizedBox(height: 4),
-          Text('Taxation: ${info.taxation}'),
-          const SizedBox(height: 4),
-          Text('Restrictions: ${info.restrictions}'),
-          if (info.link != null)
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ArticleWebView(url: info.link!),
-                  ),
-                );
-              },
-              child: const Text('Read more'),
+      children: [
+        Text('Country: ${info.country}',
+            style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text('Legal Status: ${info.legalStatus}'),
+        const SizedBox(height: 4),
+        Text('Taxation: ${info.taxation}'),
+        const SizedBox(height: 4),
+        Text('Restrictions: ${info.restrictions}'),
+        if (info.link != null)
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ArticleWebView(url: info.link!),
+                ),
+              );
+            },
+            child: const Text('Read more'),
+          ),
+        const Divider(height: 32),
+        ...googleResults.map(
+          (g) => ListTile(
+            title: Text(g.title),
+            subtitle: Text(
+              g.snippet,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-        ],
-      ),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ArticleWebView(url: g.link),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

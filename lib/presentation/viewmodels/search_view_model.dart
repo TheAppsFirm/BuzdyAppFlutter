@@ -3,6 +3,7 @@ import '../../services/search_service.dart';
 import '../screens/search/models/news_article.dart';
 import '../screens/dashboard/feed/model/youtubeModel.dart';
 import '../screens/search/models/law_info.dart';
+import '../screens/search/models/google_result.dart';
 
 class SearchViewModel extends ChangeNotifier {
   final SearchService _service = SearchService();
@@ -11,6 +12,7 @@ class SearchViewModel extends ChangeNotifier {
   bool isLoading = false;
   List<Item> videoResults = [];
   List<NewsArticle> newsResults = [];
+  List<GoogleResult> googleResults = [];
   LawInfo? lawInfo;
   bool lawLoading = true;
 
@@ -30,9 +32,9 @@ class SearchViewModel extends ChangeNotifier {
     lastQuery = '';
     videoResults = [];
     newsResults = [];
-    lawInfo = null;
+    googleResults = [];
     isLoading = false;
-    await loadLaw();
+    notifyListeners();
   }
 
   Future<void> search(String query) async {
@@ -44,11 +46,13 @@ class SearchViewModel extends ChangeNotifier {
       final results = await Future.wait([
         _service.searchYouTube(query),
         _service.searchNews(query),
+        _service.searchGoogle("${query} crypto law"),
         _service.fetchLawInfo(),
       ]);
       videoResults = results[0] as List<Item>;
       newsResults = results[1] as List<NewsArticle>;
-      lawInfo = results[2] as LawInfo?;
+      googleResults = results[2] as List<GoogleResult>;
+      lawInfo = results[3] as LawInfo?;
       lawLoading = false;
     } catch (e) {
       debugPrint('Search error: $e');
