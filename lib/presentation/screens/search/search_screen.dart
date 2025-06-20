@@ -47,9 +47,11 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialized && widget.viewModel == null &&
-        widget.initialQuery.isNotEmpty) {
-      _viewModel.search(widget.initialQuery);
+    if (!_initialized && widget.initialQuery.isNotEmpty) {
+      if (widget.viewModel == null ||
+          widget.viewModel!.lastQuery != widget.initialQuery) {
+        _viewModel.search(widget.initialQuery);
+      }
       _initialized = true;
     }
   }

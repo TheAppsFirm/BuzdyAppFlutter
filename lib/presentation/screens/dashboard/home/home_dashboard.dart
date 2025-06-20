@@ -121,16 +121,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     await _analyticsVm.load();
   }
 
-  void _onSearchChanged(String text, UserViewModel vm) {
+  void _onSearchChanged(String text, UserViewModel vm, {bool immediate = false}) {
     setState(() {});
     vm.searchCoins(text);
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     if (text.isEmpty) {
       _searchVm.clear();
     } else {
-      _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (immediate) {
         _searchVm.search(text);
-      });
+      } else {
+        _debounce = Timer(const Duration(milliseconds: 300), () {
+          _searchVm.search(text);
+        });
+      }
     }
   }
 
@@ -174,7 +178,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     time: time,
                     searchController: _searchController,
                     userVm: viewModel,
-                    onSearchChanged: (v) => _onSearchChanged(v, viewModel),
+                    onSearchChanged: (v, {immediate = false}) =>
+                        _onSearchChanged(v, viewModel, immediate: immediate),
                   ),
                   const Divider(height: 32),
                   if (_analyticsVm.isLoading)
@@ -223,7 +228,7 @@ class GreetingSection extends StatelessWidget {
   final String time;
   final TextEditingController searchController;
   final UserViewModel userVm;
-  final void Function(String) onSearchChanged;
+  final void Function(String, {bool immediate}) onSearchChanged;
 
   const GreetingSection({
     super.key,
@@ -321,7 +326,7 @@ class GreetingSection extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.arrow_forward),
                       onPressed: () {
-                        onSearchChanged(searchController.text);
+                        onSearchChanged(searchController.text, immediate: true);
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => SearchScreen(
