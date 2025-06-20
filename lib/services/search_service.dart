@@ -13,9 +13,9 @@ class SearchService {
   static const String youtubeApiKey = 'AIzaSyCAZqxVkmXlTxFIqW1-a0PoTQlZeuTyiI0';
   static const String newsApiKey = 'cc551033b6c74c529c7c33eca6350156';
 
-  Future<List<GoogleResult>> searchGoogle(String query) async {
+  Future<List<GoogleResult>> searchGoogle(String query, String country) async {
     final uri = Uri.parse(
-        'https://www.googleapis.com/customsearch/v1?key=$googleApiKey&cx=$googleCx&q=${Uri.encodeQueryComponent(query)}');
+        'https://www.googleapis.com/customsearch/v1?key=$googleApiKey&cx=$googleCx&q=${Uri.encodeQueryComponent(query)}&gl=$country');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
@@ -34,6 +34,36 @@ class SearchService {
       YoutubeModel model = YoutubeModel.fromJson(data);
       return model.items ?? [];
     }
+
+    // Fallback using open Piped API when quota exceeded or blocked
+    try {
+      final alt = await http.get(Uri.parse(
+          'https://piped.video/api/v1/search?q=${Uri.encodeQueryComponent(query)}&filter=videos'));
+      if (alt.statusCode == 200 && alt.headers['content-type']?.contains('json') == true) {
+        final data = jsonDecode(alt.body) as Map<String, dynamic>;
+        final items = data['items'] as List<dynamic>?;
+        if (items != null) {
+          return items.map<Item>((e) {
+            final id = e['id']?.toString() ?? '';
+            final title = e['title'] ?? '';
+            final channel = e['uploaderName'] ?? '';
+            final thumb = e['thumbnail'] ?? '';
+            return Item(
+              id: id,
+              videoId: id,
+              snippet: Snippet(
+                title: title,
+                channelTitle: channel,
+                thumbnails: Thumbnails(
+                  thumbnailsDefault: ThumbnailData(url: thumb, width: 120, height: 90),
+                ),
+              ),
+            );
+          }).toList();
+        }
+      }
+    } catch (_) {}
+
     return [];
   }
 
@@ -96,6 +126,7 @@ class SearchService {
     }
 
     return LawInfo(
+      code: code,
       country: country,
       legalStatus: 'Unknown',
       taxation: 'Unknown',
@@ -106,6 +137,7 @@ class SearchService {
 
   static final Map<String, LawInfo> _lawData = {
     'US': LawInfo(
+      code: 'US',
       country: 'United States',
       legalStatus: 'Legal',
       taxation: 'Capital gains tax applies',
@@ -113,6 +145,7 @@ class SearchService {
       link: 'https://www.usa.gov/cryptocurrency',
     ),
     'IN': LawInfo(
+      code: 'IN',
       country: 'India',
       legalStatus: 'Legal with regulation',
       taxation: '30% tax on gains',
@@ -121,6 +154,7 @@ class SearchService {
           'https://en.wikipedia.org/wiki/Regulation_of_cryptocurrency_in_India',
     ),
     'GB': LawInfo(
+      code: 'GB',
       country: 'United Kingdom',
       legalStatus: 'Legal',
       taxation: 'Capital gains tax',

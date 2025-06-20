@@ -43,16 +43,21 @@ class SearchViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
     try {
-      final results = await Future.wait([
+      // Fetch law info first to know the user country
+      final info = await _service.fetchLawInfo();
+
+      final futures = [
         _service.searchYouTube(query),
         _service.searchNews(query),
-        _service.searchGoogle("${query} crypto law"),
-        _service.fetchLawInfo(),
-      ]);
+        _service.searchGoogle("${query} crypto law", info?.code ?? 'US'),
+      ];
+
+      final results = await Future.wait(futures);
+
       videoResults = results[0] as List<Item>;
       newsResults = results[1] as List<NewsArticle>;
       googleResults = results[2] as List<GoogleResult>;
-      lawInfo = results[3] as LawInfo?;
+      lawInfo = info;
       lawLoading = false;
     } catch (e) {
       debugPrint('Search error: $e');
