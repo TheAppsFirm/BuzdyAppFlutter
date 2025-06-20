@@ -1,24 +1,40 @@
-import 'package:flutter/material.dart';
+// ---------------------------------------------------------------------------
+// Dashboard Home Screen
+// ---------------------------------------------------------------------------
+// This file contains the main dashboard screen along with helper widgets used
+// to present analytics, quick search results and lists of businesses/products.
+
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+// View models
 import '../../../viewmodels/user_view_model.dart';
-import '../crypto/CryptoScreen.dart';
-import '../../search/search_screen.dart';
-import '../../search/article_webview.dart';
-import '../../search/models/news_article.dart';
-import '../../dashboard.dart';
 import '../../../viewmodels/search_view_model.dart';
 import '../../../viewmodels/analytics_view_model.dart';
-import '../../../widgets/analytics_widgets.dart';
+
+// Screens
+import '../crypto/CryptoScreen.dart';
+import '../../dashboard.dart';
+import '../../search/search_screen.dart';
+import '../../search/article_webview.dart';
+
+// Models
 import '../crypto/model.dart/coinModel.dart';
 import '../banks/model/merchnatModel.dart';
 import '../products/model/productModel.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../search/models/news_article.dart';
+
+// Widgets
+import '../../../widgets/analytics_widgets.dart';
 import '../../../widgets/glass_container.dart';
+
+// Constants
 import 'package:buzdy/core/constants.dart';
 
+/// Small card used for quick statistic blocks.
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -45,48 +61,6 @@ class StatCard extends StatelessWidget {
   }
 }
 
-class FeatureCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Widget child;
-  final VoidCallback onTap;
-  const FeatureCard({
-    super.key,
-    required this.title,
-    required this.icon,
-    required this.child,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: GlassContainer(
-        borderRadius: BorderRadius.circular(16),
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: colors.primary),
-                const SizedBox(width: 4),
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Flexible(child: child),
-          ],
-        ),
-      )
-    );
-  }
-}
-
-// Removed old preview widgets
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -232,8 +206,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
 }
 
-// --- New dashboard section widgets ---
+// ---------------------------------------------------------------------------
+// Section widgets
+// ---------------------------------------------------------------------------
 
+/// Header showing greeting, analytics stats and the search bar.
 class GreetingSection extends StatelessWidget {
   final String greeting;
   final String userName;
@@ -368,6 +345,9 @@ class GreetingSection extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Quick search result cards displayed beneath the search field.
+// ---------------------------------------------------------------------------
 class QuickResultsSection extends StatelessWidget {
   final UserViewModel userVm;
 
@@ -506,6 +486,7 @@ class QuickResultsSection extends StatelessWidget {
     }
   }
 
+  // Builds the best possible display title for a coin using available fields.
   String _coinTitle(CoinModel coin) {
     final name =
         (coin.name.isNotEmpty && coin.name != 'Unknown Name') ? coin.name : '';
@@ -528,6 +509,7 @@ class QuickResultsSection extends StatelessWidget {
     return '$displayName ($displaySymbol)';
   }
 
+  // Card showing key metrics for a single coin result.
   Widget _coinInfoCard(CoinModel e) {
     final day = e.delta?.day;
     final week = e.delta?.week;
@@ -614,6 +596,7 @@ class QuickResultsSection extends StatelessWidget {
     );
   }
 
+  /// Helper to wrap a block in a titled card. Used by quick results.
   Widget _section(String title, Widget child, {VoidCallback? onTap}) {
     final card = Card(
       child: Padding(
@@ -636,6 +619,7 @@ class QuickResultsSection extends StatelessWidget {
   }
 }
 
+/// Displays a compact summary of BTC/ETH prices and daily changes.
 class CryptoPriceSection extends StatelessWidget {
   final List<CoinModel> coins;
 
@@ -708,6 +692,7 @@ class CryptoPriceSection extends StatelessWidget {
   }
 }
 
+/// Shows local legal status, taxes and restrictions for crypto.
 class LawPolicySection extends StatelessWidget {
   const LawPolicySection({super.key});
 
@@ -751,6 +736,7 @@ class LawPolicySection extends StatelessWidget {
   }
 }
 
+/// Horizontally scrolling list of nearby businesses.
 class BusinessList extends StatelessWidget {
   final List<MerchantModelData> merchants;
   const BusinessList({super.key, required this.merchants});
@@ -830,6 +816,7 @@ class BusinessList extends StatelessWidget {
   }
 }
 
+/// Horizontally scrolling list of products available to buy with crypto.
 class ProductList extends StatelessWidget {
   final List<Product> products;
   const ProductList({super.key, required this.products});
@@ -911,6 +898,7 @@ class ProductList extends StatelessWidget {
 
 
 
+/// List of crypto-related news articles shown in the dashboard.
 class TrendingNews extends StatelessWidget {
   final List<NewsArticle> news;
 
