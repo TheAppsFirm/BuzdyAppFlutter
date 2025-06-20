@@ -516,8 +516,8 @@ class QuickResultsSection extends StatelessWidget {
     final changeColor = isPos ? Colors.green : Colors.red;
     final weekText =
         week != null ? '${(week * 100).toStringAsFixed(2)}%' : 'N/A';
-    final volume = e.volume != null ? '$${_formatNumber(e.volume!)}' : 'N/A';
-    final cap = e.cap != null ? '$${_formatNumber(e.cap!)}' : 'N/A';
+    final volume = e.volume != null ? '\$${_formatNumber(e.volume!)}' : 'N/A';
+    final cap = e.cap != null ? '\$${_formatNumber(e.cap!)}' : 'N/A';
     final supply = e.circulatingSupply != null
         ? _formatNumber(e.circulatingSupply!)
         : 'N/A';
@@ -559,7 +559,7 @@ class QuickResultsSection extends StatelessWidget {
                 children: [
                   Text(
                     e.rate != null
-                        ? '$${e.rate!.toStringAsFixed(2)}'
+                        ? '\$${e.rate!.toStringAsFixed(2)}'
                         : 'N/A',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
