@@ -25,10 +25,21 @@ class MarketTrendSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: const [
-                Icon(Icons.show_chart),
-                SizedBox(width: 4),
-                Text("Market Trend", style: TextStyle(fontWeight: FontWeight.bold)),
+              children: [
+                const Icon(Icons.show_chart),
+                const SizedBox(width: 4),
+                const Text("Market Trend", style: TextStyle(fontWeight: FontWeight.bold)),
+                const Spacer(),
+                if (vm.trendChange != null)
+                  Text(
+                    '${vm.trendChange! >= 0 ? '+' : ''}${vm.trendChange!.toStringAsFixed(2)}%',
+                    style: TextStyle(
+                      color: vm.trendChange! >= 0 ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                const SizedBox(width: 8),
+                Text(vm.volatilityLabel),
               ],
             ),
             const SizedBox(height: 8),
@@ -42,6 +53,13 @@ class MarketTrendSection extends StatelessWidget {
                     Text(DateFormat('MMM d').format(vm.trendStart!)),
                     Text(DateFormat('MMM d').format(vm.trendEnd!)),
                   ],
+                ),
+              ),
+            if (vm.trendChange != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'BTC has moved ${vm.trendChange!.toStringAsFixed(2)}% over the last 7 days',
                 ),
               ),
           ],
@@ -116,6 +134,8 @@ class FearGreedGauge extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text("$value"),
+            const SizedBox(width: 4),
+            Text(vm.sentimentLabel),
           ],
         ),
       ),
@@ -155,7 +175,13 @@ class AiInsightsSection extends StatelessWidget {
             const SizedBox(height: 8),
             ...vm.aiInsights.map((e) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text("• $e"),
+                  child: Row(
+                    children: [
+                      const Text('🔮'),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text(e)),
+                    ],
+                  ),
                 )),
             if (vm.lastUpdated != null)
               Padding(

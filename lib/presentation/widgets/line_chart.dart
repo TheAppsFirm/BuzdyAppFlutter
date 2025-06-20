@@ -9,10 +9,11 @@ class LineChart extends StatelessWidget {
     if (data.isEmpty) return const SizedBox(height: 100);
     final maxY = data.reduce((a,b) => a > b ? a : b);
     final minY = data.reduce((a,b) => a < b ? a : b);
+    final up = data.last >= data.first;
     return SizedBox(
       height: 100,
       child: CustomPaint(
-        painter: _LineChartPainter(data, minY, maxY),
+        painter: _LineChartPainter(data, minY, maxY, up),
         size: Size.infinite,
       ),
     );
@@ -23,12 +24,18 @@ class _LineChartPainter extends CustomPainter {
   final List<double> data;
   final double minY;
   final double maxY;
-  _LineChartPainter(this.data, this.minY, this.maxY);
+  final bool up;
+  _LineChartPainter(this.data, this.minY, this.maxY, this.up);
 
   @override
   void paint(Canvas canvas, Size size) {
+    final gradient = LinearGradient(
+      colors: up
+          ? [Colors.green, Colors.greenAccent]
+          : [Colors.red, Colors.redAccent],
+    );
     final paint = Paint()
-      ..color = Colors.blue
+      ..shader = gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     final path = Path();

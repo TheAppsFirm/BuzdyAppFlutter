@@ -14,6 +14,32 @@ class AnalyticsViewModel extends ChangeNotifier {
   DateTime? trendStart;
   DateTime? trendEnd;
   List<double> trend = [];
+  // Computed values for quick insights
+  double? get trendChange {
+    if (trend.length < 2) return null;
+    final first = trend.first;
+    final last = trend.last;
+    if (first == 0) return null;
+    return (last - first) / first * 100;
+  }
+
+  String get volatilityLabel {
+    if (trend.length < 2) return 'Unknown';
+    final max = trend.reduce((a, b) => a > b ? a : b);
+    final min = trend.reduce((a, b) => a < b ? a : b);
+    final avg = trend.reduce((a, b) => a + b) / trend.length;
+    final diff = (max - min) / avg * 100;
+    if (diff < 2) return 'Stable';
+    if (diff < 5) return 'Volatile';
+    return 'Highly Volatile';
+  }
+
+  String get sentimentLabel {
+    final value = fearGreed ?? 0;
+    if (value < 30) return 'Fearful';
+    if (value < 60) return 'Neutral';
+    return 'Greedy';
+  }
   // AI-generated notes about current market conditions. These strings
   // are produced using a prompt that summarizes stats such as total
   // coins, exchanges and trading volume. See `analytics_widgets.dart`
