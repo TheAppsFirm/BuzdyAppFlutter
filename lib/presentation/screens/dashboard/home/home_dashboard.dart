@@ -35,6 +35,9 @@ import '../../../widgets/glass_container.dart';
 // Constants
 import 'package:buzdy/core/constants.dart';
 
+/// Consistent spacing between main dashboard sections.
+const _sectionGap = SizedBox(height: 24);
+
 /// Small card used for quick statistic blocks.
 class StatCard extends StatelessWidget {
   final String title;
@@ -193,21 +196,19 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       padding: EdgeInsets.symmetric(vertical: 20),
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                  const SizedBox(height: 20),
+                  _sectionGap,
                   const MarketTrendSection(),
-                  const SizedBox(height: 20),
+                  _sectionGap,
                   CryptoPriceSection(coins: viewModel.allCoins),
-                  const SizedBox(height: 20),
+                  _sectionGap,
                   const AiInsightsSection(),
-                  const Divider(height: 32),
-                  const SizedBox(height: 20),
+                  _sectionGap,
                   const LawPolicySection(),
-                  const Divider(height: 32),
-                  const SizedBox(height: 20),
+                  _sectionGap,
                   BusinessList(merchants: viewModel.merchantList),
-                  const SizedBox(height: 20),
+                  _sectionGap,
                   ProductList(products: viewModel.productList),
-                  const SizedBox(height: 20),
+                  _sectionGap,
                 ],
               ),
             ),
@@ -408,6 +409,7 @@ class QuickResultsSection extends StatelessWidget {
       children: [
         if (coins.isNotEmpty) ...[
           _section(
+            context,
             'Crypto',
             Column(children: coins.map(_coinInfoCard).toList()),
             onTap: () => Navigator.of(context).push(
@@ -418,6 +420,7 @@ class QuickResultsSection extends StatelessWidget {
         ],
         if (videos.isNotEmpty) ...[
           _section(
+            context,
             'Videos',
             Column(
               children: videos
@@ -469,6 +472,7 @@ class QuickResultsSection extends StatelessWidget {
         ],
         if (news.isNotEmpty)
           _section(
+            context,
             'News',
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,7 +616,8 @@ class QuickResultsSection extends StatelessWidget {
   }
 
   /// Helper to wrap a block in a titled card. Used by quick results.
-  Widget _section(String title, Widget child, {VoidCallback? onTap}) {
+  Widget _section(BuildContext context, String title, Widget child,
+      {VoidCallback? onTap}) {
     final card = Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -621,8 +626,13 @@ class QuickResultsSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              title,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
             child,
           ],
@@ -661,8 +671,13 @@ class CryptoPriceSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Crypto Prices',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Crypto Prices',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             ...symbols.map(
               (code) => Column(
@@ -782,7 +797,13 @@ class LawPolicySection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Law & Policy', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Law & Policy',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Text('Country: ${info.country}'),
             Text('Legal: ${info.legalStatus}'),
@@ -823,8 +844,13 @@ class BusinessList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Businesses',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Businesses',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pushReplacement(
@@ -908,8 +934,13 @@ class ProductList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Products',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Products',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pushReplacement(
@@ -993,8 +1024,13 @@ class TrendingNews extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Trending Crypto News',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          'Trending Crypto News',
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         ListView.builder(
           shrinkWrap: true,

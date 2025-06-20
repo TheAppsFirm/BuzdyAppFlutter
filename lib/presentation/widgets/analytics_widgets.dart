@@ -28,7 +28,13 @@ class MarketTrendSection extends StatelessWidget {
               children: [
                 const Icon(Icons.show_chart),
                 const SizedBox(width: 4),
-                const Text("Market Trend", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  "Market Trend",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
                 const Spacer(),
                 if (vm.trendChange != null)
                   Text(
@@ -91,7 +97,13 @@ class MarketCapCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Total Market Cap", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Total Market Cap",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
             Text("\$${cap.toStringAsFixed(0)}"),
             Text("24h Change: ${change.toStringAsFixed(2)}%"),
@@ -123,7 +135,13 @@ class FearGreedGauge extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            const Text("Fear & Greed"),
+            Text(
+              "Fear & Greed",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: LinearProgressIndicator(
@@ -166,10 +184,16 @@ class AiInsightsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: const [
-                Icon(Icons.bolt),
-                SizedBox(width: 4),
-                Text("AI Insights", style: TextStyle(fontWeight: FontWeight.bold)),
+              children: [
+                const Icon(Icons.bolt),
+                const SizedBox(width: 4),
+                Text(
+                  "AI Insights",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const SizedBox(height: 8),
