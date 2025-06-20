@@ -11,9 +11,15 @@ import '../dashboard/feed/videoplayer.dart';
 class SearchScreen extends StatefulWidget {
   final String initialQuery;
   final SearchViewModel? viewModel;
+  final int initialTab;
   /// [query] is kept for backward compatibility if callers use `query:`
-  const SearchScreen({super.key, String? initialQuery, String? query, this.viewModel})
-      : initialQuery = initialQuery ?? query ?? '';
+  const SearchScreen({
+    super.key,
+    String? initialQuery,
+    String? query,
+    this.viewModel,
+    this.initialTab = 0,
+  }) : initialQuery = initialQuery ?? query ?? '';
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -29,7 +35,11 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 3, vsync: this);
+    _controller = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
     _viewModel = widget.viewModel ?? SearchViewModel();
     _searchController.text = widget.initialQuery;
   }

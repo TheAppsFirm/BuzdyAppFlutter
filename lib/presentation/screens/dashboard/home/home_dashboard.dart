@@ -469,13 +469,15 @@ class QuickResultsSection extends StatelessWidget {
                   .toList(),
             ),
             onTap: () {
-              final query =
-                  searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
+              final query = searchVm.lastQuery.isNotEmpty
+                  ? searchVm.lastQuery
+                  : 'latest crypto';
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => SearchScreen(
                     initialQuery: query,
                     viewModel: searchVm,
+                    initialTab: 0,
                   ),
                 ),
               );
@@ -495,13 +497,15 @@ class QuickResultsSection extends StatelessWidget {
                   .toList(),
             ),
             onTap: () {
-              final query =
-                  searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
+              final query = searchVm.lastQuery.isNotEmpty
+                  ? searchVm.lastQuery
+                  : 'latest crypto';
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => SearchScreen(
                     initialQuery: query,
                     viewModel: searchVm,
+                    initialTab: 1,
                   ),
                 ),
               );
