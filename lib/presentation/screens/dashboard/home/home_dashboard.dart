@@ -408,11 +408,29 @@ class QuickResultsSection extends StatelessWidget {
           _section(
             'Crypto',
             Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: coins
-                  .map((e) => Text(
-                        '${e.symbol}: \$${e.rate?.toStringAsFixed(2) ?? '-'}',
-                      ))
+                  .map(
+                    (e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        children: [
+                          if (e.png64 != null && e.png64!.isNotEmpty)
+                            Image.network(e.png64!, width: 24, height: 24)
+                          else if (e.webp64 != null && e.webp64!.isNotEmpty)
+                            Image.network(e.webp64!, width: 24, height: 24)
+                          else if (e.imageUri.isNotEmpty)
+                            Image.network(e.imageUri, width: 24, height: 24)
+                          else
+                            const SizedBox(width: 24, height: 24),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(e.symbol)),
+                          Text(e.rate != null
+                              ? '\$${e.rate!.toStringAsFixed(2)}'
+                              : 'N/A'),
+                        ],
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
             onTap: () => Navigator.of(context).push(
@@ -507,11 +525,10 @@ class QuickResultsSection extends StatelessWidget {
         ),
       ),
     );
+    final content = onTap == null ? card : InkWell(onTap: onTap, child: card);
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
-      child: onTap == null
-          ? card
-          : InkWell(onTap: onTap, child: card),
+      child: SizedBox(width: double.infinity, child: content),
     );
   }
 }
