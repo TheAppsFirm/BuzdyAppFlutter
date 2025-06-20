@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:collection/collection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // View models
@@ -484,17 +485,8 @@ class QuickResultsSection extends StatelessWidget {
   }
 
   String _formatNumber(double number) {
-    if (number >= 1e12) {
-      return '${(number / 1e12).toStringAsFixed(2)}T';
-    } else if (number >= 1e9) {
-      return '${(number / 1e9).toStringAsFixed(2)}B';
-    } else if (number >= 1e6) {
-      return '${(number / 1e6).toStringAsFixed(2)}M';
-    } else if (number >= 1e3) {
-      return '${(number / 1e3).toStringAsFixed(2)}K';
-    } else {
-      return number.toStringAsFixed(2);
-    }
+    final formatter = NumberFormat.compact();
+    return formatter.format(number);
   }
 
   // Builds the best possible display title for a coin using available fields.
@@ -636,38 +628,15 @@ class CryptoPriceSection extends StatelessWidget {
 
   const CryptoPriceSection({super.key, required this.coins});
 
-  CoinModel? _find(String code) {
-    for (final c in coins) {
-      if ((c.code ?? '').toUpperCase() == code.toUpperCase()) {
-        return c;
-      }
-    }
-    return null;
-  }
+  CoinModel? _find(String code) =>
+      coins.firstWhereOrNull((c) => (c.code ?? '').toUpperCase() == code.toUpperCase());
 
   @override
   Widget build(BuildContext context) {
-    final btc = _find('BTC');
-    final eth = _find('ETH');
-    final analytics = Provider.of<AnalyticsViewModel>(context);
+    final lastUpdated = context.select<AnalyticsViewModel, DateTime?>((vm) => vm.lastUpdated);
+    final symbols = ['BTC', 'ETH'];
 
-    Widget row(String label, CoinModel? coin) {
-      final price = coin?.rate != null
-          ? '\$${coin!.rate!.toStringAsFixed(2)}'
-          : 'N/A';
-      final change = coin?.delta?.day ?? 0;
-      final color = change >= 0 ? Colors.green : Colors.red;
-      final icon = change >= 0 ? Icons.trending_up : Icons.trending_down;
-      return Row(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 4),
-          Text('$label: $price ',
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          Text('(${change.toStringAsFixed(2)}%)', style: TextStyle(color: color)),
-        ],
-      );
-    }
+    
 
     final card = Card(
       child: Padding(
@@ -678,27 +647,103 @@ class CryptoPriceSection extends StatelessWidget {
             const Text('Crypto Prices',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            row('BTC', btc),
-            const SizedBox(height: 4),
-            row('ETH', eth),
-            if (analytics.lastUpdated != null)
+            ...symbols.map((code) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: _PriceRow(label: code, coin: _find(code)),
+                )),
+            if (lastUpdated != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   'Last updated: '
-                  '${DateTime.now().difference(analytics.lastUpdated!).inMinutes} mins ago',
+                  '${DateTime.now().difference(lastUpdated).inMinutes} mins ago',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('Last updated: -',
+                    style: Theme.of(context).textTheme.bodySmall),
               ),
           ],
         ),
       ),
     );
-    return InkWell(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const CryptoScreen()),
+    return Hero(
+      tag: 'crypto-summary',
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const CryptoScreen()),
+        ),
+        child: card,
       ),
-      child: card,
+    );
+  }
+}
+
+class _PriceRow extends StatelessWidget {
+  final String label;
+  final CoinModel? coin;
+
+  const _PriceRow({required this.label, required this.coin});
+
+  @override
+  Widget build(BuildContext context) {
+    final formatter = NumberFormat.compactCurrency(symbol: '\$');
+    if (coin == null) {
+      return Row(
+        children: [
+          const SizedBox(width: 16, height: 12),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Container(
+              height: 12,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final rate = coin!.rate;
+    if (rate == null) {
+      return Row(
+        children: [
+          Icon(Icons.trending_up, color: Colors.grey, size: 16),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Container(
+              height: 12,
+              color: Colors.grey.shade300,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final price = formatter.format(rate);
+    final change = coin!.delta?.day ?? 0;
+    final deltaAbs = rate * change / 100;
+    final changeColor = change >= 0 ? Colors.green : Colors.red;
+    final icon = change >= 0 ? Icons.trending_up : Icons.trending_down;
+    final arrow = change >= 0 ? '+' : '';
+    Widget? coinIcon;
+    if (coin!.png64 != null && coin!.png64!.isNotEmpty) {
+      coinIcon = Image.network(coin!.png64!, width: 16, height: 16);
+    } else if (coin!.webp64 != null && coin!.webp64!.isNotEmpty) {
+      coinIcon = Image.network(coin!.webp64!, width: 16, height: 16);
+    }
+
+    return Row(
+      children: [
+        if (coinIcon != null) ...[coinIcon, const SizedBox(width: 4)],
+        Icon(icon, color: changeColor, size: 16),
+        const SizedBox(width: 4),
+        Text('$label: $price ', style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text('($arrow${change.toStringAsFixed(2)}%, ${arrow}${formatter.format(deltaAbs)})',
+            style: TextStyle(color: changeColor)),
+      ],
     );
   }
 }

@@ -68,6 +68,7 @@ dependencies:
   video_player: ^2.8.2
   video_thumbnail: ^0.5.3
   geocoding: ^2.1.1
+  collection: ^1.18.0
   
   
 
