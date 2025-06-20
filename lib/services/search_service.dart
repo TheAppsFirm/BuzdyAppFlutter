@@ -51,6 +51,8 @@ class SearchService {
 
   Future<LawInfo?> fetchLawInfo() async {
     String code = 'US';
+    String country = 'United States';
+
     try {
       final loc.Location location = loc.Location();
       bool serviceEnabled = await location.serviceEnabled();
@@ -71,6 +73,7 @@ class SearchService {
           );
           if (marks.isNotEmpty) {
             code = marks.first.isoCountryCode ?? code;
+            country = marks.first.country ?? country;
           }
         }
       }
@@ -82,11 +85,23 @@ class SearchService {
         if (geoRes.statusCode == 200) {
           final geo = jsonDecode(geoRes.body);
           code = geo['country_code'] ?? 'US';
+          country = geo['country_name'] ?? country;
         }
       } catch (_) {}
     }
 
-    return _lawData[code] ?? _lawData['US'];
+    final info = _lawData[code];
+    if (info != null) {
+      return info;
+    }
+
+    return LawInfo(
+      country: country,
+      legalStatus: 'Unknown',
+      taxation: 'Unknown',
+      restrictions: 'Unknown',
+      link: null,
+    );
   }
 
   static final Map<String, LawInfo> _lawData = {

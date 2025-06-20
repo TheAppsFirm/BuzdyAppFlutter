@@ -220,8 +220,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   const SizedBox(height: 20),
                   ProductList(products: viewModel.productList),
                   const SizedBox(height: 20),
-                  QuickResultsSection(userVm: viewModel),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -360,11 +358,12 @@ class GreetingSection extends StatelessWidget {
                   borderSide: BorderSide.none,
                 ),
               ),
-            ),
-          ],
+              ),
+              QuickResultsSection(userVm: userVm),
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 }
 
