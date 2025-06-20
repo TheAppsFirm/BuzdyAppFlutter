@@ -191,7 +191,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   const SizedBox(height: 20),
                   const MarketTrendSection(),
                   const SizedBox(height: 20),
-                  CryptoPriceSection(coins: viewModel.coins),
+                  CryptoPriceSection(coins: viewModel.allCoins),
                   const SizedBox(height: 20),
                   const AiInsightsSection(),
                   const Divider(height: 32),
@@ -691,36 +691,17 @@ class _PriceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.compactCurrency(symbol: '\$');
-    if (coin == null) {
+    if (coin == null || coin!.rate == null) {
       return Row(
         children: [
-          const SizedBox(width: 16, height: 12),
+          Icon(Icons.info_outline, color: Colors.grey, size: 16),
           const SizedBox(width: 4),
-          Expanded(
-            child: Container(
-              height: 12,
-              color: Colors.grey,
-            ),
-          ),
+          Text('$label: N/A', style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       );
     }
 
-    final rate = coin!.rate;
-    if (rate == null) {
-      return Row(
-        children: [
-          Icon(Icons.trending_up, color: Colors.grey, size: 16),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Container(
-              height: 12,
-              color: Colors.grey.shade300,
-            ),
-          ),
-        ],
-      );
-    }
+    final rate = coin!.rate!;
 
     final price = formatter.format(rate);
     final change = coin!.delta?.day ?? 0;

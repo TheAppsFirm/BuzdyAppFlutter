@@ -627,6 +627,7 @@ Future getAllProductsWithFilters({
   bool _hasMore = true;
 
   List<CoinModel> get coins => _filteredCoins;
+  List<CoinModel> get allCoins => _coins;
   bool get isFetching => _isFetching;
 
   Future<void> fetchCoins({int limit = 2, bool isRefresh = false}) async {
