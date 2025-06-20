@@ -11,7 +11,8 @@ import '../presentation/screens/dashboard/feed/model/youtubeModel.dart';
 class SearchService {
   static const String googleApiKey = 'AIzaSyBBRkfGYeThDsGouKNfVemFpvP-IE8K0F4';
   static const String googleCx = '2751e76d1b65c4320';
-  static const String youtubeApiKey = 'AIzaSyCAZqxVkmXlTxFIqW1-a0PoTQlZeuTyiI0';
+  // Use the same key that works for other YouTube requests in the app
+  static const String youtubeApiKey = 'AIzaSyATK5cfxRwEFXlp73Su6HrExL5_6Z0puYw';
   static const String newsApiKey = 'cc551033b6c74c529c7c33eca6350156';
 
   Future<List<GoogleResult>> searchGoogle(String query, String country) async {
@@ -44,29 +45,36 @@ class SearchService {
 
     // Fallback using open Piped API when quota exceeded or blocked
     try {
-      final alt = await http.get(Uri.parse(
-          'https://piped.video/api/v1/search?q=${Uri.encodeQueryComponent(query)}&filter=videos'));
-      if (alt.statusCode == 200 && alt.headers['content-type']?.contains('json') == true) {
-        final data = jsonDecode(alt.body) as Map<String, dynamic>;
-        final items = data['items'] as List<dynamic>?;
-        if (items != null) {
-          return items.map<Item>((e) {
-            final id = e['id']?.toString() ?? '';
-            final title = e['title'] ?? '';
-            final channel = e['uploaderName'] ?? '';
-            final thumb = e['thumbnail'] ?? '';
-            return Item(
-              id: id,
-              videoId: id,
-              snippet: Snippet(
-                title: title,
-                channelTitle: channel,
-                thumbnails: Thumbnails(
-                  thumbnailsDefault: ThumbnailData(url: thumb, width: 120, height: 90),
+      final altUrls = [
+        'https://piped.video/api/v1/search?q=${Uri.encodeQueryComponent(query)}&filter=videos',
+        'https://yewtu.be/api/v1/search?q=${Uri.encodeQueryComponent(query)}&filter=videos',
+      ];
+
+      for (final url in altUrls) {
+        final alt = await http.get(Uri.parse(url));
+        debugPrint('Alt YouTube request: $url -> ${alt.statusCode}');
+        if (alt.statusCode == 200 && alt.headers['content-type']?.contains('json') == true) {
+          final data = jsonDecode(alt.body) as Map<String, dynamic>;
+          final items = data['items'] as List<dynamic>?;
+          if (items != null) {
+            return items.map<Item>((e) {
+              final id = e['id']?.toString() ?? '';
+              final title = e['title'] ?? '';
+              final channel = e['uploaderName'] ?? '';
+              final thumb = e['thumbnail'] ?? '';
+              return Item(
+                id: id,
+                videoId: id,
+                snippet: Snippet(
+                  title: title,
+                  channelTitle: channel,
+                  thumbnails: Thumbnails(
+                    thumbnailsDefault: ThumbnailData(url: thumb, width: 120, height: 90),
+                  ),
                 ),
-              ),
-            );
-          }).toList();
+              );
+            }).toList();
+          }
         }
       }
     } catch (_) {}
