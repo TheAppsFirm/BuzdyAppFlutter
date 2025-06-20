@@ -450,9 +450,11 @@ class QuickResultsSection extends StatelessWidget {
                   .toList(),
             ),
             onTap: () {
-              Navigator.of(context).pushReplacement(
+              final query =
+                  searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
+              Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => const DashBoard(index: 4),
+                  builder: (_) => SearchScreen(initialQuery: query),
                 ),
               );
             },

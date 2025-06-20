@@ -35,6 +35,7 @@ class SearchViewModel extends ChangeNotifier {
     googleResults = [];
     isLoading = false;
     notifyListeners();
+    await loadLaw();
   }
 
   Future<void> search(String query) async {
