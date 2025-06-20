@@ -139,7 +139,14 @@ class SearchService {
 
     final info = _lawData[code];
     if (info != null) {
-      return info;
+      return LawInfo(
+        code: code,
+        country: country,
+        legalStatus: info.legalStatus,
+        taxation: info.taxation,
+        restrictions: info.restrictions,
+        link: info.link,
+      );
     }
 
     return LawInfo(
