@@ -408,30 +408,7 @@ class QuickResultsSection extends StatelessWidget {
           _section(
             'Crypto',
             Column(
-              children: coins
-                  .map(
-                    (e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        children: [
-                          if (e.png64 != null && e.png64!.isNotEmpty)
-                            Image.network(e.png64!, width: 24, height: 24)
-                          else if (e.webp64 != null && e.webp64!.isNotEmpty)
-                            Image.network(e.webp64!, width: 24, height: 24)
-                          else if (e.imageUri.isNotEmpty)
-                            Image.network(e.imageUri, width: 24, height: 24)
-                          else
-                            const SizedBox(width: 24, height: 24),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(e.symbol)),
-                          Text(e.rate != null
-                              ? '\$${e.rate!.toStringAsFixed(2)}'
-                              : 'N/A'),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
+              children: coins.map(_coinInfoCard).toList(),
             ),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const CryptoScreen()),
@@ -512,6 +489,109 @@ class QuickResultsSection extends StatelessWidget {
             },
           ),
       ],
+    );
+  }
+
+  String _formatNumber(double number) {
+    if (number >= 1e12) {
+      return '${(number / 1e12).toStringAsFixed(2)}T';
+    } else if (number >= 1e9) {
+      return '${(number / 1e9).toStringAsFixed(2)}B';
+    } else if (number >= 1e6) {
+      return '${(number / 1e6).toStringAsFixed(2)}M';
+    } else if (number >= 1e3) {
+      return '${(number / 1e3).toStringAsFixed(2)}K';
+    } else {
+      return number.toStringAsFixed(2);
+    }
+  }
+
+  Widget _coinInfoCard(CoinModel e) {
+    final day = e.delta?.day;
+    final week = e.delta?.week;
+    final isPos = day != null && day >= 0;
+    final arrow = isPos ? '↑' : '↓';
+    final changeText =
+        day != null ? '${arrow}${(day.abs() * 100).toStringAsFixed(2)}%' : 'N/A';
+    final changeColor = isPos ? Colors.green : Colors.red;
+    final weekText =
+        week != null ? '${(week * 100).toStringAsFixed(2)}%' : 'N/A';
+    final volume = e.volume != null ? '$${_formatNumber(e.volume!)}' : 'N/A';
+    final cap = e.cap != null ? '$${_formatNumber(e.cap!)}' : 'N/A';
+    final supply = e.circulatingSupply != null
+        ? _formatNumber(e.circulatingSupply!)
+        : 'N/A';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (e.png64 != null && e.png64!.isNotEmpty)
+                    Image.network(e.png64!, width: 24, height: 24)
+                  else if (e.webp64 != null && e.webp64!.isNotEmpty)
+                    Image.network(e.webp64!, width: 24, height: 24)
+                  else if (e.imageUri.isNotEmpty)
+                    Image.network(e.imageUri, width: 24, height: 24)
+                  else
+                    const SizedBox(width: 24, height: 24),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${e.name.isNotEmpty ? e.name : e.symbol} (${e.symbol})',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(Icons.star_border, size: 16),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.notifications_none, size: 16),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    e.rate != null
+                        ? '$${e.rate!.toStringAsFixed(2)}'
+                        : 'N/A',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(changeText, style: TextStyle(color: changeColor)),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('MCap: ${cap}'),
+                  Text('Vol: ${volume}'),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '7d: ${weekText}',
+                    style: TextStyle(
+                        color: week != null && week >= 0
+                            ? Colors.green
+                            : Colors.red),
+                  ),
+                  Text('Supply: ${supply}'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
