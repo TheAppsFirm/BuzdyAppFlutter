@@ -69,6 +69,7 @@ dependencies:
   video_thumbnail: ^0.5.3
   geocoding: ^2.1.1
   collection: ^1.18.0
+  gap: ^3.0.1
   
   
 

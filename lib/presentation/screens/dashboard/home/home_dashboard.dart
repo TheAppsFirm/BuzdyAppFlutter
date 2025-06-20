@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gap/gap.dart';
 
 // View models
 import '../../../viewmodels/user_view_model.dart';
@@ -36,7 +37,7 @@ import '../../../widgets/glass_container.dart';
 import 'package:buzdy/core/constants.dart';
 
 /// Consistent spacing between main dashboard sections.
-const _sectionGap = SizedBox(height: 24);
+const _sectionGap = Gap(24);
 
 /// Small card used for quick statistic blocks.
 class StatCard extends StatelessWidget {
@@ -209,6 +210,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   _sectionGap,
                   ProductList(products: viewModel.productList),
                   _sectionGap,
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: QuickResultsSection(userVm: viewModel),
+                  ),
+                  _sectionGap,
                 ],
               ),
             ),
@@ -285,7 +291,7 @@ class GreetingSection extends StatelessWidget {
                   .bodyMedium
                   ?.copyWith(color: colors.onPrimary.withOpacity(0.8), fontSize: 14),
             ),
-            const SizedBox(height: 12),
+            const Gap(12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -307,11 +313,11 @@ class GreetingSection extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const Gap(12),
             const MarketCapCard(),
-            const SizedBox(height: 12),
+            const Gap(12),
             const FearGreedGauge(),
-            const SizedBox(height: 12),
+            const Gap(12),
             TextField(
               controller: searchController,
               textInputAction: TextInputAction.search,
@@ -357,10 +363,7 @@ class GreetingSection extends StatelessWidget {
                 ),
               ),
               ),
-            const SizedBox(height: 12),
-            // Quick search results appear directly below the search box so
-            // users can see matches without scrolling the whole dashboard.
-            QuickResultsSection(userVm: userVm),
+            const Gap(12),
           ],
         ),
       ),
@@ -416,7 +419,7 @@ class QuickResultsSection extends StatelessWidget {
               MaterialPageRoute(builder: (_) => const CryptoScreen()),
             ),
           ),
-          const SizedBox(height: 8),
+          const Gap(8),
         ],
         if (videos.isNotEmpty) ...[
           _section(
@@ -468,7 +471,7 @@ class QuickResultsSection extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 8),
+          const Gap(8),
         ],
         if (news.isNotEmpty)
           _section(
@@ -678,7 +681,7 @@ class CryptoPriceSection extends StatelessWidget {
                   .titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            const Gap(8),
             ...symbols.map(
               (code) => Column(
                 children: [
@@ -804,7 +807,7 @@ class LawPolicySection extends StatelessWidget {
                   .titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            const Gap(8),
             Text('Country: ${info.country}'),
             Text('Legal: ${info.legalStatus}'),
             Text('Taxation: ${info.taxation}'),
@@ -861,7 +864,7 @@ class BusinessList extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const Gap(8),
         SizedBox(
           height: 140,
           child: ListView.builder(
@@ -951,7 +954,7 @@ class ProductList extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const Gap(8),
         SizedBox(
           height: 140,
           child: ListView.builder(
@@ -1031,7 +1034,7 @@ class TrendingNews extends StatelessWidget {
               .titleMedium
               ?.copyWith(fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 8),
+        const Gap(8),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
