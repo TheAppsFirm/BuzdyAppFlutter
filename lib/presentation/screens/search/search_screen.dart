@@ -10,8 +10,9 @@ import '../dashboard/feed/videoplayer.dart';
 
 class SearchScreen extends StatefulWidget {
   final String initialQuery;
+  final SearchViewModel? viewModel;
   /// [query] is kept for backward compatibility if callers use `query:`
-  const SearchScreen({super.key, String? initialQuery, String? query})
+  const SearchScreen({super.key, String? initialQuery, String? query, this.viewModel})
       : initialQuery = initialQuery ?? query ?? '';
 
   @override
@@ -29,14 +30,15 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     super.initState();
     _controller = TabController(length: 3, vsync: this);
-    _viewModel = SearchViewModel();
+    _viewModel = widget.viewModel ?? SearchViewModel();
     _searchController.text = widget.initialQuery;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialized && widget.initialQuery.isNotEmpty) {
+    if (!_initialized && widget.viewModel == null &&
+        widget.initialQuery.isNotEmpty) {
       _viewModel.search(widget.initialQuery);
       _initialized = true;
     }
@@ -46,6 +48,9 @@ class _SearchScreenState extends State<SearchScreen>
   void dispose() {
     _controller.dispose();
     _searchController.dispose();
+    if (widget.viewModel == null) {
+      _viewModel.dispose();
+    }
     super.dispose();
   }
 
@@ -61,9 +66,13 @@ class _SearchScreenState extends State<SearchScreen>
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
                 onSubmitted: vm.search,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Search',
                   border: InputBorder.none,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () => vm.search(_searchController.text),
+                  ),
                 ),
               ),
               bottom: TabBar(

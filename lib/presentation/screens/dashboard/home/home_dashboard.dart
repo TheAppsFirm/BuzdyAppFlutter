@@ -339,11 +339,12 @@ class GreetingSection extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.arrow_forward),
                       onPressed: () {
-                        onSearchChanged(searchController.text);
+                        onSearchChanged(searchController.text, context.read<UserViewModel>());
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => SearchScreen(
                               initialQuery: searchController.text,
+                              viewModel: context.read<SearchViewModel>(),
                             ),
                           ),
                         );
@@ -454,7 +455,10 @@ class QuickResultsSection extends StatelessWidget {
                   searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => SearchScreen(initialQuery: query),
+                  builder: (_) => SearchScreen(
+                    initialQuery: query,
+                    viewModel: searchVm,
+                  ),
                 ),
               );
             },
@@ -477,7 +481,10 @@ class QuickResultsSection extends StatelessWidget {
                   searchVm.lastQuery.isNotEmpty ? searchVm.lastQuery : 'latest crypto';
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => SearchScreen(initialQuery: query),
+                  builder: (_) => SearchScreen(
+                    initialQuery: query,
+                    viewModel: searchVm,
+                  ),
                 ),
               );
             },
