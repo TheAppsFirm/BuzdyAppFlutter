@@ -8,6 +8,7 @@ import '../crypto/CryptoScreen.dart';
 import '../../search/search_screen.dart';
 import '../../search/article_webview.dart';
 import '../../search/models/news_article.dart';
+import '../../dashboard.dart';
 import '../../../viewmodels/search_view_model.dart';
 import '../../../viewmodels/analytics_view_model.dart';
 import '../../../widgets/analytics_widgets.dart';
