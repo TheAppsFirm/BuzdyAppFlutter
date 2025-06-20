@@ -11,6 +11,8 @@ class AnalyticsViewModel extends ChangeNotifier {
   int? exchanges;
   int? fearGreed;
   DateTime? lastUpdated;
+  DateTime? trendStart;
+  DateTime? trendEnd;
   List<double> trend = [];
   final List<String> aiInsights = [
     'Altcoins gaining momentum',
@@ -29,7 +31,10 @@ class AnalyticsViewModel extends ChangeNotifier {
       totalCoins = global['active_cryptocurrencies'] as int?;
       exchanges = global['markets'] as int?;
     }
-    trend = await _service.fetchBitcoinTrend(7);
+    final trendData = await _service.fetchBitcoinTrend(7);
+    trend = (trendData['trend'] as List).cast<double>();
+    trendStart = trendData['start'] as DateTime;
+    trendEnd = trendData['end'] as DateTime;
     fearGreed = await _service.fetchFearGreed();
 
     lastUpdated = DateTime.now();

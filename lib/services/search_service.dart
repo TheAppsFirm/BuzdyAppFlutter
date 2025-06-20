@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart' as loc;
 import 'package:geocoding/geocoding.dart' show placemarkFromCoordinates;
+import 'package:flutter/foundation.dart';
 import '../presentation/screens/search/models/google_result.dart';
 import '../presentation/screens/search/models/news_article.dart';
 import '../presentation/screens/search/models/law_info.dart';
@@ -16,19 +17,25 @@ class SearchService {
   Future<List<GoogleResult>> searchGoogle(String query, String country) async {
     final uri = Uri.parse(
         'https://www.googleapis.com/customsearch/v1?key=$googleApiKey&cx=$googleCx&q=${Uri.encodeQueryComponent(query)}&gl=$country');
+    debugPrint('Google request: $uri');
     final res = await http.get(uri);
+    debugPrint('Google response: ${res.statusCode}');
     if (res.statusCode == 200) {
+      debugPrint(res.body);
       final data = jsonDecode(res.body);
       final items = data['items'] as List<dynamic>?;
       return items?.map((e) => GoogleResult.fromJson(e)).toList() ?? [];
     }
+    debugPrint('Google search failed: ${res.body}');
     return [];
   }
 
   Future<List<Item>> searchYouTube(String query) async {
     final uri = Uri.parse(
         'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=25&q=${Uri.encodeQueryComponent(query)}&key=$youtubeApiKey');
+    debugPrint('YouTube request: $uri');
     final res = await http.get(uri);
+    debugPrint('YouTube response: ${res.statusCode}');
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       YoutubeModel model = YoutubeModel.fromJson(data);
@@ -70,7 +77,9 @@ class SearchService {
   Future<List<NewsArticle>> searchNews(String query) async {
     final uri = Uri.parse(
         'https://newsapi.org/v2/everything?apiKey=$newsApiKey&pageSize=50&q=${Uri.encodeQueryComponent(query)}');
+    debugPrint('News request: $uri');
     final res = await http.get(uri);
+    debugPrint('News response: ${res.statusCode}');
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       final articles = data['articles'] as List<dynamic>?;

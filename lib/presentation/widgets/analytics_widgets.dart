@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../viewmodels/analytics_view_model.dart';
 import 'line_chart.dart';
 
@@ -32,6 +33,17 @@ class MarketTrendSection extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             LineChart(data: vm.trend),
+            if (vm.trendStart != null && vm.trendEnd != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(DateFormat('MMM d').format(vm.trendStart!)),
+                    Text(DateFormat('MMM d').format(vm.trendEnd!)),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

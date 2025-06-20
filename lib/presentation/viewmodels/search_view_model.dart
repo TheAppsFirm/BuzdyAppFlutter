@@ -39,6 +39,7 @@ class SearchViewModel extends ChangeNotifier {
 
   Future<void> search(String query) async {
     if (query.isEmpty) return;
+    debugPrint('Search query: $query');
     lastQuery = query;
     isLoading = true;
     notifyListeners();

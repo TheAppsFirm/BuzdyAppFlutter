@@ -11,15 +11,30 @@ class MarketService {
     return null;
   }
 
-  Future<List<double>> fetchBitcoinTrend(int days) async {
-    final uri = Uri.parse('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=$days');
+  Future<Map<String, dynamic>> fetchBitcoinTrend(int days) async {
+    final uri = Uri.parse(
+        'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=$days');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       final prices = data['prices'] as List<dynamic>;
-      return prices.map<double>((e) => (e[1] as num).toDouble()).toList();
+      final trend = <double>[];
+      for (final item in prices) {
+        trend.add((item[1] as num).toDouble());
+      }
+      final start = DateTime.fromMillisecondsSinceEpoch(prices.first[0]);
+      final end = DateTime.fromMillisecondsSinceEpoch(prices.last[0]);
+      return {
+        'trend': trend,
+        'start': start,
+        'end': end,
+      };
     }
-    return [];
+    return {
+      'trend': <double>[],
+      'start': DateTime.now().subtract(Duration(days: days)),
+      'end': DateTime.now(),
+    };
   }
 
   Future<int?> fetchFearGreed() async {
