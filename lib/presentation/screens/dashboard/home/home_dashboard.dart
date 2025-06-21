@@ -755,17 +755,22 @@ class LawPolicySection extends StatelessWidget {
             Text('Legal: ${info.legalStatus}'),
             Text('Taxation: ${info.taxation}'),
             Text('Restrictions: ${info.restrictions}'),
-            if (info.link != null)
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ArticleWebView(url: info.link!),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => SearchScreen(
+                      // Pre-populate the search field so results load
+                      // automatically for the user's country.
+                      initialQuery: '${info.country} crypto law',
+                      initialTab: 2,
+                      viewModel: context.read<SearchViewModel>(),
                     ),
-                  );
-                },
-                child: const Text('Read more'),
-              ),
+                  ),
+                );
+              },
+              child: const Text('View Laws'),
+            ),
           ],
         ),
       ),
