@@ -744,35 +744,37 @@ class LawPolicySection extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Law & Policy', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Country: ${info.country}'),
-            Text('Legal: ${info.legalStatus}'),
-            Text('Taxation: ${info.taxation}'),
-            Text('Restrictions: ${info.restrictions}'),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SearchScreen(
-                      // Pre-populate the search field so results load
-                      // automatically for the user's country.
-                      initialQuery: '${info.country} crypto law',
-                      initialTab: 2,
-                      viewModel: context.read<SearchViewModel>(),
-                    ),
-                  ),
-                );
-              },
-              child: const Text('View Laws'),
+      child: ListTile(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => SearchScreen(
+                // Pre-populate the search field so results load
+                // automatically for the user's country.
+                initialQuery: '${info.country} crypto law',
+                initialTab: 2,
+                viewModel: context.read<SearchViewModel>(),
+              ),
             ),
-          ],
+          );
+        },
+        title: const Text(
+          'Law & Policy',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Country: ${info.country}'),
+              Text('Legal: ${info.legalStatus}'),
+              Text('Taxation: ${info.taxation}'),
+              Text('Restrictions: ${info.restrictions}'),
+            ],
+          ),
+        ),
+        trailing: const Icon(Icons.chevron_right),
       ),
     );
   }
