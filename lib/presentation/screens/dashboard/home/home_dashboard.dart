@@ -35,6 +35,8 @@ import '../../../widgets/glass_container.dart';
 // Constants
 import 'package:buzdy/core/constants.dart';
 
+const double kSectionGap = 16.0;
+
 /// Small card used for quick statistic blocks.
 class StatCard extends StatelessWidget {
   final String title;
@@ -188,21 +190,21 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       padding: EdgeInsets.symmetric(vertical: 20),
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   const MarketTrendSection(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   CryptoPriceSection(coins: viewModel.allCoins),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   const AiInsightsSection(),
                   const Divider(height: 32),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   const LawPolicySection(),
                   const Divider(height: 32),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   BusinessList(merchants: viewModel.merchantList),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   ProductList(products: viewModel.productList),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                 ],
               ),
             ),
@@ -802,7 +804,7 @@ class BusinessList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Businesses',
+            const Text('Brands',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             TextButton(
               onPressed: () {

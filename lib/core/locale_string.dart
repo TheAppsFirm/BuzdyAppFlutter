@@ -75,6 +75,7 @@ const Map<String, String> arSA = {
   "Medication List:": "قائمة الأدوية:",
   "Home": "الرئيسية",
   "Orders": "الطلبات",
+  "Brands": "العلامات التجارية",
   "Messages": "الرسائل",
   "Profile": "الملف الشخصي",
   "Prescription Details": "تفاصيل الوصفة الطبية",
