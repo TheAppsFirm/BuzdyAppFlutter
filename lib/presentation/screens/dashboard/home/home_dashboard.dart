@@ -43,16 +43,11 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Card(
-      elevation: 3,
-      color: colors.surfaceVariant,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               value,
@@ -251,8 +246,6 @@ class GreetingSection extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
           colors: [
             kAppButtonColor.withOpacity(0.7),
             kAppButtonColor.withOpacity(0.4),
@@ -263,18 +256,15 @@ class GreetingSection extends StatelessWidget {
       child: GlassContainer(
         padding: const EdgeInsets.all(16),
         borderRadius: BorderRadius.circular(16),
-        blur: 5,
-        opacity: 0.1,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '$greeting, $userName',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: colors.onPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                  ),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: colors.onPrimary),
             ),
             const SizedBox(height: 4),
             Text(
@@ -282,7 +272,7 @@ class GreetingSection extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
-                  ?.copyWith(color: colors.onPrimary.withOpacity(0.8), fontSize: 14),
+                  ?.copyWith(color: colors.onPrimary.withOpacity(0.8)),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -356,7 +346,7 @@ class GreetingSection extends StatelessWidget {
                 ),
               ),
               ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             // Quick search results appear directly below the search box so
             // users can see matches without scrolling the whole dashboard.
             QuickResultsSection(userVm: userVm),
@@ -406,17 +396,17 @@ class QuickResultsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (coins.isNotEmpty) ...[
+        if (coins.isNotEmpty)
           _section(
             'Crypto',
-            Column(children: coins.map(_coinInfoCard).toList()),
+            Column(
+              children: coins.map(_coinInfoCard).toList(),
+            ),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const CryptoScreen()),
             ),
           ),
-          const SizedBox(height: 8),
-        ],
-        if (videos.isNotEmpty) ...[
+        if (videos.isNotEmpty)
           _section(
             'Videos',
             Column(
@@ -426,21 +416,18 @@ class QuickResultsSection extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Row(
                         children: [
-                          if (v.snippet?.thumbnails?.thumbnailsDefault?.url != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: Image.network(
-                                v.snippet!.thumbnails!.thumbnailsDefault!.url!,
-                                width: 60,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              ),
+                          if (v.snippet?.thumbnails?.thumbnailsDefault?.url !=
+                              null)
+                            Image.network(
+                              v.snippet!.thumbnails!.thumbnailsDefault!.url!,
+                              width: 60,
+                              height: 40,
+                              fit: BoxFit.cover,
                             ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               v.snippet?.title ?? '',
-                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -465,8 +452,6 @@ class QuickResultsSection extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 8),
-        ],
         if (news.isNotEmpty)
           _section(
             'News',
@@ -475,11 +460,8 @@ class QuickResultsSection extends StatelessWidget {
               children: news
                   .map((n) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Text(
-                          n.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: Text(n.title,
+                            overflow: TextOverflow.ellipsis),
                       ))
                   .toList(),
             ),
@@ -550,10 +532,8 @@ class QuickResultsSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -575,35 +555,43 @@ class QuickResultsSection extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  CircleAvatar(
-                    radius: 10,
-                    backgroundColor: changeColor.withOpacity(0.1),
-                    child: Icon(
-                      isPos ? Icons.trending_up : Icons.trending_down,
-                      size: 14,
-                      color: changeColor,
-                    ),
-                  ),
                 ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                e.rate != null ? '\$${e.rate!.toStringAsFixed(2)}' : 'N/A',
-                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('24h: $changeText', style: TextStyle(color: changeColor)),
-                  Text('7d: $weekText',
-                      style: TextStyle(color: week != null && week >= 0 ? Colors.green : Colors.red)),
+                  Text(
+                    e.rate != null
+                        ? '\$${e.rate!.toStringAsFixed(2)}'
+                        : 'N/A',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(changeText, style: TextStyle(color: changeColor)),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text('MCap: $cap · Vol: $volume'),
               const SizedBox(height: 2),
-              Text('Supply: $supply'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('MCap: ${cap}'),
+                  Text('Vol: ${volume}'),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '7d: ${weekText}',
+                    style: TextStyle(
+                        color: week != null && week >= 0
+                            ? Colors.green
+                            : Colors.red),
+                  ),
+                  Text('Supply: ${supply}'),
+                ],
+              ),
             ],
           ),
         ),
@@ -614,15 +602,12 @@ class QuickResultsSection extends StatelessWidget {
   /// Helper to wrap a block in a titled card. Used by quick results.
   Widget _section(String title, Widget child, {VoidCallback? onTap}) {
     final card = Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             child,
           ],
@@ -654,8 +639,6 @@ class CryptoPriceSection extends StatelessWidget {
     
 
     final card = Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -664,14 +647,10 @@ class CryptoPriceSection extends StatelessWidget {
             const Text('Crypto Prices',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            ...symbols.map(
-              (code) => Column(
-                children: [
-                  _PriceRow(label: code, coin: _find(code)),
-                  if (code != symbols.last) const Divider(height: 8),
-                ],
-              ),
-            ),
+            ...symbols.map((code) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: _PriceRow(label: code, coin: _find(code)),
+                )),
             if (lastUpdated != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -737,25 +716,15 @@ class _PriceRow extends StatelessWidget {
       coinIcon = Image.network(coin!.webp64!, width: 16, height: 16);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          if (coinIcon != null) ...[coinIcon, const SizedBox(width: 4)],
-          CircleAvatar(
-            radius: 10,
-            backgroundColor: changeColor.withOpacity(0.1),
-            child: Icon(icon, color: changeColor, size: 14),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Text('$label: $price ',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          Text('($arrow${change.toStringAsFixed(2)}%)',
-              style: TextStyle(color: changeColor)),
-        ],
-      ),
+    return Row(
+      children: [
+        if (coinIcon != null) ...[coinIcon, const SizedBox(width: 4)],
+        Icon(icon, color: changeColor, size: 16),
+        const SizedBox(width: 4),
+        Text('$label: $price ', style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text('($arrow${change.toStringAsFixed(2)}%, ${arrow}${formatter.format(deltaAbs)})',
+            style: TextStyle(color: changeColor)),
+      ],
     );
   }
 }
@@ -775,8 +744,6 @@ class LawPolicySection extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -845,13 +812,9 @@ class BusinessList extends StatelessWidget {
               final item = items[index];
               return SizedBox(
                 width: 120,
-                child: Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                child: GlassContainer(
+                  borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
@@ -875,7 +838,6 @@ class BusinessList extends StatelessWidget {
                           child: Text(
                             item.name,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],
@@ -931,13 +893,9 @@ class ProductList extends StatelessWidget {
               final imageUrl = item.image;
               return SizedBox(
                 width: 120,
-                child: Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                child: GlassContainer(
+                  borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
@@ -960,7 +918,6 @@ class ProductList extends StatelessWidget {
                           child: Text(
                             item.name,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],
@@ -1003,12 +960,14 @@ class TrendingNews extends StatelessWidget {
           itemBuilder: (context, index) {
             final item = news[index];
             return Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
               margin: const EdgeInsets.symmetric(vertical: 4),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
+              child: ListTile(
+                leading: item.imageUrl != null
+                    ? Image.network(item.imageUrl!,
+                        width: 80, fit: BoxFit.cover)
+                    : null,
+                title: Text(item.title),
+                subtitle: Text(item.source ?? ''),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -1016,40 +975,6 @@ class TrendingNews extends StatelessWidget {
                     ),
                   );
                 },
-                child: Row(
-                  children: [
-                    if (item.imageUrl != null)
-                      ClipRRect(
-                        borderRadius: const BorderRadius.horizontal(
-                            left: Radius.circular(12)),
-                        child: Image.network(
-                          item.imageUrl!,
-                          width: 80,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    else
-                      const SizedBox(width: 80, height: 60),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(item.source ?? '',
-                              style: Theme.of(context).textTheme.bodySmall),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
               ),
             );
           },
