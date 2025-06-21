@@ -5,7 +5,7 @@ A comprehensive Flutter application that combines YouTube video downloading capa
 ## 🚀 Features
 
 ### 📱 Core Functionality
-- **Multi-tab Navigation**: Crypto tracking, Business directory, Products catalog, and YouTube feed
+- **Multi-tab Navigation**: Crypto tracking, Brands directory, Products catalog, and YouTube feed
 - **User Authentication**: Complete registration and login system with profile management
 - **Responsive Design**: Optimized for both mobile and tablet devices
 
@@ -27,7 +27,7 @@ A comprehensive Flutter application that combines YouTube video downloading capa
 - **TradingView Integration**: Professional charts with full-screen viewing
 - **Market Insights**: Comprehensive coin details including performance metrics
 
-### 🏢 Business Directory
+### 🏢 Brands Directory
 - **Global Coverage**: Browse banks and merchants worldwide
 - **Location-based Search**: Filter by country and city
 - **Detailed Profiles**: Complete business information with images and contact details
@@ -221,7 +221,7 @@ lib/
 - **Advanced Filtering**: Multiple filter options for precise market analysis
 - **Performance Indicators**: Visual representation of price changes and market trends
 
-### Business Directory
+### Brands Directory
 - **Global Search**: Search businesses by country, city, and type
 - **Detailed Profiles**: Complete business information with contact details
 - **Image Galleries**: Multiple images with carousel navigation

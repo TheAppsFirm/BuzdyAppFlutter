@@ -92,7 +92,7 @@ class _DashBoardState extends State<DashBoard> {
               BottomNavigationBarItem(
                 icon: const Icon(Icons.business_center_outlined),
                 activeIcon: const Icon(Icons.business_center),
-                label: 'Business'.tr,
+                label: 'Brands'.tr,
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.shopping_bag_outlined),

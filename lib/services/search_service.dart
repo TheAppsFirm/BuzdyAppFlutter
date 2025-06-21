@@ -149,13 +149,25 @@ class SearchService {
       );
     }
 
+    // Attempt to fetch basic info from Google searches when we don't have
+    // built-in data. This gives users some real details instead of "Unknown".
+    Future<String?> firstSnippet(String q) async {
+      final results = await searchGoogle(q, code);
+      return results.isNotEmpty ? results.first.snippet : null;
+    }
+
+    final legal = await firstSnippet('$country cryptocurrency legal status');
+    final tax = await firstSnippet('$country cryptocurrency tax');
+    final restrict = await firstSnippet('$country cryptocurrency restrictions');
+    final linkRes = await searchGoogle('$country cryptocurrency regulation', code);
+
     return LawInfo(
       code: code,
       country: country,
-      legalStatus: 'Unknown',
-      taxation: 'Unknown',
-      restrictions: 'Unknown',
-      link: null,
+      legalStatus: legal ?? 'Unknown',
+      taxation: tax ?? 'Unknown',
+      restrictions: restrict ?? 'Unknown',
+      link: linkRes.isNotEmpty ? linkRes.first.link : null,
     );
   }
 

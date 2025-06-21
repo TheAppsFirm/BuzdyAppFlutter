@@ -35,6 +35,8 @@ import '../../../widgets/glass_container.dart';
 // Constants
 import 'package:buzdy/core/constants.dart';
 
+const double kSectionGap = 16.0;
+
 /// Small card used for quick statistic blocks.
 class StatCard extends StatelessWidget {
   final String title;
@@ -188,21 +190,21 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       padding: EdgeInsets.symmetric(vertical: 20),
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   const MarketTrendSection(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   CryptoPriceSection(coins: viewModel.allCoins),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   const AiInsightsSection(),
                   const Divider(height: 32),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   const LawPolicySection(),
                   const Divider(height: 32),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   BusinessList(merchants: viewModel.merchantList),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                   ProductList(products: viewModel.productList),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: kSectionGap),
                 ],
               ),
             ),
@@ -673,9 +675,11 @@ class CryptoPriceSection extends StatelessWidget {
     return Hero(
       tag: 'crypto-summary',
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const CryptoScreen()),
-        ),
+        onTap: () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DashBoard(index: 1)),
+          );
+        },
         child: card,
       ),
     );
@@ -744,30 +748,40 @@ class LawPolicySection extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Law & Policy', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Country: ${info.country}'),
-            Text('Legal: ${info.legalStatus}'),
-            Text('Taxation: ${info.taxation}'),
-            Text('Restrictions: ${info.restrictions}'),
-            if (info.link != null)
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ArticleWebView(url: info.link!),
-                    ),
-                  );
-                },
-                child: const Text('Read more'),
+      child: ListTile(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => SearchScreen(
+                // Pre-populate the search field so results load
+                // automatically for the user's country.
+                initialQuery: '${info.country} crypto law',
+                initialTab: 2,
+                viewModel: context.read<SearchViewModel>(),
               ),
-          ],
+            ),
+          );
+        },
+        title: const Text(
+          'Law & Policy',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Country: ${info.country}'),
+              if (info.legalStatus.toLowerCase() != 'unknown')
+                Text('Legal: ${info.legalStatus}'),
+              if (info.taxation.toLowerCase() != 'unknown')
+                Text('Taxation: ${info.taxation}'),
+              if (info.restrictions.toLowerCase() != 'unknown')
+                Text('Restrictions: ${info.restrictions}'),
+            ],
+          ),
+        ),
+        trailing: const Icon(Icons.chevron_right),
       ),
     );
   }
@@ -790,7 +804,7 @@ class BusinessList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Businesses',
+            const Text('Brands',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             TextButton(
               onPressed: () {
