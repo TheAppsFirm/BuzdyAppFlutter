@@ -770,9 +770,12 @@ class LawPolicySection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Country: ${info.country}'),
-              Text('Legal: ${info.legalStatus}'),
-              Text('Taxation: ${info.taxation}'),
-              Text('Restrictions: ${info.restrictions}'),
+              if (info.legalStatus.toLowerCase() != 'unknown')
+                Text('Legal: ${info.legalStatus}'),
+              if (info.taxation.toLowerCase() != 'unknown')
+                Text('Taxation: ${info.taxation}'),
+              if (info.restrictions.toLowerCase() != 'unknown')
+                Text('Restrictions: ${info.restrictions}'),
             ],
           ),
         ),
