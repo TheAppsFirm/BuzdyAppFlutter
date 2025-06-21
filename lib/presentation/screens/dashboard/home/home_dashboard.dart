@@ -673,9 +673,11 @@ class CryptoPriceSection extends StatelessWidget {
     return Hero(
       tag: 'crypto-summary',
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const CryptoScreen()),
-        ),
+        onTap: () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DashBoard(index: 1)),
+          );
+        },
         child: card,
       ),
     );
